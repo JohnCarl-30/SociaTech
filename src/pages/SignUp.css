@@ -1,15 +1,27 @@
 .main_container {
-  width: 20em;
-  border: solid 1px black;
+  width: 23em;
+box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   border-radius: 0.4rem;
   padding: 0.8rem;
 
-  margin-top: 3em;
+  margin:3em auto 0 auto;
+  z-index: 10;
+  background-color: white;
 }
-.system_title {
+
+/* LOGO NG SYSTEM */
+.system_logo_container{
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  height: 3em;
   font-weight: 700;
   margin: 0.5rem;
-  color: rgb(50, 156, 205);
+  z-index: 0;
+}
+.system_logo{
+  height: 100%;
+
 }
 
 .signUp_title {
@@ -17,6 +29,8 @@
   font-size: 1.5rem;
   margin: 0.5rem;
 }
+
+
 
 .field_container {
   display: flex;
@@ -34,7 +48,7 @@
 }
 .field_container .field label {
   font-size: 0.7rem;
-  color: rgb(69, 69, 69);
+  color: rgb(0, 0, 0);
   margin-bottom: 0.1rem;
 }
 
@@ -43,6 +57,10 @@
   border-radius: 0.4rem;
   border: solid 2px black;
   padding: 0 0.5rem;
+}
+.field_container .field input:focus {
+  outline: none; /* optional */
+  border-color: inherit; /* para inline style ang mangyari */
 }
 
 .field .passWrap {
@@ -72,6 +90,39 @@
 .field .eye_btn .eyeSvg {
   width: 1.3em;
   height: 1.3em;
+}
+
+.tooltip {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 260px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 99;
+}
+
+.tooltip ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tooltip li {
+  list-style-type: disc;
+  margin-bottom: 4px;
+}
+
+/* Lumalabas pag hover or typing */
+.passWrap:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .signUp_btn {

@@ -8,7 +8,7 @@ export default function Homepage() {
   return (
     <>
       <div className="home_container">
-        <PageHeader />
+        <PageHeader isOnCreatePost={true} isOnSearchBar={true} />
         <div className="page_body">
           <Nav currentPage={" home"} />
 

@@ -6,12 +6,14 @@ body{
     
 }
 
+
+
 .signIn_container{
    
-    border: 1px solid black;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
     width: 20em;
     min-height: 25em;
-    border-radius: 0.8rem;
+    border-radius: 0.4rem;
 
     margin-top: 5em;
     padding: .8rem;
@@ -19,6 +21,16 @@ body{
     margin: 0 auto;
     top: -15%;
     transform: translateY(15%);
+}
+
+.system_logo_container{
+    position: fixed;
+  top: 1em;
+  left: 1em;
+  height: 3em;
+  font-weight: 700;
+  margin: 0.5rem;
+  z-index: 0;
 }
 
 .signIn_title{
@@ -35,6 +47,8 @@ body{
    
     gap: .2rem;
 }
+
+
 .input_container .input_childContainer{
     display: flex;
     flex-direction: column;

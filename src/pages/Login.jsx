@@ -129,9 +129,10 @@ export default function Login() {
         draggable
         pauseOnHover
       />
+       <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
 
       <div className="signIn_container">
-        <div className="system_title">SociaTech</div>
+       
         <div className="signIn_title">Sign In</div>
 
         <form onSubmit={handleEmailSignIn} className="input_container">

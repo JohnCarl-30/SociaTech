@@ -9,12 +9,54 @@ import { signUpWithEmail } from "../services/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { updateProfile } from "firebase/auth";
 import { auth } from "./../config/firebase.js";
+
+
+
+
 export default function SignUp() {
   const [showPass, cycleShowPass] = useCycle(false, true);
   const [showCPass, cycleShowCPass] = useCycle(false, true);
+  const [isValid, setValid] = useState('');
+  const [isMatch, setMatch] = useState('');
+  const [pass,setPass] = useState('');
+  
+  const [border_color, setBoarder_color] = useState('black')
+  const [bg_color,setBg_color] = useState('black');
+ 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+
+  const validatePasswordRules = (password) => {
+  const lengthRule = password.length >= 8;
+  const uppercaseRule = /[A-Z]/.test(password);
+  const numberRule = /[0-9]/.test(password);
+  const specialCharRule = /[!@#$%^&*(),.?":{}|<>_-]/.test(password);
+
+  return lengthRule && uppercaseRule && numberRule && specialCharRule;
+};
+
+const handlePassValidation=(password)=>{
+    if(validatePasswordRules(password)){
+      setValid(true);
+      setBg_color('green');
+    }else{
+      setValid(false);
+      setBg_color('red');
+    }
+}
+
+  
+  
+  const handlePassMatch =(password,confirmPass)=>{
+    if(password === confirmPass){
+      setMatch(true)
+      setBoarder_color('green');
+    }else{
+        setMatch(false)
+       setBoarder_color('red')
+    }
+  }
 
   const validateInputs = () => {
     const email = document.getElementById("user_email");
@@ -106,8 +148,9 @@ export default function SignUp() {
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
+       <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
       <div className="main_container">
-        <div className="system_title">SociaTech</div>
+       
         <div className="signUp_title">Sign Up</div>
         <div className="field_container">
           <div className="field">
@@ -119,6 +162,17 @@ export default function SignUp() {
               name="user_fullname"
               id="user_fullname"
               placeholder="John Doe"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="user_userName" className="field_labels">
+              Username
+            </label>
+            <input
+              type="text"
+              name="user_userName"
+              id="user_userName"
+              placeholder="doejohn12"
             />
           </div>
           <div className="field">
@@ -143,7 +197,13 @@ export default function SignUp() {
                 name="user_pass"
                 id="user_pass"
                 placeholder="********"
+                onChange={(e)=>{
+                  setPass(e.target.value);
+                  handlePassValidation(e.target.value);
+                }}
+                style={isValid?{borderColor:bg_color}:{borderColor:bg_color}}
               />
+              
               <button
                 className="eye_btn"
                 type="button"
@@ -155,6 +215,14 @@ export default function SignUp() {
                   <EyeOff className="eyeSvg" />
                 )}
               </button>
+              <div class="tooltip">
+                <ul>
+                  <li>At least eight (8) characters long</li>
+                  <li>At least one uppercase letter (A–Z)</li>
+                  <li>At least one number (0–9)</li>
+                  <li>At least one special character</li>
+                </ul>
+              </div>
             </div>
           </div>
           <div className="field">
@@ -168,6 +236,12 @@ export default function SignUp() {
                 name="user_cpass"
                 id="user_cpass"
                 placeholder="********"
+                onChange={(e)=>{
+                  
+                  handlePassMatch(pass,e.target.value);
+                  console.log(isMatch);
+                }}
+                style={{borderColor:border_color}}
               />
               <button
                 className="eye_btn"

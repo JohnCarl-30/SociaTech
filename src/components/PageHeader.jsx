@@ -5,19 +5,22 @@ import { useCycle } from 'framer-motion';
 
 
 
-export default function PageHeader(){
+export default function PageHeader({isOnSearchBar,isOnCreatePost}){
       const[isDropDownModalOpen , cycleDrownDownModalOpen] = useCycle(false,true)
-    
+
+    const open=(isOpen)=>{
+        return isOpen
+    }
 
 
     return(<>
      <div className="page_header">
                     <img className="page_title_logo" src="src\assets\SociaTech_logo_blackbg.png" alt=""  />
                     
-                    <div className="search_bar_container"><Search /><input type="text" placeholder='Search' className='search_bar'/></div>
+                    <div className="search_bar_container" style={open(isOnSearchBar)? {display:'flex'}:{display:'none'}}><Search /><input type="text" placeholder='Search' className='search_bar'/></div>
     
                     <div className='side_header_btn'>
-                        <button className="createPost_btn"><CirclePlus className='circlePlus_svg'/> Create</button>
+                        <button className="createPost_btn" style={open(isOnCreatePost)? {display:'flex'}:{display:'none'}}><CirclePlus className='circlePlus_svg'/> Create</button>
                         <button className="notification_btn"><Bell className='bell_svg'/></button>
                         <div className="profile_btn" onClick={()=>{cycleDrownDownModalOpen()}}><img src="src\assets\deault_pfp.png" alt="default_pfp" className='profile_img'/></div>
                     </div>
