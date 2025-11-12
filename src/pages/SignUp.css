@@ -1,164 +1,148 @@
-.main_container{
-    width: 20em;
-    border: solid 1px black;
-    border-radius: .4rem;
-   padding: .8rem;
-    
-   margin:3em auto 0 auto;
-    
+.main_container {
+  width: 20em;
+  border: solid 1px black;
+  border-radius: 0.4rem;
+  padding: 0.8rem;
+
+  margin-top: 3em;
 }
-.system_title{
-    font-weight: 700;
-    margin: .5rem;
-    color: rgb(50, 156, 205);
-    
+.system_title {
+  font-weight: 700;
+  margin: 0.5rem;
+  color: rgb(50, 156, 205);
 }
 
-.signUp_title{
-    font-weight: 600;
-    font-size: 1.5rem;
-    margin: .5rem;
+.signUp_title {
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0.5rem;
 }
 
-.field_container{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: .2rem;
-   
+.field_container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.2rem;
 }
 
-.field_container .field{
-    display: flex;
-    flex-direction: column;
-    width: 18em;
-    margin: .2rem;
-   
-    
-    
+.field_container .field {
+  display: flex;
+  flex-direction: column;
+  width: 18em;
+  margin: 0.2rem;
 }
-.field_container .field label{
-    font-size: .7rem;
-    color: rgb(69, 69, 69);
-    margin-bottom: .1rem;
+.field_container .field label {
+  font-size: 0.7rem;
+  color: rgb(69, 69, 69);
+  margin-bottom: 0.1rem;
 }
 
-
-.field_container .field input{
-    height: 2.5em;
-    border-radius: .4rem;
-     border: solid 2px black;
-     padding: 0 .5rem;
+.field_container .field input {
+  height: 2.5em;
+  border-radius: 0.4rem;
+  border: solid 2px black;
+  padding: 0 0.5rem;
 }
 
-.field .passWrap{
-    position: relative;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-    width: 100%;
-
-    
-
+.field .passWrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
-.field .passWrap_child{
-    width: 100%;
+.field .passWrap_child {
+  width: 100%;
 }
 
-.field .eye_btn{
-    position: absolute;
-    top: .5rem;
-    right: .5rem;
-    border: none;
-    background-color: white;
-    color: #555;
+.field .eye_btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  border: none;
+  background-color: white;
+  color: #555;
 }
 
-.field .eye_btn:hover{
-    
-
+.field .eye_btn:hover {
   color: #000;
   cursor: pointer;
-
 }
-.field .eye_btn .eyeSvg{
-    width: 1.3em;
-    height: 1.3em;
-}   
-
-.signUp_btn{
-   width: 21em;
-   height: 2.6em;
-   font-size: .85rem;
-   border-radius: .5rem;
-   border: solid 1.5px black;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-    font-weight: 600;
-   background-color: #212830;
-    color: white;
+.field .eye_btn .eyeSvg {
+  width: 1.3em;
+  height: 1.3em;
 }
 
-.signUp_btn:hover{
-    cursor: pointer;
+.signUp_btn {
+  width: 21em;
+  height: 2.6em;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  border: solid 1.5px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  background-color: #212830;
+  color: white;
 }
 
-
-.signUpBtn{
-    margin-top: 1.5rem;
+.signUp_btn:hover {
+  cursor: pointer;
 }
 
-.google_signUp_btn{
-    background-color: white;
-    color: #212830;
+.signUpBtn {
+  margin-top: 1.5rem;
+}
+
+.google_signUp_btn {
+  background-color: white;
+  color: #212830;
 }
 
 .or_container {
-    margin: .8rem 0; 
-    text-align: center;
-    position: relative;
-   
+  margin: 0.8rem 0;
+  text-align: center;
+  position: relative;
 }
 
 .or_container .or {
-    position: relative;
-    z-index: 1;
-    background-color: white;
-    padding: 0 .6rem .1rem; 
-    font-size: .7rem;
-    font-weight: 500;
-    display: inline-block; 
-    
+  position: relative;
+  z-index: 1;
+  background-color: white;
+  padding: 0 0.6rem 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
 }
 
-.or_container .or::before, 
+.or_container .or::before,
 .or_container .or::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 120px; 
-    height: 1px;
-    background-color: #605f5f; 
-    z-index: 0;
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 120px;
+  height: 1px;
+  background-color: #605f5f;
+  z-index: 0;
 }
 
 .or_container .or::before {
-    left: 0;
-    transform: translateX(-100%); 
+  left: 0;
+  transform: translateX(-100%);
 }
 
 .or_container .or::after {
-    right: 0;
-    transform: translateX(100%); 
+  right: 0;
+  transform: translateX(100%);
 }
-.signIn_text{
-    font-size: .7rem;
-    font-weight: 500;
+.signIn_text {
+  font-size: 0.7rem;
+  font-weight: 500;
 }
-.signIn_link{
-    cursor: pointer;
-    font-weight: 600;
-    color: black;
+.signIn_link {
+  cursor: pointer;
+  font-weight: 600;
+  color: black;
 }
