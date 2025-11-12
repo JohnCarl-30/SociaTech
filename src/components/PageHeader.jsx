@@ -1,4 +1,4 @@
-import { CirclePlus,Search,Bell,UserRound,Settings,HandHelping,LogOut } from 'lucide-react';
+import { CirclePlus,Search,Bell,UserRound,Settings,HandHelping,LogOut,FolderOpen } from 'lucide-react';
 import "./PageHeader.css"
 import { useCycle } from 'framer-motion';
 
@@ -27,6 +27,7 @@ export default function PageHeader(){
 
                 <div className='dropDown_profile_modal' style={isDropDownModalOpen ? {display:'flex'}:{display:'none'}}>
                     <button className='dropDown_btn'> <UserRound />View Profile</button>
+                    <button className='dropDown_btn'><FolderOpen/>Drafts</button>
                     <button className='dropDown_btn'><Settings />Settings</button>
                     <button className='dropDown_btn'><HandHelping />Help</button>
                     <button className='dropDown_btn'><LogOut />Logout</button>
