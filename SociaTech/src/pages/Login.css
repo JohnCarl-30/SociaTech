@@ -1,0 +1,195 @@
+body{
+    display: flex;
+    justify-content: center;
+    
+    align-items: center;
+    
+
+    font-family: "Montserrat", sans-serif;
+    
+}
+
+.signIn_container{
+   
+    border: 1px solid black;
+    width: 20em;
+    min-height: 25em;
+    border-radius: 0.8rem;
+
+    margin-top: 5em;
+    padding: .8rem;
+
+}
+
+.signIn_title{
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: .5rem;
+}
+
+.input_container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+   
+    gap: .2rem;
+}
+.input_container .input_childContainer{
+    display: flex;
+    flex-direction: column;
+    width: 18em;
+    margin: .2rem;
+}
+
+.input_container .input_childContainer label{
+    font-size: .7rem;
+    color: rgb(69, 69, 69);
+    margin-bottom: .1rem;
+}
+
+.input_container .input_childContainer input{
+    height: 2.5em;
+    border-radius: .4rem;
+     border: solid 2px black;
+     padding: 0 .5rem;
+}
+
+
+
+
+
+
+
+
+.input_childContainer .password_wrapper {
+  position: relative;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+    width: 100%;
+}
+
+.input_childContainer .password_wrapper_child{
+    width: 100%;
+}
+
+
+.input_childContainer .showPass_btn {
+  position: absolute;
+    top: .5rem;
+    right: .5rem;
+    border: none;
+    background-color: white;
+    color: #555;
+}
+
+.showPass_btn:hover {
+  color: #000;
+}
+
+.input_childContainer .showPass_btn .eye_logo{
+     width: 1.3em;
+    height: 1.3em;
+}
+
+.forgetPass_link{
+  
+    align-self: self-end;
+    font-weight: 600;
+    text-decoration: underline;
+    color: black;
+    font-size: .6rem;
+    
+    margin-right: 1.7rem;
+}
+
+.rememberMe_container{
+    margin: 1rem 0 1rem 1rem;
+    font-size: .8rem;
+    align-items: center;
+    display:flex ;
+    align-self: self-start;
+}
+
+.signIn_btn{
+    width: 21em;
+   height: 3em;
+   font-size: .85rem;
+   border-radius: .5rem;
+   border: solid 1.5px black;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+    font-weight: 600;
+   background-color: #212830;
+    color: white; 
+}
+.google_signIn_btn{
+    background-color: white;
+    color: #212830;
+}
+.signIn_btn:hover{
+    cursor: pointer;
+}
+
+
+
+.createAcc_link{
+    font-size: .7rem;
+    font-weight: 500;
+}
+.signUp_link{
+       cursor: pointer;
+    font-weight: 600;
+    color: black;
+}
+
+
+.seperator{
+     margin: .8rem 0; 
+    text-align: center;
+    position: relative;
+     
+}
+.seperator .or_text{
+        position: relative;
+    z-index: 1;
+    background-color: white;
+    padding: 0 .6rem .1rem; 
+    font-size: .7rem;
+    font-weight: 500;
+    display: inline-block; 
+}
+.seperator .or_text::after,
+.seperator .or_text::before{
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 120px; 
+    height: 1px;
+    background-color: #605f5f; 
+    z-index: 0;
+}
+
+.seperator .or_text::after{
+  right: 0;
+    transform: translateX(100%); 
+}
+
+.seperator .or_text::before{
+    left: 0;
+    transform: translateX(-100%); 
+}
+
+.google_signIn{
+    margin-bottom: 1rem;
+}
+
+.google_logo{
+    height: 15px;
+    width: 15px;
+    margin-right: 10px;
+}
+
+
