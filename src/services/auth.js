@@ -5,6 +5,7 @@ import {
   signOut as firebaseSignOut,
 } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
+import { toast } from "react-hot-toast";
 
 export const signUpWithEmail = async (email, password) => {
   try {
@@ -48,6 +49,7 @@ export const signInWithGoogle = async () => {
 export const signOut = async () => {
   try {
     await firebaseSignOut(auth);
+    toast.success("Successfully signed out");
   } catch (error) {
     console.error("Error signing out:", error);
     throw error;
