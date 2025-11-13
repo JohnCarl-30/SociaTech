@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBzvweKbhffci_vAB8FyqCiMwAAXlxS494",
-  authDomain: "sociatech-f7441.firebaseapp.com",
-  projectId: "sociatech-f7441",
-  storageBucket: "sociatech-f7441.firebasestorage.app",
-  messagingSenderId: "581753415151",
-  appId: "1:581753415151:web:2a7222bc4e38f52453c21a",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
