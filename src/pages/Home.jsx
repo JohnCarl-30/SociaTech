@@ -2,6 +2,7 @@ import Nav from "../components/Nav";
 import CategorySlider from "../components/CategorySlider";
 import PageHeader from "../components/PageHeader";
 import "./Home.css";
+import { useState } from "react";
 
 export default function Homepage() {
   return (

@@ -119,8 +119,8 @@ export default function Login() {
   return (
     <>
       <ToastContainer
-        position="top-center"
-        autoClose={2000}
+        position="top-right"
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -129,16 +129,11 @@ export default function Login() {
         draggable
         pauseOnHover
       />
-      <div className="system_logo_container">
-        <img
-          src="src\assets\SociaTech_logo_whitebg.png"
-          alt="system_logo"
-          className="system_logo"
-        />
-      </div>
+       <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
 
       <div className="login_parent_container">
         <div className="signIn_container">
+        
           <div className="signIn_title">Sign In</div>
           <form onSubmit={handleEmailSignIn} className="input_container">
             <div className="input_childContainer">

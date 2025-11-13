@@ -1,13 +1,15 @@
-const API_URL = "http://localhost/Sociatech/backend/auth";
+const API_URL = "http://localhost/sociatech-api/auth";
 
 const setToken = (token) => {
   localStorage.setItem("authToken", token);
 };
 
+// Get token from localStorage
 const getToken = () => {
   return localStorage.getItem("authToken");
 };
 
+// Remove token from localStorage
 const removeToken = () => {
   localStorage.removeItem("authToken");
 };
@@ -27,27 +29,14 @@ export const signUpWithEmail = async (email, password, fullname, username) => {
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server responded with error:", errorText);
-
-      let errorData = {
-        message: "Signup failed. Server returned non-OK response.",
-      };
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        console.warn("Could not parse non-OK server response as JSON", e);
-        errorData.message = errorText;
-      }
-
-      const error = new Error(errorData.message || "Signup failed");
-      error.code = errorData.code || "auth/unknown-error";
+      const error = new Error(data.message || "Signup failed");
+      error.code = data.code || "auth/unknown-error";
       throw error;
     }
 
-    // 4. If we get here, response.ok was true, so it's safe to parse as JSON.
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Signup error:", error);
@@ -62,41 +51,32 @@ export const signInWithEmail = async (email, password) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     });
-
-    // 1. CHECK FOR AN ERROR RESPONSE FIRST
-    if (!response.ok) {
-      // 401 means "Unauthorized" (Invalid email/password)
-      if (response.status === 401) {
-        throw new Error("Invalid email or password");
-      }
-
-      // 400 means "Bad Request" (Email or password missing)
-      if (response.status === 400) {
-        throw new Error("Email and password are required");
-      }
-
-      // Any other error (like a 500 crash)
-      const errorText = await response.text();
-      console.error("Server Error:", errorText);
-      throw new Error("Server error. Please try again later.");
-    }
 
     const data = await response.json();
 
-    // Store token and user data
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    // Store token
     setToken(data.data.token);
-    localStorage.setItem("userData", JSON.stringify(data.data.user));
+
+    // Store user data
+    localStorage.setItem("userData", JSON.stringify(data.data));
 
     return data;
   } catch (error) {
-    console.error("Login service error:", error);
-
+    console.error("Login error:", error);
     throw error;
   }
 };
 
+// Google Authentication - PHP Backend
 export const googleAuth = async (user) => {
   try {
     const response = await fetch(`${API_URL}/google-auth.php`, {
@@ -119,6 +99,7 @@ export const googleAuth = async (user) => {
       throw new Error(data.message || "Google authentication failed");
     }
 
+    // Store token and user data
     setToken(data.data.token);
     localStorage.setItem("userData", JSON.stringify(data.data));
 
@@ -185,6 +166,7 @@ export const verifyToken = async () => {
   }
 };
 
+// Get current user
 export const getCurrentUser = () => {
   const userData = localStorage.getItem("userData");
   return userData ? JSON.parse(userData) : null;

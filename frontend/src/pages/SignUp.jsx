@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpWithEmail } from "../services/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { googleAuth } from "../services/auth";
+import { updateProfile } from "firebase/auth";
 import { auth } from "./../config/firebase.js";
 
 export default function SignUp() {
@@ -70,8 +70,8 @@ export default function SignUp() {
       isValid = false;
     }
 
-    if (!password.value || password.value.length < 8) {
-      toast.error("Password must be at least 8 characters long.");
+    if (!password.value || password.value.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
       isValid = false;
     }
 
@@ -90,25 +90,15 @@ export default function SignUp() {
 
     const email = document.getElementById("user_email").value;
     const password = document.getElementById("user_pass").value;
-    const fullname = document.getElementById("user_fullname").value;
-    const username = document.getElementById("user_userName").value;
+    const name = document.getElementById("user_fullname").value;
 
     try {
-      // Call PHP backend
-      await signUpWithEmail(email, password, fullname, username);
-
-      toast.success("Account created successfully!", {
-        position: "top-right",
-        autoClose: 2000,
-      });
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      const userCredential = await signUpWithEmail(email, password);
+      await updateProfile(userCredential.user, { displayName: name });
+      toast.success("Account created successfully!");
+      navigate("/login");
     } catch (err) {
       console.error("Sign up error:", err);
-
-      // Handle error codes from PHP
       if (err.code === "auth/email-already-in-use") {
         toast.error(
           "This email is already registered. Please sign in instead."
@@ -118,9 +108,7 @@ export default function SignUp() {
       } else if (err.code === "auth/invalid-email") {
         toast.error("Invalid email address.");
       } else {
-        toast.error(
-          err.message || "Failed to create account. Please try again."
-        );
+        toast.error("Failed to create account. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -141,7 +129,6 @@ export default function SignUp() {
       const result = await signInWithPopup(auth, provider);
       console.log("Google sign in successful:", result.user);
       toast.success("Signed up with Google successfully!");
-      await googleAuth(result.user);
       navigate("/home");
     } catch (err) {
       console.error("Google sign up error:", err);
@@ -155,7 +142,7 @@ export default function SignUp() {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={2000} />
       <div className="system_logo_container">
         <img
           src="src\assets\SociaTech_logo_whitebg.png"
@@ -163,148 +150,158 @@ export default function SignUp() {
           className="system_logo"
         />
       </div>
-      <div className="main_container">
-        <div className="signUp_title">Sign Up</div>
-        <div className="field_container">
-          <div className="field">
-            <label htmlFor="user_fullname" className="field_labels">
-              Full name
-            </label>
-            <input
-              type="text"
-              name="user_fullname"
-              id="user_fullname"
-              placeholder="John Doe"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="user_userName" className="field_labels">
-              Username
-            </label>
-            <input
-              type="text"
-              name="user_userName"
-              id="user_userName"
-              placeholder="doejohn12"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="user_email" className="field_labels">
-              Email
-            </label>
-            <input
-              type="text"
-              name="user_email"
-              id="user_email"
-              placeholder="your@email.com"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="user_pass" className="field_labels">
-              Password
-            </label>
-            <div className="passWrap">
+      <div className="signUp_parent_container">
+        <div className="main_container">
+          <div className="signUp_title">Sign Up</div>
+          <div className="field_container">
+            <div className="field">
+              <label htmlFor="user_fullname" className="field_labels">
+                Full name
+              </label>
               <input
-                className="passWrap_child"
-                type={showPass ? "text" : "password"}
-                name="user_pass"
-                id="user_pass"
-                placeholder="********"
-                onChange={(e) => {
-                  setPass(e.target.value);
-                  handlePassValidation(e.target.value);
-                }}
-                style={
-                  isValid
-                    ? { borderColor: bg_color }
-                    : { borderColor: bg_color }
-                }
+                type="text"
+                name="user_fullname"
+                id="user_fullname"
+                placeholder="John Doe"
               />
+            </div>
+            <div className="field">
+              <label htmlFor="user_userName" className="field_labels">
+                Username
+              </label>
+              <input
+                type="text"
+                name="user_userName"
+                id="user_userName"
+                placeholder="doejohn12"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="user_email" className="field_labels">
+                Email
+              </label>
+              <input
+                type="text"
+                name="user_email"
+                id="user_email"
+                placeholder="your@email.com"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="user_pass" className="field_labels">
+                Password
+              </label>
+              <div className="passWrap">
+                <input
+                  className="passWrap_child"
+                  type={showPass ? "text" : "password"}
+                  name="user_pass"
+                  id="user_pass"
+                  placeholder="********"
+                  onChange={(e) => {
+                    setPass(e.target.value);
+                    handlePassValidation(e.target.value);
+                  }}
+                  style={
+                    isValid
+                      ? { borderColor: bg_color }
+                      : { borderColor: bg_color }
+                  }
+                />
 
-              <button
-                className="eye_btn"
-                type="button"
-                onClick={() => cycleShowPass()}
-              >
-                {showPass ? (
-                  <Eye className="eyeSvg" />
-                ) : (
-                  <EyeOff className="eyeSvg" />
-                )}
-              </button>
-              <div className="tooltip">
-                <ul>
-                  <li>At least eight (8) characters long</li>
-                  <li>At least one uppercase letter (A–Z)</li>
-                  <li>At least one number (0–9)</li>
-                  <li>At least one special character</li>
-                </ul>
+                <button
+                  className="eye_btn"
+                  type="button"
+                  onClick={() => cycleShowPass()}
+                >
+                  {showPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
+                <div class="tooltip">
+                  <ul>
+                    <li>At least eight (8) characters long</li>
+                    <li>At least one uppercase letter (A–Z)</li>
+                    <li>At least one number (0–9)</li>
+                    <li>At least one special character</li>
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="field">
-            <label htmlFor="user_cpass" className="field_labels">
-              Confirm password
-            </label>
-            <div className="passWrap">
-              <input
-                className="passWrap_child"
-                type={showCPass ? "text" : "password"}
-                name="user_cpass"
-                id="user_cpass"
-                placeholder="********"
-                onChange={(e) => {
-                  handlePassMatch(pass, e.target.value);
-                  console.log(isMatch);
-                }}
-                style={{ borderColor: border_color }}
-              />
-              <button
-                className="eye_btn"
-                type="button"
-                onClick={() => cycleShowCPass()}
-              >
-                {showCPass ? (
-                  <Eye className="eyeSvg" />
-                ) : (
-                  <EyeOff className="eyeSvg" />
-                )}
-              </button>
+            <div className="field">
+              <label htmlFor="user_cpass" className="field_labels">
+                Confirm password
+              </label>
+              <div className="passWrap">
+                <input
+                  className="passWrap_child"
+                  type={showCPass ? "text" : "password"}
+                  name="user_cpass"
+                  id="user_cpass"
+                  placeholder="********"
+                  onChange={(e) => {
+                    handlePassMatch(pass, e.target.value);
+                    console.log(isMatch);
+                  }}
+                  style={{ borderColor: border_color }}
+                />
+                <button
+                  className="eye_btn"
+                  type="button"
+                  onClick={() => cycleShowCPass()}
+                >
+                  {showCPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+            <div className="term_checkbox_container">
+              <input type="checkbox" />{" "}
+              <div className="term_checkbox_text">
+                I agree to the{" "}
+                <span className="term_link">Terms of Service</span> and{" "}
+                <span className="privacy_link">Privacy Policies</span> of
+                SociaTech
+              </div>
+            </div>
+            <button
+              className="signUp_btn signUpBtn"
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || googleLoading}
+            >
+              {loading ? "Signing Up..." : "Sign Up"}
+            </button>
 
-          <button
-            className="signUp_btn signUpBtn"
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || googleLoading}
-          >
-            {loading ? "Signing Up..." : "Sign Up"}
-          </button>
+            <div className="or_container">
+              <span className="or">or</span>
+            </div>
 
-          <div className="or_container">
-            <span className="or">or</span>
-          </div>
+            <button
+              className="signUp_btn google_signUp_btn"
+              type="button"
+              onClick={handleGoogleSignUp}
+              disabled={loading || googleLoading}
+            >
+              <img
+                src="/src/assets/google.svg"
+                alt="googleLogo"
+                className="google_logo"
+              />
+              {googleLoading ? "Signing up..." : "Sign up with Google"}
+            </button>
 
-          <button
-            className="signUp_btn google_signUp_btn"
-            type="button"
-            onClick={handleGoogleSignUp}
-            disabled={loading || googleLoading}
-          >
-            <img
-              src="/src/assets/google.svg"
-              alt="googleLogo"
-              className="google_logo"
-            />
-            {googleLoading ? "Signing up..." : "Sign up with Google"}
-          </button>
-
-          <div className="signIn_text">
-            Already have an account?{" "}
-            <span onClick={() => navigate("/")} className="signIn_link">
-              Sign In
-            </span>
+            <div className="signIn_text">
+              Already have an account?{" "}
+              <span onClick={() => navigate("/")} className="signIn_link">
+                Sign In
+              </span>
+            </div>
           </div>
         </div>
       </div>
