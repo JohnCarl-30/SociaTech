@@ -24,20 +24,28 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.sucesss("Logout successfull!");
-      navigate("/login");
+      toast.success("Logout successful!", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (error) {
       console.log("Error signing out:", error);
+      toast.error("Failed to logout. Please try again.");
     }
   };
-
   return (
     <>
       <div className="page_header">
         <img
           className="page_title_logo"
           src="src\assets\SociaTech_logo_blackbg.png"
-          alt=""
+          alt="socia-tech-logo"
+          onClick={() => navigate("/home")}
+          onFocus={true}
         />
 
         <div
