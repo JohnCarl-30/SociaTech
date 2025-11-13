@@ -12,9 +12,11 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/home" element={<Home />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword type={'email'} forgetPassType={'email'} placeholder={'youremail@gmail.com'}/>} />
       </Routes>
     </BrowserRouter>
+
+    // <ForgotPassword type={'text'} forgetPassType={'username'} placeholder={'doejohn12'}/> eto dapat pag nag try another way
   );
 }
 

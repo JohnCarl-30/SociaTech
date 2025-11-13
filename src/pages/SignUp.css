@@ -1,10 +1,18 @@
+.signUp_parent_container{
+  display: flex;
+  min-height: 100vh; 
+  width: 100vw;
+  justify-content: center; 
+  align-items: center;
+  overflow: hidden;
+}
 .main_container {
   width: 23em;
 box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   border-radius: 0.4rem;
   padding: 0.8rem;
 
-  margin:3em auto 0 auto;
+  
   z-index: 10;
   background-color: white;
 }
@@ -13,7 +21,7 @@ box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 .system_logo_container{
   position: fixed;
   top: 1em;
-  left: 1em;
+  left: 3em;
   height: 3em;
   font-weight: 700;
   margin: 0.5rem;
@@ -125,6 +133,23 @@ box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   pointer-events: auto;
 }
 
+.term_checkbox_container{
+  margin-top: .5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center ;
+}
+
+.term_checkbox_text{
+  font-size: .6rem;
+  font-weight: 500;
+}
+.term_link,.privacy_link{
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .signUp_btn {
   width: 21em;
   height: 2.6em;
@@ -196,4 +221,5 @@ box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   cursor: pointer;
   font-weight: 600;
   color: black;
+  text-decoration: underline;
 }

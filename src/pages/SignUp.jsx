@@ -149,6 +149,7 @@ const handlePassValidation=(password)=>{
     <>
       <ToastContainer position="top-right" autoClose={3000} />
        <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
+       <div className="signUp_parent_container">
       <div className="main_container">
        
         <div className="signUp_title">Sign Up</div>
@@ -256,7 +257,7 @@ const handlePassValidation=(password)=>{
               </button>
             </div>
           </div>
-
+          <div className="term_checkbox_container"><input type="checkbox" /> <div className="term_checkbox_text">I agree to the <span className="term_link">Terms of Service</span> and <span className="privacy_link">Privacy Policies</span> of SociaTech</div></div>
           <button
             className="signUp_btn signUpBtn"
             type="button"
@@ -265,6 +266,7 @@ const handlePassValidation=(password)=>{
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
+
 
           <div className="or_container">
             <span className="or">or</span>
@@ -292,6 +294,7 @@ const handlePassValidation=(password)=>{
           </div>
         </div>
       </div>
+     </div> 
     </>
   );
 }

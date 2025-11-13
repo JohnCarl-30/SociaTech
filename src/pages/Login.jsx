@@ -131,90 +131,84 @@ export default function Login() {
       />
        <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
 
-      <div className="signIn_container">
-       
-        <div className="signIn_title">Sign In</div>
-
-        <form onSubmit={handleEmailSignIn} className="input_container">
-          <div className="input_childContainer">
-            <label htmlFor="user_signIn_email">Email</label>
-            <input
-              type="email"
-              name="user_signIn_email"
-              id="user_signIn_email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="input_childContainer">
-            <label htmlFor="user_signIn_pass">Password</label>
-            <div className="password_wrapper">
+      <div className="login_parent_container">
+        <div className="signIn_container">
+        
+          <div className="signIn_title">Sign In</div>
+          <form onSubmit={handleEmailSignIn} className="input_container">
+            <div className="input_childContainer">
+              <label htmlFor="user_signIn_email">Email</label>
               <input
-                type={showPass ? "text" : "password"}
-                name="user_signIn_pass"
-                id="user_signIn_pass"
-                className="password_wrapper_child"
-                placeholder="********"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="email"
+                name="user_signIn_email"
+                id="user_signIn_email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
               />
-              <button
-                type="button"
-                className="showPass_btn"
-                onClick={() => cycleShowPass()}
-                disabled={loading}
-              >
-                {showPass ? (
-                  <Eye className="eye_logo" />
-                ) : (
-                  <EyeOff className="eye_logo" />
-                )}
-              </button>
             </div>
-          </div>
-
-          <a href="/forgot-password" className="forgetPass_link">
-            Forgot your password?
-          </a>
-
-          <div className="rememberMe_container">
-            <input type="checkbox" name="remember_me" id="remember_me" />
-            <label htmlFor="remember_me">Remember me</label>
-          </div>
-
-          <button type="submit" className="signIn_btn" disabled={loading}>
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-
-          <div className="createAcc_link">
-            Don't have an account?{" "}
-            <a href="/signup" className="signUp_link">
-              Sign Up
+            <div className="input_childContainer">
+              <label htmlFor="user_signIn_pass">Password</label>
+              <div className="password_wrapper">
+                <input
+                  type={showPass ? "text" : "password"}
+                  name="user_signIn_pass"
+                  id="user_signIn_pass"
+                  className="password_wrapper_child"
+                  placeholder="********"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="showPass_btn"
+                  onClick={() => cycleShowPass()}
+                  disabled={loading}
+                >
+                  {showPass ? (
+                    <Eye className="eye_logo" />
+                  ) : (
+                    <EyeOff className="eye_logo" />
+                  )}
+                </button>
+              </div>
+            </div>
+            <a href="/forgot-password" className="forgetPass_link">
+              Forgot your password?
             </a>
-          </div>
-
-          <div className="seperator">
-            <span className="or_text">or</span>
-          </div>
-
-          <button
-            type="button"
-            className="signIn_btn google_signIn_btn"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-          >
-            <img
-              src="src/assets/google.svg"
-              alt="google_logo"
-              className="google_logo"
-            />
-            Sign in with Google
-          </button>
-        </form>
+            <div className="rememberMe_container">
+              <input type="checkbox" name="remember_me" id="remember_me" />
+              <label htmlFor="remember_me">Remember me</label>
+            </div>
+            <button type="submit" className="signIn_btn" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+            <div className="createAcc_link">
+              Don't have an account?{" "}
+              <a href="/signup" className="signUp_link">
+                Sign Up
+              </a>
+            </div>
+            <div className="seperator">
+              <span className="or_text">or</span>
+            </div>
+            <button
+              type="button"
+              className="signIn_btn google_signIn_btn"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <img
+                src="src/assets/google.svg"
+                alt="google_logo"
+                className="google_logo"
+              />
+              Sign in with Google
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );

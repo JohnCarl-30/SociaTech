@@ -2,35 +2,34 @@
 import { useState } from "react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../config/firebase";
+import { div } from "framer-motion/client";
+import "./ForgotPassword.css"
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+export default function ForgotPassword({forgetPassType, placeholder, type}) {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setMessage("Password reset email sent! Check your inbox.");
-    } catch (error) {
-      setMessage(error.message);
-    }
-  };
+
+ 
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", padding: "2rem" }}>
-      <h2>Forgot Password</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <button type="submit">Reset Password</button>
-      </form>
-      {message && <p>{message}</p>}
-    </div>
+    <>
+    <div className="system_logo_container"><img src="src\assets\SociaTech_logo_whitebg.png" alt="system_logo" className="system_logo"/></div>
+      
+      <div className="parent_container">
+        <form className="forgetPass_main_container">
+          <div className="container_title">Forgot Password</div>
+          <div className="childText1">
+            No worries, we've got your back. Just let us know where we should send your password reset link.
+          </div>
+          <div className="forgetPass_child_container">
+          <label htmlFor="" className="field_label">Enter your {forgetPassType}</label>
+              <input type={type} placeholder={placeholder} className="forgetPass_field"/>
+              <div className="validationText">sample text</div>
+          </div>
+          <button className="forgetPass_btn">Find your account</button>
+          <div className="tryText_container">Forgot your {forgetPassType}? <a href="" className="try_text">Try another way</a></div>
+        </form>
+      </div>
+    </>
+    
   );
 }
