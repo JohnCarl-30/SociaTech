@@ -338,32 +338,32 @@ export default function SignUp() {
                 Confirm password <span style={{ color: "red" }}>*</span>
               </label>
               <div className="passWrap">
-                <input
-                  className="passWrap_child"
-                  type={showCPass ? "text" : "password"}
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  placeholder="********"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  style={{ borderColor: getConfirmPasswordBorderColor() }}
-                  disabled={loading || googleLoading}
-                  autoComplete="new-password"
-                />
-                <button
-                  className="eye_btn"
-                  type="button"
-                  onClick={() => cycleShowCPass()}
-                  disabled={loading || googleLoading}
-                  aria-label="Toggle confirm password visibility"
-                >
-                  {showCPass ? (
-                    <Eye className="eyeSvg" />
-                  ) : (
-                    <EyeOff className="eyeSvg" />
-                  )}
-                </button>
+                    <input
+                      className="passWrap_child"
+                      type={showCPass ? "text" : "password"}
+                      name="confirmPassword"
+                      id="confirmPassword"
+                      placeholder="********"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      onKeyPress={handleKeyPress}
+                      style={{ borderColor: getConfirmPasswordBorderColor() }}
+                      disabled={loading || googleLoading}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      className="eye_btn"
+                      type="button"
+                      onClick={() => cycleShowCPass()}
+                      disabled={loading || googleLoading}
+                      aria-label="Toggle confirm password visibility"
+                    >
+                      {showCPass ? (
+                        <Eye className="eyeSvg" />
+                      ) : (
+                        <EyeOff className="eyeSvg" />
+                      )}
+                    </button>
               </div>
             </div>
 

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import "./ResetPassword.css";
+import { useNavigate } from "react-router-dom";
 import { useCycle } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function PasswordResetForm() {
   const [showPass, cycleShowPass] = useCycle(false, true);
   const [showCPass, cycleShowCPass] = useCycle(false, true);
+  const navigate = useNavigate();
+
+  
 
   const validatePasswordRules = (password) => {
     return {
@@ -50,82 +54,85 @@ export default function PasswordResetForm() {
   };
 
   return (
-    <div className="container">
-      <div className="header">
-        <h1 className="logo">Sociatech</h1>
+    <>
+    <div className="system_logo_container">
+        <img
+          src="src\assets\SociaTech_logo_whitebg.png"
+          alt="system_logo"
+          className="system_logo"
+          onClick={() => navigate("/")}
+          style={{ cursor: "pointer" }}
+        />
       </div>
 
-      <div className="card">
-        <h2 className="title">Create new password</h2>
-        <p className="subtitle">Please enter your new password below</p>
-
-        <div className="form-group">
-          <label className="label">New Password</label>
-          <div className="input-wrapper">
-            <input
-              type={showPass ? "text" : "password"}
-              className="input"
-              value={formData.password}
-              onChange={handleInputChange}
-              placeholder="**********"
-              style={{ borderColor: getPasswordBorderColor() }}
-            />
-            <button
-              className="eye-button"
-              onClick={() => cycleShowPass()}
-              type="button"
-            >
-              {showPass ? (
-                <Eye className="eyeSvg" />
-              ) : (
-                <EyeOff className="eyeSvg" />
-              )}
-            </button>
+      <div className="resetPass_parent_container">
+        <div className="resetPass_container">
+          <div className="resetPass_title">Create new password</div>
+          <div className="resetPass_subtitle">Please enter your new password below</div>
+          <div className="resetPass_parent_fieldContainer">
+            <div className="resetPass_field_container">
+              <label className="resetPass_field_label">New Password</label>
+              <div className="resetPass_field_wrapper">
+                <input
+                  type={showPass ? "text" : "password"}
+                  className="resetPass_input_field"
+                  value={formData.password}
+                 name="password"   
+                  onChange={handleInputChange}
+                  placeholder="**********"
+                  style={{ borderColor: getPasswordBorderColor() }}
+                />
+                <button
+                  className="resetPass_eye_button"
+                  onClick={() => cycleShowPass()}
+                  type="button"
+                >
+                  {showPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="resetPass_field_container">
+              <label className="resetPass_field_label">Confirm Password</label>
+              <div className="input-wrapper">
+                <input
+                  type={showCPass ? "text" : "password"}
+                  className="resetPass_input_field"
+                  value={formData.confirmPassword}
+                   name="confirmPassword"
+                  placeholder="**********"
+                  style={{ borderColor: getConfirmPasswordBorderColor() }}
+                  onChange={handleInputChange}
+                />
+                <button
+                  className="resetPass_eye_button"
+                  onClick={() => cycleShowCPass()}
+                  type="button"
+                >
+                  {showCPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-
-          <div className="tooltip">
-            <ul>
-              <li>At least eight (8) characters long</li>
-              <li>At least one uppercase letter (A–Z)</li>
-              <li>At least one number (0–9)</li>
-              <li>At least one special character</li>
-            </ul>
+          <div className="changePass_btn_container">
+            <button className="changePass_btn" onClick={handleSubmit}>
+              Change Password
+            </button>
+            <a href="/login" className="login_link">
+              Back to log in
+            </a>
           </div>
         </div>
-
-        <div className="form-group">
-          <label className="label">Confirm Password</label>
-          <div className="input-wrapper">
-            <input
-              type={showCPass ? "text" : "password"}
-              className="input"
-              value={formData.confirmPassword}
-              placeholder="**********"
-              style={{ borderColor: getConfirmPasswordBorderColor() }}
-              onChange={handleInputChange}
-            />
-            <button
-              className="eye-button"
-              onClick={() => cycleShowCPass()}
-              type="button"
-            >
-              {showCPass ? (
-                <Eye className="eyeSvg" />
-              ) : (
-                <EyeOff className="eyeSvg" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <button className="submit-button" onClick={handleSubmit}>
-          Change Password
-        </button>
-
-        <a href="/login" className="back-link">
-          Back to log in
-        </a>
       </div>
-    </div>
+    
+    </>
   );
 }
