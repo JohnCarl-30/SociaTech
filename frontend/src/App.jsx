@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
@@ -49,6 +50,10 @@ function App() {
           Kung walang user (hindi naka-login), i-redirect sa login page ('/').
         */}
         <Route path="/home" element={user ? <Home /> : <Navigate to="/" />} />
+        <Route
+          path="/reset-password"
+          element={!user ? <ResetPassword /> : <Navigate to="/home" />}
+        />
 
         <Route
           path="*"

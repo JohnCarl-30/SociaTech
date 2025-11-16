@@ -1,5 +1,6 @@
 import "./ForgotPassword.css";
 import { useNavigate } from "react-router-dom";
+import ResetPassword from "./ResetPassword.jsx";
 
 export default function ForgotPassword({
   forgetPassType,
@@ -40,7 +41,12 @@ export default function ForgotPassword({
             />
             <div className="validationText">sample text</div>
           </div>
-          <button className="forgetPass_btn">Find your account</button>
+          <button
+            className="forgetPass_btn"
+            onClick={() => navigate("/reset-password")}
+          >
+            Find your account
+          </button>
           <div className="tryText_container">
             Forgot your {forgetPassType}?
             <a
