@@ -1,6 +1,8 @@
 <?php
-header('Access-Control-Allow-Origin: *');
+
+header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
@@ -34,9 +36,9 @@ if (empty($email) || empty($password)) {
 
 try {
     $database = new Database();
-    $db = $database->getConnection(); // <-- THIS IS THE FIX
+    $db = $database->getConnection(); 
 
-    // 1. Find the user by email
+    
     $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);

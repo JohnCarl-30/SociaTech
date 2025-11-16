@@ -1,16 +1,14 @@
 import { useCycle } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import { useState } from "react";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { toast } from "react-toastify";
+import { useState, useEffect } from "react";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./../config/firebase.js";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
+import { signInWithEmail, googleAuth } from "../services/auth.js";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const [showPass, cycleShowPass] = useCycle(false, true);
@@ -18,7 +16,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login, user } = useAuth();
 
+  useEffect(() => {
+    if (user) {
+      navigate("/home", { replace: true });
+    }
+  }, [user, navigate]);
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
 
@@ -27,30 +31,21 @@ export default function Login() {
       return;
     }
 
-    setLoading(true);
-
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      console.log("User:", userCredential.user);
-      toast.success("Login successfully!", {
-        position: "top-right",
-        autoClose: 3000, // milliseconds
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      setLoading(true);
+      const response = await signInWithEmail(email, password);
 
-      navigate("/home");
+      console.log("User:", response);
+
+      login({
+        uid: response.uid,
+        email: response.email,
+        displayName: response.displayName,
+        photoURL: response.photoURL,
+      });
     } catch (error) {
       console.error("Login error:", error);
 
-      // Handle specific error codes
       switch (error.code) {
         case "auth/invalid-email":
           toast.error("Invalid email address");
@@ -60,7 +55,6 @@ export default function Login() {
             "Too many unsuccessful login attempts. Please try again later."
           );
           break;
-
         case "auth/user-disabled":
           toast.error("This account has been disabled");
           break;
@@ -81,7 +75,6 @@ export default function Login() {
     }
   };
 
-  // Google Sign In
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
@@ -92,12 +85,15 @@ export default function Login() {
 
     try {
       const result = await signInWithPopup(auth, provider);
-      console.log("Google sign-in result:", result);
-      toast.success("Login successfully!", {
-        position: "top-right",
-        autoClose: 3000, // milliseconds
+      await googleAuth(result.user);
+
+      login({
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        providerId: "google.com",
       });
-      setTimeout(() => navigate("/home"), 1500);
     } catch (error) {
       console.error("Google sign in error:", error);
 
@@ -118,17 +114,6 @@ export default function Login() {
 
   return (
     <>
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <div className="system_logo_container">
         <img
           src="src\assets\SociaTech_logo_whitebg.png"
@@ -210,7 +195,7 @@ export default function Login() {
                 alt="google_logo"
                 className="google_logo"
               />
-              Sign in with Google
+              {loading ? "Signing In..." : "Sign In with Google"}
             </button>
           </form>
         </div>

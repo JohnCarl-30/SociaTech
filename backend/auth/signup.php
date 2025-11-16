@@ -11,102 +11,183 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $data = json_decode(file_get_contents("php://input"));
+    $data = json_decode(file_get_contents("php://input")); // to read json input
 
-    // 4. Add a check for invalid or empty JSON
+    
     if (is_null($data)) {
         http_response_code(400);
         echo json_encode([
             "success" => false,
-            "message" => "Invalid JSON payload."
+            "message" => "Invalid JSON." // validation message if json is invalid
         ]);
         exit();
     }
 
-    if (!empty($data->email) && !empty($data->password) && !empty($data->fullname)) {
-        
-        // === 1. CHECK IF EMAIL EXISTS ===
-        $check_query = "SELECT id FROM users WHERE email = :email";
-        $check_stmt = $db->prepare($check_query);
-
-        if (!$check_stmt) {
-            throw new Exception("SQL prepare failed (check email query).");
-        }
-
-        $check_stmt->bindParam(":email", $data->email);
-        $check_stmt->execute();
-
-        if ($check_stmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode([
-                "success" => false,
-                "message" => "Email already exists"
-            ]);
-            exit();
-        }
-
-        // === 2. DEFINE USERNAME ===
-        $username = $data->username ?? explode('@', $data->email)[0];
-
-        if (empty(trim($username))) {
-            $username = explode('@', $data->email)[0];
-        }
-
-        // === 3. CHECK IF USERNAME EXISTS ===
-        $check_user_query = "SELECT id FROM users WHERE username = :username";
-        $check_user_stmt = $db->prepare($check_user_query);
-
-        if (!$check_user_stmt) {
-            throw new Exception("SQL prepare failed (check username query).");
-        }
-
-        $check_user_stmt->bindParam(":username", $username);
-        $check_user_stmt->execute();
-
-        if ($check_user_stmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode([
-                "success" => false,
-                "message" => "Username already exists"
-            ]);
-            exit();
-        }
-
-        // === 4. HASH PASSWORD ===
-        $hashed_password = password_hash($data->password, PASSWORD_BCRYPT);
-
-        // === 5. INSERT USER ===
-        $query = "INSERT INTO users (fullname, username, email, password) 
-                  VALUES (:fullname, :username, :email, :password)";
-        $stmt = $db->prepare($query);
-
-        if (!$stmt) {
-            throw new Exception("SQL prepare failed (insert user query).");
-        }
-
-        $stmt->bindParam(":fullname", $data->fullname);
-        $stmt->bindParam(":username", $username);
-        $stmt->bindParam(":email", $data->email);
-        $stmt->bindParam(":password", $hashed_password);
-
-        if ($stmt->execute()) {
-            http_response_code(201);
-            echo json_encode([
-                "success" => true,
-                "message" => "User registered successfully"
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "message" => "Unable to execute registration"
-            ]);
-        }
-    } else {
+    
+    if (empty($data->email) || empty($data->password) || empty($data->fullname)) {
         http_response_code(400);
         echo json_encode([
             "success" => false,
-            "message" => "Incomplete data"
+            "message" => "Incomplete data. Email, password, and full name are required."
+        ]);
+        exit(); // if the data send is incomplete it will exit here
+    }
+
+    
+    $email = trim($data->email);
+    $fullname = trim($data->fullname);
+    $password = $data->password;
+    
+   
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Invalid email format."
+        ]);
+        exit(); // exit if email format is invalid
+    }
+
+  
+    if (strlen($fullname) < 1) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Full name is required." 
+        ]);
+        exit(); // exit if full name is invalid
+    }
+
+    // === VALIDATE PASSWORD RULES ===
+    if (strlen($password) < 8) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Password must be at least 8 characters long."
+        ]);
+        exit(); // exit if password is too short
+    }
+
+    if (!preg_match('/[A-Z]/', $password)) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Password must contain at least one uppercase letter."
+        ]);
+        exit(); // exit if no uppercase letter
+    }
+
+    if (!preg_match('/[0-9]/', $password)) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Password must contain at least one number."
+        ]);
+        exit(); // exit if no number
+    }
+
+    if (!preg_match('/[!@#$%^&*(),.?":{}|<>_-]/', $password)) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Password must contain at least one special character."
+        ]);
+        exit(); // exit if no special character 
+    }
+
+    $username = isset($data->username) && !empty(trim($data->username)) 
+        ? trim($data->username) 
+        : explode('@', $email)[0]; // if username is not provided, use email prefix
+
+    // Validate username format if provided
+    if (isset($data->username) && !empty(trim($data->username))) {
+        if (strlen($username) < 3) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "message" => "Username must be at least 3 characters long."
+            ]);
+            exit(); // exit if username is too short
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            http_response_code(400);
+            echo json_encode([
+                "success" => false,
+                "message" => "Username can only contain letters, numbers, and underscores."
+            ]);
+            exit(); // exit if username format is invalid
+        }
+    }
+    
+   
+    $check_query = "SELECT id FROM users WHERE email = :email";
+    $check_stmt = $db->prepare($check_query);
+
+    if (!$check_stmt) {
+        throw new Exception("SQL prepare failed (check email query).");
+    }
+
+    $check_stmt->bindParam(":email", var: $email);
+    $check_stmt->execute();
+
+    if ($check_stmt->rowCount() > 0) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Email already exists"
+        ]);
+        exit(); // exit if email already exists
+    }
+
+   
+    $check_user_query = "SELECT id FROM users WHERE username = :username";
+    $check_user_stmt = $db->prepare($check_user_query);
+
+    if (!$check_user_stmt) {
+        throw new Exception("SQL prepare failed (check username query).");
+    }
+
+    $check_user_stmt->bindParam(":username", $username);
+    $check_user_stmt->execute();
+
+    if ($check_user_stmt->rowCount() > 0) {
+        http_response_code(400);
+        echo json_encode([
+            "success" => false,
+            "message" => "Username already exists"
+        ]);
+        exit();
+    }
+
+    
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+
+   
+    $query = "INSERT INTO users (fullname, username, email, password) 
+              VALUES (:fullname, :username, :email, :password)";
+    $stmt = $db->prepare($query);
+
+    if (!$stmt) {
+        throw new Exception("SQL prepare failed (insert user query).");
+    }
+
+    $stmt->bindParam(":fullname", $fullname);
+    $stmt->bindParam(":username", $username);
+    $stmt->bindParam(":email", $email);
+    $stmt->bindParam(":password", $hashed_password);
+
+    if ($stmt->execute()) {
+        http_response_code(201);
+        echo json_encode([
+            "success" => true,
+            "message" => "User registered successfully"
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            "success" => false,
+            "message" => "Unable to execute registration"
         ]);
     }
 

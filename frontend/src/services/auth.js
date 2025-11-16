@@ -1,24 +1,28 @@
 const API_URL = "http://localhost/Sociatech/backend/auth";
 
-const setToken = (token) => {
-  localStorage.setItem("authToken", token);
-};
+const handleResponse = async (response) => {
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    throw new Error(text || "Server returned non-JSON response");
+  }
 
-const getToken = () => {
-  return localStorage.getItem("authToken");
-};
+  if (!response.ok) {
+    throw new Error(data.message || "Request failed");
+  }
 
-const removeToken = () => {
-  localStorage.removeItem("authToken");
+  return data;
 };
 
 export const signUpWithEmail = async (email, password, fullname, username) => {
   try {
     const response = await fetch(`${API_URL}/signup.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // Important for sessions
       body: JSON.stringify({
         email,
         password,
@@ -27,28 +31,7 @@ export const signUpWithEmail = async (email, password, fullname, username) => {
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server responded with error:", errorText);
-
-      let errorData = {
-        message: "Signup failed. Server returned non-OK response.",
-      };
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        console.warn("Could not parse non-OK server response as JSON", e);
-        errorData.message = errorText;
-      }
-
-      const error = new Error(errorData.message || "Signup failed");
-      error.code = errorData.code || "auth/unknown-error";
-      throw error;
-    }
-
-    // 4. If we get here, response.ok was true, so it's safe to parse as JSON.
-    const data = await response.json();
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Signup error:", error);
     throw error;
@@ -59,40 +42,28 @@ export const signInWithEmail = async (email, password) => {
   try {
     const response = await fetch(`${API_URL}/login.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // Important for sessions
       body: JSON.stringify({ email, password }),
     });
 
-    // 1. CHECK FOR AN ERROR RESPONSE FIRST
     if (!response.ok) {
-      // 401 means "Unauthorized" (Invalid email/password)
-      if (response.status === 401) {
-        throw new Error("Invalid email or password");
-      }
-
-      // 400 means "Bad Request" (Email or password missing)
-      if (response.status === 400) {
+      if (response.status === 401) throw new Error("Invalid email or password");
+      if (response.status === 400)
         throw new Error("Email and password are required");
-      }
 
-      // Any other error (like a 500 crash)
-      const errorText = await response.text();
-      console.error("Server Error:", errorText);
-      throw new Error("Server error. Please try again later.");
+      const text = await response.text();
+      throw new Error(text || "Server error. Please try again later.");
     }
 
     const data = await response.json();
 
-    // Store token and user data
-    setToken(data.data.token);
+    // Store user data in localStorage
     localStorage.setItem("userData", JSON.stringify(data.data.user));
 
     return data;
   } catch (error) {
     console.error("Login service error:", error);
-
     throw error;
   }
 };
@@ -101,9 +72,8 @@ export const googleAuth = async (user) => {
   try {
     const response = await fetch(`${API_URL}/google-auth.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         google_id: user.uid,
         email: user.email,
@@ -113,14 +83,10 @@ export const googleAuth = async (user) => {
       }),
     });
 
-    const data = await response.json();
+    const data = await handleResponse(response);
 
-    if (!response.ok) {
-      throw new Error(data.message || "Google authentication failed");
-    }
-
-    setToken(data.data.token);
-    localStorage.setItem("userData", JSON.stringify(data.data));
+    // Store user data in localStorage
+    localStorage.setItem("userData", JSON.stringify(data.data.user));
 
     return data;
   } catch (error) {
@@ -129,58 +95,36 @@ export const googleAuth = async (user) => {
   }
 };
 
-// Sign out
 export const signOut = async () => {
   try {
-    const token = getToken();
-
-    if (token) {
-      await fetch(`${API_URL}/logout.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    }
-
-    removeToken();
-    localStorage.removeItem("userData");
+    await fetch(`${API_URL}/logout.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // Important for sessions
+    });
   } catch (error) {
     console.error("Logout error:", error);
-    // Remove token anyway
-    removeToken();
+  } finally {
     localStorage.removeItem("userData");
   }
 };
 
-// Verify token
-export const verifyToken = async () => {
+export const verifySession = async () => {
   try {
-    const token = getToken();
-
-    if (!token) {
-      throw new Error("No token found");
-    }
-
     const response = await fetch(`${API_URL}/verify.php`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
+      credentials: "include",
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Token verification failed");
-    }
-
-    return data;
+    return await handleResponse(response);
   } catch (error) {
-    console.error("Token verification error:", error);
-    removeToken();
+    console.error("Session verification error:", error);
+    localStorage.removeItem("userData");
     throw error;
   }
 };
@@ -194,19 +138,12 @@ export const forgotPassword = async (email) => {
   try {
     const response = await fetch(`${API_URL}/forgot-password.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to send reset email");
-    }
-
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Forgot password error:", error);
     throw error;
@@ -217,47 +154,30 @@ export const verifyResetToken = async (token) => {
   try {
     const response = await fetch(`${API_URL}/verify-reset-token.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ token }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Invalid or expired token");
-    }
-
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Token verification error:", error);
     throw error;
   }
 };
 
-// Reset password
 export const resetPassword = async (token, password) => {
   try {
     const response = await fetch(`${API_URL}/reset-password.php`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ token, password }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to reset password");
-    }
-
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Reset password error:", error);
     throw error;
   }
 };
-
-export { getToken, removeToken };

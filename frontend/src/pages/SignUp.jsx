@@ -1,123 +1,201 @@
 import "./SignUp.css";
 import { Eye, EyeOff } from "lucide-react";
 import { useCycle } from "framer-motion";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify"; // Only import toast, not ToastContainer
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signUpWithEmail } from "../services/auth";
+import { signUpWithEmail, googleAuth } from "../services/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { updateProfile } from "firebase/auth";
 import { auth } from "./../config/firebase.js";
+import systemLogo from "../assets/SociaTech_logo_whitebg.png";
+import googleLogo from "../assets/google.svg";
+import { useAuth } from "../hooks/useAuth";
 
 export default function SignUp() {
+  const { login } = useAuth();
+  // Form state
+  const [formData, setFormData] = useState({
+    fullName: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // UI state
   const [showPass, cycleShowPass] = useCycle(false, true);
   const [showCPass, cycleShowCPass] = useCycle(false, true);
-  const [isValid, setValid] = useState("");
-  const [isMatch, setMatch] = useState("");
-  const [pass, setPass] = useState("");
-
-  const [border_color, setBoarder_color] = useState("black");
-  const [bg_color, setBg_color] = useState("black");
-
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [checkbox, setCheckbox] = useState(false);
+
   const navigate = useNavigate();
 
+  // Password validation
   const validatePasswordRules = (password) => {
-    const lengthRule = password.length >= 8;
-    const uppercaseRule = /[A-Z]/.test(password);
-    const numberRule = /[0-9]/.test(password);
-    const specialCharRule = /[!@#$%^&*(),.?":{}|<>_-]/.test(password);
-
-    return lengthRule && uppercaseRule && numberRule && specialCharRule;
+    return {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[!@#$%^&*(),.?":{}|<>_-]/.test(password),
+    };
   };
 
-  const handlePassValidation = (password) => {
-    if (validatePasswordRules(password)) {
-      setValid(true);
-      setBg_color("green");
-    } else {
-      setValid(false);
-      setBg_color("red");
-    }
+  const isPasswordValid = (password) => {
+    const rules = validatePasswordRules(password);
+    return Object.values(rules).every(Boolean);
   };
 
-  const handlePassMatch = (password, confirmPass) => {
-    if (password === confirmPass) {
-      setMatch(true);
-      setBoarder_color("green");
-    } else {
-      setMatch(false);
-      setBoarder_color("red");
-    }
+  // Get password field styling
+  const getPasswordBorderColor = () => {
+    if (!formData.password) return "black";
+    return isPasswordValid(formData.password) ? "green" : "red";
   };
 
+  const getConfirmPasswordBorderColor = () => {
+    if (!formData.confirmPassword) return "black";
+    return formData.password === formData.confirmPassword ? "green" : "red";
+  };
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCheckbox = () => {
+    setCheckbox(!checkbox);
+  };
+
+  // Validation
   const validateInputs = () => {
-    const email = document.getElementById("user_email");
-    const password = document.getElementById("user_pass");
-    const cpassword = document.getElementById("user_cpass");
-    const name = document.getElementById("user_fullname");
-    let isValid = true;
+    const errors = [];
 
-    if (!name.value || name.value.trim().length < 1) {
-      toast.error("Name is required.");
-      isValid = false;
+    // Validate full name
+    if (!formData.fullName || formData.fullName.trim().length < 1) {
+      errors.push("Full name is required.");
     }
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      toast.error("Please enter a valid email address.");
-      isValid = false;
+    // Validate username (optional but if provided must be valid)
+    if (formData.username && formData.username.trim().length > 0) {
+      if (formData.username.trim().length < 3) {
+        errors.push("Username must be at least 3 characters long.");
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
+        errors.push(
+          "Username can only contain letters, numbers, and underscores."
+        );
+      }
     }
 
-    if (!password.value || password.value.length < 6) {
-      toast.error("Password must be at least 6 characters long.");
-      isValid = false;
+    // Validate email
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.push("Please enter a valid email address.");
     }
 
-    if (password.value !== cpassword.value) {
-      toast.error("Passwords do not match.");
-      isValid = false;
+    // Validate password with rules
+    if (!formData.password) {
+      errors.push("Password is required.");
+    } else if (!isPasswordValid(formData.password)) {
+      errors.push(
+        "Password must be at least 8 characters with uppercase, number, and special character."
+      );
     }
 
-    return isValid;
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      errors.push("Passwords do not match.");
+    }
+
+    // Validate terms acceptance
+    if (!checkbox) {
+      errors.push("You must accept the terms of service and privacy policy.");
+    }
+
+    // Show all errors or return true
+    if (errors.length > 0) {
+      toast.error(
+        <div>
+          <strong>Please fix the following:</strong>
+          <ul style={{ marginTop: "8px", paddingLeft: "20px" }}>
+            {errors.map((error, idx) => (
+              <li key={idx}>{error}</li>
+            ))}
+          </ul>
+        </div>,
+        { autoClose: 5000 }
+      );
+      return false;
+    }
+
+    return true;
   };
 
+  // Handle email signup
   const handleSubmit = async () => {
+    if (!checkbox) {
+      toast.error("You must accept the terms of service and privacy policy.");
+      return;
+    }
     if (!validateInputs()) return;
 
     setLoading(true);
 
-    const email = document.getElementById("user_email").value;
-    const password = document.getElementById("user_pass").value;
-    const name = document.getElementById("user_fullname").value;
+    const email = formData.email.trim();
+    const password = formData.password;
+    const name = formData.fullName.trim();
+    const usernameInput = formData.username.trim();
+    const username = usernameInput || email.split("@")[0];
 
     try {
-      const userCredential = await signUpWithEmail(email, password);
-      await updateProfile(userCredential.user, { displayName: name });
-      toast.success("Account created successfully!");
-      navigate("/login");
+      const response = await signUpWithEmail(email, password, name, username);
+
+      toast.success(response.message || "Account created successfully!", {
+        position: "top-center",
+        autoClose: 1500,
+        onClose: () => navigate("/login"),
+      });
     } catch (err) {
       console.error("Sign up error:", err);
-      if (err.code === "auth/email-already-in-use") {
+
+      // Handle specific error codes
+      if (
+        err.code === "auth/email-already-in-use" ||
+        err.message?.includes("Email already exists")
+      ) {
         toast.error(
           "This email is already registered. Please sign in instead."
+        );
+      } else if (err.message?.includes("Username already exists")) {
+        toast.error(
+          "This username is already taken. Please choose another one."
         );
       } else if (err.code === "auth/weak-password") {
         toast.error("Password is too weak. Please use a stronger password.");
       } else if (err.code === "auth/invalid-email") {
         toast.error("Invalid email address.");
+      } else if (err.message?.includes("Incomplete data")) {
+        toast.error("Please fill in all required fields.");
       } else {
-        toast.error("Failed to create account. Please try again.");
+        toast.error(
+          err.message || "Failed to create account. Please try again."
+        );
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignUp = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // Handle Google signup
+  const handleGoogleSignUp = async () => {
+    if (!checkbox) {
+      toast.warning("You must accept the terms and policies to proceed.");
+      return;
+    }
+
     setGoogleLoading(true);
 
     const provider = new GoogleAuthProvider();
@@ -128,91 +206,115 @@ export default function SignUp() {
     try {
       const result = await signInWithPopup(auth, provider);
       console.log("Google sign in successful:", result.user);
-      toast.success("Signed up with Google successfully!");
-      navigate("/home");
+
+      const finalUserData = await googleAuth(result.user);
+
+      login(finalUserData);
     } catch (err) {
       console.error("Google sign up error:", err);
-      toast.error(
-        err.message || "Failed to sign up with Google. Please try again."
-      );
+
+      if (err.code === "auth/popup-closed-by-user") {
+        toast.info("Sign up cancelled.");
+      } else if (err.code === "auth/popup-blocked") {
+        toast.error("Popup was blocked. Please allow popups for this site.");
+      } else {
+        toast.error(
+          err.message || "Failed to sign up with Google. Please try again."
+        );
+      }
     } finally {
       setGoogleLoading(false);
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !loading && !googleLoading && checkbox) {
+      handleSubmit();
+    }
+  };
+
   return (
     <>
-      <ToastContainer position="top-center" autoClose={2000} />
       <div className="system_logo_container">
-        <img
-          src="src\assets\SociaTech_logo_whitebg.png"
-          alt="system_logo"
-          className="system_logo"
-        />
+        <img src={systemLogo} alt="SociaTech Logo" className="system_logo" />
       </div>
       <div className="signUp_parent_container">
         <div className="main_container">
           <div className="signUp_title">Sign Up</div>
           <div className="field_container">
             <div className="field">
-              <label htmlFor="user_fullname" className="field_labels">
-                Full name
+              <label htmlFor="fullName" className="field_labels">
+                Full name <span style={{ color: "red" }}>*</span>
               </label>
               <input
                 type="text"
-                name="user_fullname"
-                id="user_fullname"
+                name="fullName"
+                id="fullName"
                 placeholder="John Doe"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                disabled={loading || googleLoading}
               />
             </div>
+
             <div className="field">
-              <label htmlFor="user_userName" className="field_labels">
+              <label htmlFor="username" className="field_labels">
                 Username
               </label>
               <input
                 type="text"
-                name="user_userName"
-                id="user_userName"
+                name="username"
+                id="username"
                 placeholder="doejohn12"
+                value={formData.username}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                disabled={loading || googleLoading}
               />
             </div>
+
             <div className="field">
-              <label htmlFor="user_email" className="field_labels">
-                Email
+              <label htmlFor="email" className="field_labels">
+                Email <span style={{ color: "red" }}>*</span>
               </label>
               <input
-                type="text"
-                name="user_email"
-                id="user_email"
+                type="email"
+                name="email"
+                id="email"
                 placeholder="your@email.com"
+                value={formData.email}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                disabled={loading || googleLoading}
+                autoComplete="email"
               />
             </div>
+
             <div className="field">
-              <label htmlFor="user_pass" className="field_labels">
-                Password
+              <label htmlFor="password" className="field_labels">
+                Password <span style={{ color: "red" }}>*</span>
               </label>
               <div className="passWrap">
                 <input
                   className="passWrap_child"
                   type={showPass ? "text" : "password"}
-                  name="user_pass"
-                  id="user_pass"
+                  name="password"
+                  id="password"
                   placeholder="********"
-                  onChange={(e) => {
-                    setPass(e.target.value);
-                    handlePassValidation(e.target.value);
-                  }}
-                  style={
-                    isValid
-                      ? { borderColor: bg_color }
-                      : { borderColor: bg_color }
-                  }
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  style={{ borderColor: getPasswordBorderColor() }}
+                  disabled={loading || googleLoading}
+                  autoComplete="new-password"
                 />
-
                 <button
                   className="eye_btn"
                   type="button"
                   onClick={() => cycleShowPass()}
+                  disabled={loading || googleLoading}
+                  aria-label="Toggle password visibility"
                 >
                   {showPass ? (
                     <Eye className="eyeSvg" />
@@ -220,7 +322,7 @@ export default function SignUp() {
                     <EyeOff className="eyeSvg" />
                   )}
                 </button>
-                <div class="tooltip">
+                <div className="tooltip">
                   <ul>
                     <li>At least eight (8) characters long</li>
                     <li>At least one uppercase letter (A–Z)</li>
@@ -230,27 +332,31 @@ export default function SignUp() {
                 </div>
               </div>
             </div>
+
             <div className="field">
-              <label htmlFor="user_cpass" className="field_labels">
-                Confirm password
+              <label htmlFor="confirmPassword" className="field_labels">
+                Confirm password <span style={{ color: "red" }}>*</span>
               </label>
               <div className="passWrap">
                 <input
                   className="passWrap_child"
                   type={showCPass ? "text" : "password"}
-                  name="user_cpass"
-                  id="user_cpass"
+                  name="confirmPassword"
+                  id="confirmPassword"
                   placeholder="********"
-                  onChange={(e) => {
-                    handlePassMatch(pass, e.target.value);
-                    console.log(isMatch);
-                  }}
-                  style={{ borderColor: border_color }}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  style={{ borderColor: getConfirmPasswordBorderColor() }}
+                  disabled={loading || googleLoading}
+                  autoComplete="new-password"
                 />
                 <button
                   className="eye_btn"
                   type="button"
                   onClick={() => cycleShowCPass()}
+                  disabled={loading || googleLoading}
+                  aria-label="Toggle confirm password visibility"
                 >
                   {showCPass ? (
                     <Eye className="eyeSvg" />
@@ -260,15 +366,24 @@ export default function SignUp() {
                 </button>
               </div>
             </div>
+
             <div className="term_checkbox_container">
-              <input type="checkbox" />{" "}
-              <div className="term_checkbox_text">
+              <input
+                type="checkbox"
+                className="term_checkbox"
+                id="term_checkbox"
+                checked={checkbox}
+                onChange={handleCheckbox}
+                disabled={loading || googleLoading}
+              />
+              <label htmlFor="term_checkbox" className="term_checkbox_text">
                 I agree to the{" "}
                 <span className="term_link">Terms of Service</span> and{" "}
                 <span className="privacy_link">Privacy Policies</span> of
                 SociaTech
-              </div>
+              </label>
             </div>
+
             <button
               className="signUp_btn signUpBtn"
               type="button"
@@ -288,11 +403,7 @@ export default function SignUp() {
               onClick={handleGoogleSignUp}
               disabled={loading || googleLoading}
             >
-              <img
-                src="/src/assets/google.svg"
-                alt="googleLogo"
-                className="google_logo"
-              />
+              <img src={googleLogo} alt="Google Logo" className="google_logo" />
               {googleLoading ? "Signing up..." : "Sign up with Google"}
             </button>
 

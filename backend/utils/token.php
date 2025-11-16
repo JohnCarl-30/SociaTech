@@ -1,11 +1,11 @@
 <?php
 function generateToken($userId) {
-    $secret = 'your-secret-key-here'; // Change this to a secure random string
+    $secret = 'sosyatek05'; 
     $header = base64_encode(json_encode(['typ' => 'JWT', 'alg' => 'HS256']));
     $payload = base64_encode(json_encode([
         'user_id' => $userId,
-        'iat' => time(),
-        'exp' => time() + (7 * 24 * 60 * 60) 
+        'iat' => time(), // kung kelan ginawa ang token
+        'exp' => time() + (7 * 24 * 60 * 60)  // expires in 7 days
     ]));
     
     $signature = hash_hmac('sha256', "$header.$payload", $secret, true);
@@ -15,7 +15,7 @@ function generateToken($userId) {
 }
 
 function verifyToken($token) {
-    $secret = 'your-secret-key-here'; 
+    $secret = 'sosyatek05'; 
     
     $parts = explode('.', $token);
     if (count($parts) !== 3) {

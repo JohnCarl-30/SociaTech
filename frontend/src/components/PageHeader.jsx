@@ -7,55 +7,48 @@ import {
   HandHelping,
   LogOut,
   FolderOpen,
-  Image,
 } from "lucide-react";
 import "./PageHeader.css";
 import { useCycle } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "../services/auth";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
 import CreatePostModal from "./CreatePostModal";
+import { useAuth } from "../hooks/useAuth.js";
+
+import logoImage from "../assets/SociaTech_logo_blackbg.png";
+import defaultPfp from "../assets/deault_pfp.png";
+
 export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
   const navigate = useNavigate();
   const [isDropDownModalOpen, cycleDrownDownModalOpen] = useCycle(false, true);
-  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false,true);
-
-  const open = (isOpen) => {
-    return isOpen;
-  };
+  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false, true);
+  const { logout } = useAuth();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      toast.success("Logout successful!", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      await logout();
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      navigate("/", { state: { fromLogout: true }, replace: true });
     } catch (error) {
-      console.log("Error signing out:", error);
-      toast.error("Failed to logout. Please try again.");
+      console.error("Error signing out:", error);
+      toast.error("Logout failed. Please try again.");
     }
   };
+
   return (
     <>
       <div className="page_header">
         <img
           className="page_title_logo"
-          src="src\assets\SociaTech_logo_blackbg.png"
+          src={logoImage}
           alt="socia-tech-logo"
           onClick={() => navigate("/home")}
-          onFocus={true}
+          style={{ cursor: "pointer" }}
         />
 
         <div
           className="search_bar_container"
-          style={
-            open(isOnSearchBar) ? { display: "flex" } : { display: "none" }
-          }
+          style={{ display: isOnSearchBar ? "flex" : "none" }}
         >
           <Search />
           <input type="text" placeholder="Search" className="search_bar" />
@@ -64,39 +57,25 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
         <div className="side_header_btn">
           <button
             className="createPost_btn"
-            style={
-              open(isOnCreatePost) ? { display: "flex" } : { display: "none" }
-            }
-            onClick={()=>{
-              cycleCreatePostOpen();
-            }}
+            style={{ display: isOnCreatePost ? "flex" : "none" }}
+            onClick={cycleCreatePostOpen}
           >
             <CirclePlus className="circlePlus_svg" /> Create
           </button>
           <button className="notification_btn">
             <Bell className="bell_svg" />
           </button>
-          <div
-            className="profile_btn"
-            onClick={() => {
-              cycleDrownDownModalOpen();
-            }}
-          >
-            <img
-              src="src\assets\deault_pfp.png"
-              alt="default_pfp"
-              className="profile_img"
-            />
+          <div className="profile_btn" onClick={cycleDrownDownModalOpen}>
+            <img src={defaultPfp} alt="default_pfp" className="profile_img" />
           </div>
         </div>
       </div>
 
       <div
         className="dropDown_profile_modal"
-        style={isDropDownModalOpen ? { display: "flex" } : { display: "none" }}
+        style={{ display: isDropDownModalOpen ? "flex" : "none" }}
       >
         <button className="dropDown_btn">
-          {" "}
           <UserRound />
           View Profile
         </button>
@@ -112,14 +91,16 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
           <HandHelping />
           Help
         </button>
-        <button className="dropDown_btn" onClick={() => handleSignOut()}>
+        <button className="dropDown_btn" onClick={handleSignOut}>
           <LogOut />
           Logout
         </button>
       </div>
 
-          <CreatePostModal isOpen={open(isCreatePostOpen)} onClose={()=>{cycleCreatePostOpen()}}/>
-      
+      <CreatePostModal
+        isOpen={isCreatePostOpen}
+        onClose={cycleCreatePostOpen}
+      />
     </>
   );
 }
