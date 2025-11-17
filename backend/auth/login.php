@@ -54,7 +54,7 @@ try {
     }
     
 
-    $token = generateToken($user['id']);
+    $token = generateToken($user['user_id']);
     
     unset($user['password']); 
     

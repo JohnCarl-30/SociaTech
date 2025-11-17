@@ -74,7 +74,7 @@ try {
             "success" => false,
             "message" => "Password must contain at least one uppercase letter."
         ]);
-        exit(); 
+        exit(); // exit if no uppercase letter
     }
 
     if (!preg_match('/[0-9]/', $password)) {
@@ -83,7 +83,7 @@ try {
             "success" => false,
             "message" => "Password must contain at least one number."
         ]);
-        exit(); 
+        exit(); // exit if no number
     }
 
     if (!preg_match('/[!@#$%^&*(),.?":{}|<>_-]/', $password)) {
@@ -92,12 +92,13 @@ try {
             "success" => false,
             "message" => "Password must contain at least one special character."
         ]);
-        exit(); 
+        exit(); // exit if no special character 
     }
 
     $username = isset($data->username) && !empty(trim($data->username)) 
         ? trim($data->username) 
-        : explode('@', $email)[0]; 
+        : explode('@', $email)[0]; // if username is not provided, use email prefix
+
     // Validate username format if provided
     if (isset($data->username) && !empty(trim($data->username))) {
         if (strlen($username) < 3) {
@@ -120,7 +121,7 @@ try {
     }
     
    
-    $check_query = "SELECT id FROM users WHERE email = :email";
+    $check_query = "SELECT user_id FROM users WHERE email = :email";
     $check_stmt = $db->prepare($check_query);
 
     if (!$check_stmt) {
@@ -140,7 +141,7 @@ try {
     }
 
    
-    $check_user_query = "SELECT id FROM users WHERE username = :username";
+    $check_user_query = "SELECT user_id FROM users WHERE username = :username";
     $check_user_stmt = $db->prepare($check_user_query);
 
     if (!$check_user_stmt) {

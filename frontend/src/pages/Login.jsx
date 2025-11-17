@@ -37,6 +37,10 @@ export default function Login() {
 
       console.log("User:", response);
 
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+
       login({
         uid: response.uid,
         email: response.email,

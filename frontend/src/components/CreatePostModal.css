@@ -10,6 +10,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 9999;
+    
 }
 .createPost_container_modal{
     background-color: white;
@@ -19,10 +21,21 @@
     justify-content: center;
     flex-direction: column;
     align-items: start;
-
+    max-height: 35em;
     padding: 1.5rem;
     gap: 1rem;
+   
+    
 }
+
+.create_body_field{
+    max-height: 35em;
+    overflow-y: scroll;
+}
+.create_body_field::-webkit-scrollbar{
+    display: none;
+}
+
 .createPost_modal_title{
     
     font-weight: 700;
@@ -55,6 +68,7 @@
     border-radius: .4rem;
     border: solid 2px black;
     height: 2rem;
+    padding: 0 .5rem;
 }
 
 .create_textarea{
@@ -63,6 +77,26 @@
     height: 10em;
     resize: none;
 }
+.content_img{
+    /* height: 10em; */
+   max-height: 25em;
+   display: flex; 
+    justify-content: center;
+    align-items: center;
+     border-radius: .4rem;
+    border: solid 2px black;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.content_img::-webkit-scrollbar{
+    display: none;
+}
+.content_img img{
+    width: 100%;
+    height: auto;
+    object-fit: fill;
+}
+
 .create_field:focus,.create_textarea:focus{
     outline: none;
 }
@@ -75,12 +109,20 @@
 .upload_img_btn{
     width: 2em;
     height: 2em;
+    border: solid 2px black;
+    border-radius: .4rem;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
-    cursor: pointer;
+    transition: all 150ms ease-in-out;
+    background-color: white;
 }
+.upload_img_btn:hover{
+     cursor: pointer;
+     background-color: black;
+     color: white;
+}   
 
 .cancelPost_btn_container{
     display: flex;
@@ -94,11 +136,18 @@
 .cancelPost_btn{
     border-radius: .8rem;
     border: none;
+    border: solid 2px black;
     background-color: black;
     color: white;
     width: 7em;
     font-weight: 700;
     font-size:.9rem;
     height: 2.25em;
-    cursor: pointer;
+    
+    transition: all 150ms ease-in-out;
+}
+.cancelPost_btn:hover{
+    background-color: white;
+     color: black;
+     cursor: pointer;
 }

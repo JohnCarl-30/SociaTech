@@ -46,10 +46,12 @@ function App() {
             )
           }
         />
-
+        {/* Protected Route para sa mga NAKA-LOGIN.
+          Kung walang user (hindi naka-login), i-redirect sa login page ('/').
+        */}
         <Route path="/home" element={user ? <Home /> : <Navigate to="/" />} />
         <Route
-          path="/update-password"
+          path="/reset-password"
           element={!user ? <ResetPassword /> : <Navigate to="/home" />}
         />
 
