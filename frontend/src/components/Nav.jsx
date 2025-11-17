@@ -11,7 +11,7 @@ export default function Nav({currentPage}){
         return activePage === pageName ? ' active':'';
     };
 
-    console.log(pageName);
+   
    
 
 
