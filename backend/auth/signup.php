@@ -74,7 +74,7 @@ try {
             "success" => false,
             "message" => "Password must contain at least one uppercase letter."
         ]);
-        exit(); // exit if no uppercase letter
+        exit(); 
     }
 
     if (!preg_match('/[0-9]/', $password)) {
@@ -83,7 +83,7 @@ try {
             "success" => false,
             "message" => "Password must contain at least one number."
         ]);
-        exit(); // exit if no number
+        exit(); 
     }
 
     if (!preg_match('/[!@#$%^&*(),.?":{}|<>_-]/', $password)) {
@@ -92,13 +92,12 @@ try {
             "success" => false,
             "message" => "Password must contain at least one special character."
         ]);
-        exit(); // exit if no special character 
+        exit(); 
     }
 
     $username = isset($data->username) && !empty(trim($data->username)) 
         ? trim($data->username) 
-        : explode('@', $email)[0]; // if username is not provided, use email prefix
-
+        : explode('@', $email)[0]; 
     // Validate username format if provided
     if (isset($data->username) && !empty(trim($data->username))) {
         if (strlen($username) < 3) {

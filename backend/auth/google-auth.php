@@ -47,7 +47,7 @@ try {
         : explode('@', $email)[0];
     $profile_image = isset($data->profile_image) ? trim($data->profile_image) : 'default_pfp.png';
 
-    // Check if user already exists by google_id or email
+    
     $check_query = "SELECT id, fullname, username, email, profile_image, google_id, created_at 
                     FROM users 
                     WHERE google_id = :google_id OR email = :email";
@@ -62,10 +62,10 @@ try {
     $check_stmt->execute();
 
     if ($check_stmt->rowCount() > 0) {
-        // User exists - perform login
+      
         $user = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Update google_id if it's null (user registered with email/password first)
+    
         if (empty($user['google_id'])) {
             $update_query = "UPDATE users SET google_id = :google_id, profile_image = :profile_image WHERE id = :id";
             $update_stmt = $db->prepare($update_query);
