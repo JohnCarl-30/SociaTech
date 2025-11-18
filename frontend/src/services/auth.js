@@ -22,7 +22,7 @@ export const signUpWithEmail = async (email, password, fullname, username) => {
     const response = await fetch(`${API_URL}/signup.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // Important for sessions
+      credentials: "include",
       body: JSON.stringify({
         email,
         password,
@@ -43,7 +43,7 @@ export const signInWithEmail = async (email, password) => {
     const response = await fetch(`${API_URL}/login.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // Important for sessions
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
@@ -57,8 +57,6 @@ export const signInWithEmail = async (email, password) => {
     }
 
     const data = await response.json();
-
-    // Store user data in localStorage
     localStorage.setItem("userData", JSON.stringify(data.data.user));
 
     return data;
@@ -84,8 +82,6 @@ export const googleAuth = async (user) => {
     });
 
     const data = await handleResponse(response);
-
-    // Store user data in localStorage
     localStorage.setItem("userData", JSON.stringify(data.data.user));
 
     return data;
@@ -102,7 +98,7 @@ export const signOut = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include", // Important for sessions
+      credentials: "include",
     });
   } catch (error) {
     console.error("Logout error:", error);
@@ -150,34 +146,50 @@ export const forgotPassword = async (email) => {
   }
 };
 
-export const verifyResetToken = async (token) => {
-  try {
-    const response = await fetch(`${API_URL}/verify-reset-token.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ token }),
-    });
-
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Token verification error:", error);
-    throw error;
-  }
-};
-
-export const resetPassword = async (token, password) => {
+export const resetPassword = async (new_password, confirm_password, token) => {
   try {
     const response = await fetch(`${API_URL}/reset-password.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ token, password }),
+      body: JSON.stringify({
+        new_password: new_password,
+        confirmPassword: confirm_password,
+        token: token,
+      }),
     });
 
     return await handleResponse(response);
   } catch (error) {
     console.error("Reset password error:", error);
+    throw error;
+  }
+};
+
+export const fetchPost = async () => {
+  try {
+    const response = await fetch(`${API_URL}/fetchPost.php`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Fetch post error:", error);
+    throw error;
+  }
+};
+
+export const createPost = async (formData) => {
+  try {
+    const response = await fetch(`${API_URL}/createPost.php`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Create post error:", error);
     throw error;
   }
 };

@@ -20,14 +20,13 @@ function sendPasswordResetEmail($recipientEmail, $recipientName, $token) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = $_ENV['SMTP_PORT'];
      
-        $mail->setFrom('sociatech@gmail.com', 'Sociatech Support');
+        $mail->setFrom('sociatech@gmail.com', 'Sociatech');
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->addReplyTo('no-reply@sociatech.com', 'No Reply');
 
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset Request - Sociatech';
-        
-        // Updated reset link with token instead of email
+       
         $resetLink = "http://localhost:5173/update-password?token=" . urlencode($token);
         
         $mail->Body = "

@@ -1,5 +1,8 @@
 <?php
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
@@ -37,13 +40,11 @@ if (empty($email) || empty($password)) {
 try {
     $database = new Database();
     $db = $database->getConnection(); 
-
     
     $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-
     if (!$user || !password_verify($password, $user['password'])) {
         http_response_code(401);
         echo json_encode([
@@ -53,11 +54,16 @@ try {
         exit();
     }
     
-
-    $token = generateToken($user['user_id']);
+   
+    $userId = $user['id'] ?? $user['user_id'] ?? null;
+    
+    if (!$userId) {
+        throw new Exception("User ID not found in database result");
+    }
+    
+    $token = generateToken($userId);
     
     unset($user['password']); 
-    
     
     http_response_code(200);
     echo json_encode([
@@ -70,7 +76,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    http_response_code(500);
+    error_log("Login error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'Server error: ' . $e->getMessage()
