@@ -17,12 +17,24 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login, user } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const saveRememberMe = localStorage.getItem("rememberMe") === "true";
+    setRememberMe(saveRememberMe);
+
+    if (saveRememberMe) {
+      const savedEmail = localStorage.getItem("rememberedEmail") || "";
+      setEmail(savedEmail);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
       navigate("/home", { replace: true });
     }
   }, [user, navigate]);
+
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
 
@@ -35,20 +47,26 @@ export default function Login() {
       setLoading(true);
       const response = await signInWithEmail(email, password);
 
-      console.log("User:", response);
+      const userData = {
+        user_id: response.data.user.user_id,
+        email: response.data.user.email,
+        displayName: response.data.user.fullname,
+        photoURL: response.data.user.profile_image,
+      };
 
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (rememberMe) {
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("savedEmail", email);
+      } else {
+        sessionStorage.setItem("authToken", response.data.token);
+        sessionStorage.setItem("user", JSON.stringify(userData));
+      }
 
-
-      login({
-        uid: response.uid,
-        email: response.email,
-        displayName: response.displayName,
-        photoURL: response.photoURL,
-      });
+      login(userData, rememberMe);
+      navigate("/home", { replace: true });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Email sign in error:", error);
 
       switch (error.code) {
         case "auth/invalid-email":
@@ -91,13 +109,20 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       await googleAuth(result.user);
 
-      login({
+      const userData = {
         uid: result.user.uid,
         email: result.user.email,
         displayName: result.user.displayName,
         photoURL: result.user.photoURL,
         providerId: "google.com",
-      });
+      };
+      if (rememberMe) {
+        localStorage.setItem("user", JSON.stringify(userData));
+      } else {
+        sessionStorage.setItem("user", JSON.stringify(userData));
+      }
+
+      login(userData, rememberMe);
     } catch (error) {
       console.error("Google sign in error:", error);
 
@@ -173,7 +198,13 @@ export default function Login() {
               Forgot your password?
             </a>
             <div className="rememberMe_container">
-              <input type="checkbox" name="remember_me" id="remember_me" />
+              <input
+                type="checkbox"
+                name="remember_me"
+                id="remember_me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               <label htmlFor="remember_me">Remember me</label>
             </div>
             <button type="submit" className="signIn_btn" disabled={loading}>

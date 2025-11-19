@@ -1,7 +1,7 @@
 import "./SignUp.css";
 import { Eye, EyeOff } from "lucide-react";
 import { useCycle } from "framer-motion";
-import { toast } from "react-toastify"; // Only import toast, not ToastContainer
+import { toast } from "react-toastify";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpWithEmail, googleAuth } from "../services/auth";
@@ -10,6 +10,7 @@ import { auth } from "./../config/firebase.js";
 import systemLogo from "../assets/SociaTech_logo_whitebg.png";
 import googleLogo from "../assets/google.svg";
 import { useAuth } from "../hooks/useAuth";
+
 
 export default function SignUp() {
   const { login } = useAuth();
@@ -152,6 +153,8 @@ export default function SignUp() {
 
     try {
       const response = await signUpWithEmail(email, password, name, username);
+
+
 
       toast.success(response.message || "Account created successfully!", {
         position: "top-center",
@@ -338,32 +341,32 @@ export default function SignUp() {
                 Confirm password <span style={{ color: "red" }}>*</span>
               </label>
               <div className="passWrap">
-                    <input
-                      className="passWrap_child"
-                      type={showCPass ? "text" : "password"}
-                      name="confirmPassword"
-                      id="confirmPassword"
-                      placeholder="********"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      onKeyPress={handleKeyPress}
-                      style={{ borderColor: getConfirmPasswordBorderColor() }}
-                      disabled={loading || googleLoading}
-                      autoComplete="new-password"
-                    />
-                    <button
-                      className="eye_btn"
-                      type="button"
-                      onClick={() => cycleShowCPass()}
-                      disabled={loading || googleLoading}
-                      aria-label="Toggle confirm password visibility"
-                    >
-                      {showCPass ? (
-                        <Eye className="eyeSvg" />
-                      ) : (
-                        <EyeOff className="eyeSvg" />
-                      )}
-                    </button>
+                <input
+                  className="passWrap_child"
+                  type={showCPass ? "text" : "password"}
+                  name="confirmPassword"
+                  id="confirmPassword"
+                  placeholder="********"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  style={{ borderColor: getConfirmPasswordBorderColor() }}
+                  disabled={loading || googleLoading}
+                  autoComplete="new-password"
+                />
+                <button
+                  className="eye_btn"
+                  type="button"
+                  onClick={() => cycleShowCPass()}
+                  disabled={loading || googleLoading}
+                  aria-label="Toggle confirm password visibility"
+                >
+                  {showCPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
               </div>
             </div>
 

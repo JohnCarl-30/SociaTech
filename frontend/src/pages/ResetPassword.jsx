@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import "./ResetPassword.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCycle } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { resetPassword } from "../services/auth";
 
 export default function PasswordResetForm() {
   const [showPass, cycleShowPass] = useCycle(false, true);
   const [showCPass, cycleShowCPass] = useCycle(false, true);
   const navigate = useNavigate();
-
-  
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
 
   const validatePasswordRules = (password) => {
     return {
@@ -22,6 +23,34 @@ export default function PasswordResetForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!token) {
+      alert(
+        "Invalid or missing token. Please try the password reset process again."
+      );
+      return;
+    }
+
+    if (!isPasswordValid(formData.password)) {
+      alert(
+        "Password must be at least 8 characters and contain uppercase, number, and special character"
+      );
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    resetPassword(formData.password, formData.confirmPassword, token)
+      .then(() => {
+        alert("Password has been successfully reset. Please log in.");
+        navigate("/login");
+      })
+      .catch((error) => {
+        alert(`Error: ${error.message}`);
+      });
   };
 
   const [formData, setFormData] = useState({
@@ -55,7 +84,7 @@ export default function PasswordResetForm() {
 
   return (
     <>
-    <div className="system_logo_container">
+      <div className="system_logo_container">
         <img
           src="src\assets\SociaTech_logo_whitebg.png"
           alt="system_logo"
@@ -68,7 +97,9 @@ export default function PasswordResetForm() {
       <div className="resetPass_parent_container">
         <div className="resetPass_container">
           <div className="resetPass_title">Create new password</div>
-          <div className="resetPass_subtitle">Please enter your new password below</div>
+          <div className="resetPass_subtitle">
+            Please enter your new password below
+          </div>
           <div className="resetPass_parent_fieldContainer">
             <div className="resetPass_field_container">
               <label className="resetPass_field_label">New Password</label>
@@ -77,7 +108,7 @@ export default function PasswordResetForm() {
                   type={showPass ? "text" : "password"}
                   className="resetPass_input_field"
                   value={formData.password}
-                 name="password"   
+                  name="password"
                   onChange={handleInputChange}
                   placeholder="**********"
                   style={{ borderColor: getPasswordBorderColor() }}
@@ -95,7 +126,7 @@ export default function PasswordResetForm() {
                 </button>
               </div>
             </div>
-            
+
             <div className="resetPass_field_container">
               <label className="resetPass_field_label">Confirm Password</label>
               <div className="input-wrapper">
@@ -103,7 +134,7 @@ export default function PasswordResetForm() {
                   type={showCPass ? "text" : "password"}
                   className="resetPass_input_field"
                   value={formData.confirmPassword}
-                   name="confirmPassword"
+                  name="confirmPassword"
                   placeholder="**********"
                   style={{ borderColor: getConfirmPasswordBorderColor() }}
                   onChange={handleInputChange}
@@ -132,7 +163,6 @@ export default function PasswordResetForm() {
           </div>
         </div>
       </div>
-    
     </>
   );
 }
