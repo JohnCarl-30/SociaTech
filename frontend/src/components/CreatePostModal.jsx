@@ -1,4 +1,4 @@
-import { Image } from "lucide-react";
+import { Image, X } from "lucide-react";
 import "./CreatePostModal.css";
 import { useState, useEffect } from "react";
 import { createPost } from "../services/auth";
@@ -167,6 +167,7 @@ export default function CreatePostModal({ isOpen, onClose }) {
                 style={isImage ? { display: "block" } : { display: "none" }}
               >
                 <img src={URL.createObjectURL(image)} alt="contentImg" />
+                <button className="removePic_btn" onClick={()=>{setImage(null),setIsImage(false)}}><X className="crossSvg"/></button>
               </div>
             )}
           </div>

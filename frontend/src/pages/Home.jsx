@@ -9,6 +9,7 @@ import moreBtn from "../assets/moreBtn.png";
 import { getUser } from "../utils/storage";
 import pfpImage from "../assets/deault_pfp.png";
 import { useRef } from "react";
+import ProfilePage from "../components/ProfilePage.jsx";
 
 export default function Homepage() {
   const [posts, setPosts] = useState([]);
@@ -17,6 +18,8 @@ export default function Homepage() {
   const [downTally, setDownTally] = useState({});
   const [voteState, setVoteState] = useState({});
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const textareaRef = useRef(null);
 
@@ -26,6 +29,13 @@ export default function Homepage() {
   useEffect(() => {
     fetchPost();
   }, []);
+
+  const toggleDropDown = () => setIsDropDownOpen(prev => !prev);
+  const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); // ⬅ auto-close dropdown
+  };
+  const closeProfilePage = () => setIsProfilePageOpen(false);
 
   //for textarea resize itooo
   const handleInput = () => {
@@ -119,11 +129,22 @@ export default function Homepage() {
 
   return (
     <div className="home_container">
-      <PageHeader isOnCreatePost={true} isOnSearchBar={true} />
+      <PageHeader 
+        isOnCreatePost={true} 
+        isOnSearchBar={true}
+        toggleDropDown={toggleDropDown}
+        isDropDownOpen={isDropDownOpen}
+        openProfilePage={openProfilePage}
+      />
       <div className="page_body">
         <Nav currentPage="home" />
         <div className="home_main_container">
           <CategorySlider />
+         <ProfilePage 
+            style={isProfilePageOpen ? 'flex' : 'none'}
+            closeProfilePage={closeProfilePage}
+          />
+          
           <div className="post_container">
             {posts.length === 0 ? (
               <p>Loading posts...</p>

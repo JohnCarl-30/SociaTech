@@ -17,12 +17,19 @@ import { useAuth } from "../hooks/useAuth.js";
 
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
 import defaultPfp from "../assets/deault_pfp.png";
+import { useEffect } from "react";
 
-export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
+export default function PageHeader({  isOnSearchBar, 
+  isOnCreatePost, 
+  openProfilePage,
+  toggleDropDown,
+  isDropDownOpen}) {
   const navigate = useNavigate();
-  const [isDropDownModalOpen, cycleDrownDownModalOpen] = useCycle(false, true);
-  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false, true);
+  
+  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false,true);
   const { logout } = useAuth();
+
+
 
   const handleSignOut = async () => {
     try {
@@ -65,17 +72,14 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
           <button className="notification_btn">
             <Bell className="bell_svg" />
           </button>
-          <div className="profile_btn" onClick={cycleDrownDownModalOpen}>
+          <div className="profile_btn" onClick={toggleDropDown}>
             <img src={defaultPfp} alt="default_pfp" className="profile_img" />
           </div>
         </div>
       </div>
 
-      <div
-        className="dropDown_profile_modal"
-        style={{ display: isDropDownModalOpen ? "flex" : "none" }}
-      >
-        <button className="dropDown_btn">
+       <div className="dropDown_profile_modal" style={{ display: isDropDownOpen ? 'flex' : 'none' }}>
+        <button className="dropDown_btn" onClick={openProfilePage}>
           <UserRound />
           View Profile
         </button>

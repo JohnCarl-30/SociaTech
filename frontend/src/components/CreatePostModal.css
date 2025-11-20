@@ -48,7 +48,7 @@
     font-weight: bold;
     font-size: 1rem;
     border-radius: .4rem;
-    width: 8em;
+    width: fit-content;
 
 
 }
@@ -87,7 +87,9 @@
     border: solid 2px black;
     overflow-y: scroll;
     overflow-x: hidden;
+    position: relative;
 }
+
 .content_img::-webkit-scrollbar{
     display: none;
 }
@@ -95,6 +97,35 @@
     width: 100%;
     height: auto;
     object-fit: fill;
+}
+.removePic_btn{
+    position: absolute;
+    top: 1rem;
+    right:1rem;
+    z-index: 8888;
+    border: none;
+    border-radius: 50%;
+    height: 1.5rem;
+    width: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: black;
+color: white;
+    outline: none;
+    transition: all 150ms ease-in-out;
+}
+.removePic_btn:hover{
+background-color: white;
+color: black;
+cursor: pointer;
+border: solid 2px black;
+}
+.crossSvg{
+    
+    width: 80%;
+    
 }
 
 .create_field:focus,.create_textarea:focus{
