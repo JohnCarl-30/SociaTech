@@ -8,6 +8,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    z-index: 999;
 }
 
 .page_title_logo{

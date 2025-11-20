@@ -20,7 +20,7 @@ export default function CreatePostModal({ isOpen, onClose }) {
   useEffect(() => {
     console.log("Current user data:", user);
     console.log("User ID:", user?.user_id);
-  }, [user]);
+  }, []);
 
   const user_id = user?.user_id || null;
 

@@ -17,6 +17,8 @@
      
 
      padding: 0 .5rem ;
+
+     z-index: 999;
      
 }
 
@@ -55,6 +57,7 @@
 
 
     font-size: .8rem;
+
 }
 .category_slider::-webkit-scrollbar{
     display: none;
