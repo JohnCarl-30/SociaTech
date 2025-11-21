@@ -1,10 +1,10 @@
-import { Image } from "lucide-react";
+import { Image, X } from "lucide-react";
 import "./CreatePostModal.css";
 import { useState, useEffect } from "react";
 import { createPost } from "../services/auth";
 import { getUser } from "../utils/storage";
 
-export default function CreatePostModal({ isOpen, onClose }) {
+export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -16,7 +16,7 @@ export default function CreatePostModal({ isOpen, onClose }) {
     console.log("Updated image:", image);
   }, [image]);
 
-  const user_id = user ? user.user_id : null;
+  const user_id = user?.id || null;
 
   const resetFields = () => {
     setCategory("");
@@ -40,12 +40,18 @@ export default function CreatePostModal({ isOpen, onClose }) {
   };
 
   const handlePost = async () => {
-    if (!category || !title) {
-      alert("Missing fields");
+    if (!user_id) {
+      alert("You must be logged in to create a post. Please log in again.");
       return;
     }
+
+    if (!category || !title) {
+      alert("Please fill in category and title fields");
+      return;
+    }
+
     if (!image && !body) {
-      alert("You must atleast put text in the body or upload img");
+      alert("You must add text in the body or upload an image");
       return;
     }
 
@@ -53,9 +59,18 @@ export default function CreatePostModal({ isOpen, onClose }) {
     formData.append("user_id", user_id);
     formData.append("post_category", category);
     formData.append("post_title", title);
-
     formData.append("post_content", body || "");
-    formData.append("post_image", image || "");
+
+    if (image) {
+      formData.append("post_image", image);
+    }
+
+    console.log("Submitting post with:");
+    console.log("- user_id:", user_id);
+    console.log("- category:", category);
+    console.log("- title:", title);
+    console.log("- body:", body);
+    console.log("- image:", image?.name);
 
     try {
       const data = await createPost(formData);
@@ -64,12 +79,24 @@ export default function CreatePostModal({ isOpen, onClose }) {
         resetFields();
         setIsImage(false);
         onClose();
+
+        if (onPostCreated) {
+          onPostCreated();
+        }
       } else {
-        alert("Failed to create post: " + data.error);
+        console.error("Post creation failed:", data.error);
+
+        if (data.error && data.error.includes("foreign key constraint")) {
+          alert(
+            "Your session appears to be invalid. Please log out and log back in."
+          );
+        } else {
+          alert("Failed to create post: " + data.error);
+        }
       }
     } catch (err) {
-      console.log(err);
-      alert("Something went wrong while posting.");
+      console.error("Error creating post:", err);
+      alert("Something went wrong while posting. Please try again.");
     }
   };
 
@@ -90,18 +117,20 @@ export default function CreatePostModal({ isOpen, onClose }) {
               setCategory(e.target.value);
             }}
           >
-            <option value="" disabled selected>
+            <option value="" disabled>
               Category
             </option>
-            <option value="AI">Artificial Intelligence</option>
+            <option value="Artificial Intelligence">
+              Artificial Intelligence
+            </option>
             <option value="Cyber Security">Cyber Security</option>
             <option value="Networking">Networking</option>
-            <option value="Cloud">Cloud Engineering</option>
-            <option value="Software Dev">Software Development</option>
-            <option value="DevOps">Dev Ops</option>
-            <option value="ML">Machine Learning</option>
-            <option value="VR">Virtual Reality</option>
-            <option value="AR">Augmented Reality</option>
+            <option value="Cloud Engineering">Cloud Engineering</option>
+            <option value="Software Development">Software Development</option>
+            <option value="Dev Ops">Dev Ops</option>
+            <option value="Machine Learning">Machine Learning</option>
+            <option value="Virtual Reality">Virtual Reality</option>
+            <option value="Augmented Reality">Augmented Reality</option>
           </select>
           <div className="create_title_field">
             <label htmlFor="" className="create_field_label">
@@ -134,6 +163,14 @@ export default function CreatePostModal({ isOpen, onClose }) {
                 style={isImage ? { display: "block" } : { display: "none" }}
               >
                 <img src={URL.createObjectURL(image)} alt="contentImg" />
+                <button
+                  className="removePic_btn"
+                  onClick={() => {
+                    setImage(null), setIsImage(false);
+                  }}
+                >
+                  <X className="crossSvg" />
+                </button>
               </div>
             )}
           </div>
@@ -165,7 +202,7 @@ export default function CreatePostModal({ isOpen, onClose }) {
             </div>
           </div>
         </div>
-      </div>{" "}
+      </div>
     </>
   );
 }

@@ -1,4 +1,3 @@
-// Get user data from either localStorage or sessionStorage
 export const getUser = () => {
   const localUser =
     localStorage.getItem("userData") || localStorage.getItem("user");

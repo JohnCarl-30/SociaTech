@@ -143,17 +143,65 @@ body {
   align-items: center;
   text-align: center;
 }
+.more_menu_container {
+  position: relative;
+  display: inline-block;
+  z-index: 0;
+}
 .more_btn {
-  font-size: 1.5em;
-  font-weight: 500;
-  border: solid 1px black;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  width: 1em;
-  height: 1em;
+  border: solid 2px black;
+  width: 25px;
+  height: 25px;
+  transition: all 150ms ease-in-out;
 }
+.more_btn:hover {
+  background-color: rgb(195, 194, 194);
+  cursor: pointer;
+}
+.more_btn .more {
+  width: 100%;
+}
+.dropdown_menu {
+  position: absolute;
+  top: 30px; /* adjust mo kung gusto mo mas baba */
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 6px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  min-width: 120px;
+  animation: fadeIn 0.15s ease-in-out;
+  z-index: 0;
+}
+
+.dropdown_item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown_item:hover {
+  background-color: #f4f4f4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .post_card_title {
   font-weight: 700;
   font-size: 1.25rem;
@@ -199,6 +247,125 @@ body {
 .up_vote_btn:hover,
 .down_vote_btn:hover,
 .post_comment_btn:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
+}
+
+.comment_backDrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.comment_modal {
+  background-color: white;
+  border-radius: 0.4rem;
+  width: 35em;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: start;
+  max-height: 35em;
+  padding: 1.5rem;
+  gap: 1rem;
+
+  overflow-y: scroll;
+}
+.comment_modal::-webkit-scrollbar {
+  display: none;
+}
+
+.comment_modal .Comment_user_title {
+  position: fixed;
+  top: 8em;
+  left: 37em;
+  text-align: center;
+  background-color: gray;
+  width: 20em;
+}
+
+.comment_post_card {
+  width: 33em;
+  max-height: 35em;
+  border-radius: 0.8rem;
+
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+
+  margin: 1rem 0;
+
+  overflow-y: scroll;
+}
+.comment_post_card::-webkit-scrollbar {
+  display: none;
+}
+.comment_section_container {
+  width: 100%;
+  height: 5em;
+}
+
+.comment_textarea_container {
+  width: 92%;
+  max-height: 20em;
+  height: auto;
+  box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
+  border-radius: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  margin: 0 auto;
+}
+
+.comment_action_container {
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  gap: 1rem;
+}
+
+.comment_textarea_container textarea {
+  resize: none;
+  border: none;
+  width: 97%;
+
+  padding: 0.5rem 0.5rem 0.8rem 0.5rem;
+  box-sizing: border-box;
+}
+.comment_textarea_container textarea::-webkit-scrollbar {
+  display: none;
+}
+.comment_textarea_container textarea:focus {
+  outline: none;
+}
+
+.comment_action_btn {
+  border-radius: 0.8rem;
+  border: none;
+  border: solid 2px black;
+  background-color: black;
+  color: white;
+  width: 7em;
+  font-weight: 700;
+  font-size: 0.9rem;
+  height: 2.25em;
+
+  transition: all 150ms ease-in-out;
+}
+.comment_action_btn:hover {
   background-color: white;
   color: black;
   cursor: pointer;

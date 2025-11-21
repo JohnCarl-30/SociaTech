@@ -63,7 +63,6 @@ export default function PasswordResetForm() {
     return Object.values(rules).every(Boolean);
   };
 
-  // Get password field styling
   const getPasswordBorderColor = () => {
     if (!formData.password) return "black";
     return isPasswordValid(formData.password) ? "green" : "red";

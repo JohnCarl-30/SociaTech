@@ -1,72 +1,78 @@
-.category_slider_container{
-    position: fixed;
-    top: 5em;
-    right: 0;
-    left: 15em;
-    
-    display: flex;
-    flex-direction: row;
-    border-radius: .4rem;
-    background-color: black;
-    margin-left: auto;
-    margin-right: auto;
-    
-     align-items: center;
-    
-     width: 53.5em;
-     
+.category_slider_container {
+  position: fixed;
+  top: 5em;
+  right: 0;
+  left: 15em;
 
-     padding: 0 .5rem ;
-     
+  display: flex;
+  flex-direction: row;
+  border-radius: 0.4rem;
+  background-color: black;
+  margin-left: auto;
+  margin-right: auto;
+
+  align-items: center;
+
+  width: 53.5em;
+
+  padding: 0 0.5rem;
 }
 
-.arrow_slider_btn{
-    background-color: black;
-    color: white;
-    border: none;
-    border-radius: 100%;
-    height: 3em;
-    width: 3em;
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.arrow_slider_btn {
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 100%;
+  height: 3em;
+  width: 3em;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.arrow_slider_btn:hover{
-    cursor: pointer;
-    background-color: rgb(32, 32, 32);
-}
-
-.category_slider{
-    display: flex;
-    flex-direction: row;
- 
-    overflow-x: scroll;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    color: white;
-    background-color: black;
-
-    gap: 1rem;
-
-    flex-grow: 1;
-   
-    width: calc(100% - 3em);
-
-
-    font-size: .8rem;
-}
-.category_slider::-webkit-scrollbar{
-    display: none;
+.arrow_slider_btn:hover {
+  cursor: pointer;
+  background-color: rgb(32, 32, 32);
 }
 
-.category_child{
-    font-weight: 500;
-    height: 2em;
-    display: flex;
-    align-items: center;
+.category_slider {
+  display: flex;
+  flex-direction: row;
+
+  overflow-x: scroll;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  color: white;
+  background-color: black;
+
+  gap: 1rem;
+
+  flex-grow: 1;
+
+  width: calc(100% - 3em);
+
+  font-size: 0.8rem;
 }
-.category_child:hover{
-    background-color: rgb(32, 32, 32);
-    cursor: pointer;
+.category_slider::-webkit-scrollbar {
+  display: none;
+}
+
+.category_child {
+  font-weight: 500;
+  height: 2em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.category_child:hover {
+  background-color: rgb(32, 32, 32);
+  cursor: pointer;
+}
+
+.category_child.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }

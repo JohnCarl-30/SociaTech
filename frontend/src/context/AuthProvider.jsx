@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       sessionStorage.setItem("userData", userDataString);
       localStorage.removeItem("userData");
-      localStorage.setItem("rememberMe");
+      localStorage.removeItem("rememberMe");
     }
     setUser(userData);
     toast.success("Login successful!", {

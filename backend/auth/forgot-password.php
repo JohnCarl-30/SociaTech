@@ -52,7 +52,7 @@ try {
         exit();
     }
 
-    $stmt = $db->prepare("SELECT id, fullname, email FROM users WHERE email = :email LIMIT 1");
+    $stmt = $db->prepare("SELECT user_id, fullname, email FROM users WHERE email = :email LIMIT 1");
     $stmt->bindParam(":email", $email);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,7 +68,7 @@ try {
     }
 
 
-    $token = bin2hex(random_bytes(32)); // 64 character token
+    $token = bin2hex(random_bytes(32));
     $token_hash = hash('sha256', $token);
     $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
@@ -76,11 +76,11 @@ try {
         "UPDATE users 
          SET reset_token = :token_hash, 
              reset_token_expires = :expires_at 
-         WHERE id = :id"
+         WHERE user_id = :user_id"
     );
     $update_stmt->bindParam(":token_hash", $token_hash);
     $update_stmt->bindParam(":expires_at", $expires_at);
-    $update_stmt->bindParam(":id", $user['id']);
+    $update_stmt->bindParam(":user_id", $user['user_id']);
     
     if (!$update_stmt->execute()) {
         throw new Exception("Failed to store reset token");
@@ -90,7 +90,7 @@ try {
     $emailResult = sendPasswordResetEmail(
         $user['email'], 
         $user['fullname'], 
-        $token // Pass the plain token (not the hash)
+        $token 
     );
 
     if (!$emailResult['success']) {

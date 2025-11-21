@@ -2,12 +2,16 @@ const API_URL = "http://localhost/Sociatech/backend/auth";
 
 const handleResponse = async (response) => {
   const text = await response.text();
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (error) {
-    console.error("Error parsing JSON:", error);
-    throw new Error(text || "Server returned non-JSON response");
+  let data = {};
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+
+      throw new Error(text || "Server returned non-JSON response");
+    }
   }
 
   if (!response.ok) {
@@ -16,7 +20,6 @@ const handleResponse = async (response) => {
 
   return data;
 };
-
 export const signUpWithEmail = async (email, password, fullname, username) => {
   try {
     const response = await fetch(`${API_URL}/signup.php`, {
@@ -47,18 +50,17 @@ export const signInWithEmail = async (email, password) => {
       body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      if (response.status === 401) throw new Error("Invalid email or password");
-      if (response.status === 400)
-        throw new Error("Email and password are required");
+    const data = await response.json();
 
-      const text = await response.text();
-      throw new Error(text || "Server error. Please try again later.");
+    if (data.success === false && data.data?.needsVerification) {
+      throw new Error("Please verify your email address before logging in.");
     }
 
-    const data = await response.json();
-    localStorage.setItem("userData", JSON.stringify(data.data.user));
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
 
+    localStorage.setItem("userData", JSON.stringify(data.data.user));
     return data;
   } catch (error) {
     console.error("Login service error:", error);
@@ -82,9 +84,11 @@ export const googleAuth = async (user) => {
     });
 
     const data = await handleResponse(response);
-    localStorage.setItem("userData", JSON.stringify(data.data.user));
 
-    return data;
+    return {
+      user: data.data.user,
+      rememberMe: data.data.rememberMe ?? true,
+    };
   } catch (error) {
     console.error("Google auth error:", error);
     throw error;
@@ -166,20 +170,6 @@ export const resetPassword = async (new_password, confirm_password, token) => {
   }
 };
 
-export const fetchPost = async () => {
-  try {
-    const response = await fetch(`${API_URL}/fetchPost.php`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Fetch post error:", error);
-    throw error;
-  }
-};
-
 export const createPost = async (formData) => {
   try {
     const response = await fetch(`${API_URL}/createPost.php`, {
@@ -190,6 +180,41 @@ export const createPost = async (formData) => {
     return await handleResponse(response);
   } catch (error) {
     console.error("Create post error:", error);
+    throw error;
+  }
+};
+
+export const verifyEmail = async (token) => {
+  try {
+    const response = await fetch(`${API_URL}/verify-email.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ token: token }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Verification failed");
+    }
+    return data;
+  } catch (error) {
+    console.error("Email verification error:", error);
+    throw error;
+  }
+};
+
+export const sendVerificationEmail = async (email) => {
+  try {
+    const response = await fetch(`${API_URL}/send-verification-email.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: email }),
+    });
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("Send verification email error:", error);
     throw error;
   }
 };

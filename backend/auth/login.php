@@ -41,6 +41,7 @@ try {
     $database = new Database();
     $db = $database->getConnection(); 
     
+    // Get user with email_verified field
     $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,7 +55,20 @@ try {
         exit();
     }
     
-   
+    // Check if email is verified (skip for Google users)
+    if (isset($user['email_verified']) && $user['email_verified'] == 0 && empty($user['google_id'])) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Please verify your email address before logging in.',
+            'data' => [
+                'email' => $email,
+                'needsVerification' => true
+            ]
+        ]);
+        exit();
+    }
+    
     $userId = $user['id'] ?? $user['user_id'] ?? null;
     
     if (!$userId) {
@@ -77,6 +91,7 @@ try {
     
 } catch (Exception $e) {
     error_log("Login error: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode([
         'success' => false,
         'message' => 'Server error: ' . $e->getMessage()

@@ -14,13 +14,20 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
-
+import { useEffect } from "react";
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
 import defaultPfp from "../assets/deault_pfp.png";
 
-export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
+export default function PageHeader({
+  isOnSearchBar,
+  isOnCreatePost,
+  onPostCreated,
+  toggleDropDown,
+  isDropDownOpen,
+  openProfilePage,
+}) {
   const navigate = useNavigate();
-  const [isDropDownModalOpen, cycleDrownDownModalOpen] = useCycle(false, true);
+
   const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false, true);
   const { logout } = useAuth();
 
@@ -32,6 +39,12 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
     } catch (error) {
       console.error("Error signing out:", error);
       toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  const handlePostCreated = () => {
+    if (onPostCreated) {
+      onPostCreated();
     }
   };
 
@@ -65,7 +78,7 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
           <button className="notification_btn">
             <Bell className="bell_svg" />
           </button>
-          <div className="profile_btn" onClick={cycleDrownDownModalOpen}>
+          <div className="profile_btn" onClick={toggleDropDown}>
             <img src={defaultPfp} alt="default_pfp" className="profile_img" />
           </div>
         </div>
@@ -73,9 +86,9 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
 
       <div
         className="dropDown_profile_modal"
-        style={{ display: isDropDownModalOpen ? "flex" : "none" }}
+        style={{ display: isDropDownOpen ? "flex" : "none" }}
       >
-        <button className="dropDown_btn">
+        <button className="dropDown_btn" onClick={openProfilePage}>
           <UserRound />
           View Profile
         </button>
@@ -100,6 +113,7 @@ export default function PageHeader({ isOnSearchBar, isOnCreatePost }) {
       <CreatePostModal
         isOpen={isCreatePostOpen}
         onClose={cycleCreatePostOpen}
+        onPostCreated={handlePostCreated}
       />
     </>
   );

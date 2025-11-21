@@ -1,7 +1,7 @@
 import "./SignUp.css";
 import { Eye, EyeOff } from "lucide-react";
 import { useCycle } from "framer-motion";
-import { toast } from "react-toastify"; // Only import toast, not ToastContainer
+import { toast } from "react-toastify";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpWithEmail, googleAuth } from "../services/auth";
@@ -10,10 +10,11 @@ import { auth } from "./../config/firebase.js";
 import systemLogo from "../assets/SociaTech_logo_whitebg.png";
 import googleLogo from "../assets/google.svg";
 import { useAuth } from "../hooks/useAuth";
+import { sendVerificationEmail } from "../services/auth";
 
 export default function SignUp() {
   const { login } = useAuth();
-  // Form state
+
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -22,7 +23,6 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
-  // UI state
   const [showPass, cycleShowPass] = useCycle(false, true);
   const [showCPass, cycleShowCPass] = useCycle(false, true);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,6 @@ export default function SignUp() {
     return Object.values(rules).every(Boolean);
   };
 
-  // Get password field styling
   const getPasswordBorderColor = () => {
     if (!formData.password) return "black";
     return isPasswordValid(formData.password) ? "green" : "red";
@@ -57,7 +56,6 @@ export default function SignUp() {
     return formData.password === formData.confirmPassword ? "green" : "red";
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -70,7 +68,6 @@ export default function SignUp() {
     setCheckbox(!checkbox);
   };
 
-  // Validation
   const validateInputs = () => {
     const errors = [];
 
@@ -115,7 +112,6 @@ export default function SignUp() {
       errors.push("You must accept the terms of service and privacy policy.");
     }
 
-    // Show all errors or return true
     if (errors.length > 0) {
       toast.error(
         <div>
@@ -134,7 +130,6 @@ export default function SignUp() {
     return true;
   };
 
-  // Handle email signup
   const handleSubmit = async () => {
     if (!checkbox) {
       toast.error("You must accept the terms of service and privacy policy.");
@@ -151,17 +146,19 @@ export default function SignUp() {
     const username = usernameInput || email.split("@")[0];
 
     try {
-      const response = await signUpWithEmail(email, password, name, username);
+      const signupData = await signUpWithEmail(email, password, name, username);
 
-      toast.success(response.message || "Account created successfully!", {
-        position: "top-center",
-        autoClose: 1500,
-        onClose: () => navigate("/login"),
-      });
+      await sendVerificationEmail(signupData.email || email);
+      toast.success(
+        "Account created! Please check your email to verify your account.",
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
     } catch (err) {
       console.error("Sign up error:", err);
 
-      // Handle specific error codes
       if (
         err.code === "auth/email-already-in-use" ||
         err.message?.includes("Email already exists")
@@ -207,9 +204,20 @@ export default function SignUp() {
       const result = await signInWithPopup(auth, provider);
       console.log("Google sign in successful:", result.user);
 
-      const finalUserData = await googleAuth(result.user);
+      const backendResponse = await googleAuth(result.user);
 
-      login(finalUserData);
+      const userData = {
+        id: backendResponse.user.user_id, // ✅ Use user_id from backend
+        email: backendResponse.user.email,
+        displayName: backendResponse.user.fullname,
+        photoURL: backendResponse.user.profile_image,
+        providerId: "google.com",
+      };
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      localStorage.setItem("rememberMe", "true");
+      login(userData, true);
+      navigate("/home", { replace: true });
     } catch (err) {
       console.error("Google sign up error:", err);
 
@@ -338,32 +346,32 @@ export default function SignUp() {
                 Confirm password <span style={{ color: "red" }}>*</span>
               </label>
               <div className="passWrap">
-                    <input
-                      className="passWrap_child"
-                      type={showCPass ? "text" : "password"}
-                      name="confirmPassword"
-                      id="confirmPassword"
-                      placeholder="********"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      onKeyPress={handleKeyPress}
-                      style={{ borderColor: getConfirmPasswordBorderColor() }}
-                      disabled={loading || googleLoading}
-                      autoComplete="new-password"
-                    />
-                    <button
-                      className="eye_btn"
-                      type="button"
-                      onClick={() => cycleShowCPass()}
-                      disabled={loading || googleLoading}
-                      aria-label="Toggle confirm password visibility"
-                    >
-                      {showCPass ? (
-                        <Eye className="eyeSvg" />
-                      ) : (
-                        <EyeOff className="eyeSvg" />
-                      )}
-                    </button>
+                <input
+                  className="passWrap_child"
+                  type={showCPass ? "text" : "password"}
+                  name="confirmPassword"
+                  id="confirmPassword"
+                  placeholder="********"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  style={{ borderColor: getConfirmPasswordBorderColor() }}
+                  disabled={loading || googleLoading}
+                  autoComplete="new-password"
+                />
+                <button
+                  className="eye_btn"
+                  type="button"
+                  onClick={() => cycleShowCPass()}
+                  disabled={loading || googleLoading}
+                  aria-label="Toggle confirm password visibility"
+                >
+                  {showCPass ? (
+                    <Eye className="eyeSvg" />
+                  ) : (
+                    <EyeOff className="eyeSvg" />
+                  )}
+                </button>
               </div>
             </div>
 

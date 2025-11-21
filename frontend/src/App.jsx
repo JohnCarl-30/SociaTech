@@ -46,6 +46,10 @@ function App() {
             )
           }
         />
+        <Route
+          path="/login"
+          element={!user ? <Login /> : <Navigate to="/home" />}
+        />
 
         <Route path="/home" element={user ? <Home /> : <Navigate to="/" />} />
         <Route

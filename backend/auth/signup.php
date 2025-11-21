@@ -2,7 +2,7 @@
 
 header("Content-Type: application/json");
 
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 try {
@@ -120,7 +120,7 @@ try {
     }
     
    
-    $check_query = "SELECT id FROM users WHERE email = :email";
+    $check_query = "SELECT user_id FROM users WHERE email = :email";
     $check_stmt = $db->prepare($check_query);
 
     if (!$check_stmt) {
@@ -140,7 +140,7 @@ try {
     }
 
    
-    $check_user_query = "SELECT id FROM users WHERE username = :username";
+    $check_user_query = "SELECT user_id FROM users WHERE username = :username";
     $check_user_stmt = $db->prepare($check_user_query);
 
     if (!$check_user_stmt) {

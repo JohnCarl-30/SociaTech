@@ -1,21 +1,45 @@
 <?php
 
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: http://localhost:5173"); //frontend URL
+header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
 
-ini_set('display_errors', 0);
+// Temporarily enable for debugging
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
 
-require_once '../config/database.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Check if database.php exists
+$db_file = '../config/database.php';
+if (!file_exists($db_file)) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Database configuration file not found",
+        "error" => "File does not exist: " . $db_file
+    ]);
+    exit();
+}
+
+require_once $db_file;
 
 try {
+    // Test database connection
     $database = new Database();
     $db = $database->getConnection();
+    
+    if (!$db) {
+        throw new Exception("Database connection failed");
+    }
+    
+    // Enable exception mode for better error reporting
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $data = json_decode(file_get_contents("php://input"));
 
@@ -29,7 +53,7 @@ try {
         exit();
     }
 
-
+    // Validate required fields
     if (empty($data->google_id) || empty($data->email) || empty($data->fullname)) {
         http_response_code(400);
         echo json_encode([
@@ -47,39 +71,55 @@ try {
         : explode('@', $email)[0];
     $profile_image = isset($data->profile_image) ? trim($data->profile_image) : 'default_pfp.png';
 
-    // Check if user already exists by google_id or email
-    $check_query = "SELECT id, fullname, username, email, profile_image, google_id, created_at 
+    
+    $check_query = "SELECT user_id, fullname, username, email, profile_image, google_id, created_at 
                     FROM users 
                     WHERE google_id = :google_id OR email = :email";
+    
     $check_stmt = $db->prepare($check_query);
 
     if (!$check_stmt) {
-        throw new Exception("SQL prepare failed (check user query).");
+        $errorInfo = $db->errorInfo();
+        throw new Exception("SQL prepare failed: " . $errorInfo[2]);
     }
 
     $check_stmt->bindParam(":google_id", $google_id);
     $check_stmt->bindParam(":email", $email);
-    $check_stmt->execute();
+    
+    if (!$check_stmt->execute()) {
+        $errorInfo = $check_stmt->errorInfo();
+        throw new Exception("Query execution failed: " . $errorInfo[2]);
+    }
 
     if ($check_stmt->rowCount() > 0) {
-        // User exists - perform login
+       
         $user = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Update google_id if it's null (user registered with email/password first)
+        // Update google_id if it's null
         if (empty($user['google_id'])) {
-            $update_query = "UPDATE users SET google_id = :google_id, profile_image = :profile_image WHERE id = :id";
+            $update_query = "UPDATE users SET google_id = :google_id, profile_image = :profile_image WHERE user_id = :user_id";
             $update_stmt = $db->prepare($update_query);
+            
+            if (!$update_stmt) {
+                $errorInfo = $db->errorInfo();
+                throw new Exception("Update prepare failed: " . $errorInfo[2]);
+            }
+            
             $update_stmt->bindParam(":google_id", $google_id);
             $update_stmt->bindParam(":profile_image", $profile_image);
-            $update_stmt->bindParam(":id", $user['id']);
-            $update_stmt->execute();
+            $update_stmt->bindParam(":user_id", $user['user_id']);
+            
+            if (!$update_stmt->execute()) {
+                $errorInfo = $update_stmt->errorInfo();
+                throw new Exception("Update execution failed: " . $errorInfo[2]);
+            }
             
             $user['google_id'] = $google_id;
             $user['profile_image'] = $profile_image;
         }
 
-        
-        $_SESSION['user_id'] = $user['id'];
+        // Set session
+        $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['logged_in'] = true;
@@ -95,43 +135,55 @@ try {
         exit();
     }
 
-    // Check if username is taken
-    $check_username_query = "SELECT id FROM users WHERE username = :username";
+  
+    $check_username_query = "SELECT user_id FROM users WHERE username = :username";
     $check_username_stmt = $db->prepare($check_username_query);
+    
+    if (!$check_username_stmt) {
+        $errorInfo = $db->errorInfo();
+        throw new Exception("Username check prepare failed: " . $errorInfo[2]);
+    }
+    
     $check_username_stmt->bindParam(":username", $username);
     $check_username_stmt->execute();
 
     if ($check_username_stmt->rowCount() > 0) {
-        
         $username = $username . rand(100, 999);
     }
 
-    // User doesn't exist - create new account
+  
     $insert_query = "INSERT INTO users (fullname, username, email, google_id, profile_image, password) 
                      VALUES (:fullname, :username, :email, :google_id, :profile_image, :password)";
-    $insert_stmt = $db->prepare($insert_query);
+    
+    try {
+        $insert_stmt = $db->prepare($insert_query);
 
-    if (!$insert_stmt) {
-        throw new Exception("SQL prepare failed (insert user query).");
+        if (!$insert_stmt) {
+            $errorInfo = $db->errorInfo();
+            throw new Exception("Insert prepare failed: " . $errorInfo[2]);
+        }
+
+        $dummy_password = password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT);
+
+        $insert_stmt->bindParam(":fullname", $fullname);
+        $insert_stmt->bindParam(":username", $username);
+        $insert_stmt->bindParam(":email", $email);
+        $insert_stmt->bindParam(":google_id", $google_id);
+        $insert_stmt->bindParam(":profile_image", $profile_image);
+        $insert_stmt->bindParam(":password", $dummy_password);
+
+        if (!$insert_stmt->execute()) {
+            $errorInfo = $insert_stmt->errorInfo();
+            throw new Exception("Insert execution failed: " . $errorInfo[2]);
+        }
+    } catch (PDOException $e) {
+        error_log("Insert error details: " . print_r($e->errorInfo, true));
+        throw new Exception("Database insert failed: " . $e->getMessage());
     }
 
-    $dummy_password = password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT);
-
-    $insert_stmt->bindParam(":fullname", $fullname);
-    $insert_stmt->bindParam(":username", $username);
-    $insert_stmt->bindParam(":email", $email);
-    $insert_stmt->bindParam(":google_id", $google_id);
-    $insert_stmt->bindParam(":profile_image", $profile_image);
-    $insert_stmt->bindParam(":password", $dummy_password);
-
-    if (!$insert_stmt->execute()) {
-        throw new Exception("Failed to create user account");
-    }
-
-    // Get the newly created user
     $user_id = $db->lastInsertId();
     $user = [
-        'id' => $user_id,
+        'user_id' => $user_id,
         'fullname' => $fullname,
         'username' => $username,
         'email' => $email,
@@ -141,7 +193,7 @@ try {
     ];
 
     // Set session
-    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['email'] = $user['email'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['logged_in'] = true;
@@ -155,13 +207,23 @@ try {
         ]
     ]);
 
-} catch (Throwable $e) {
-    error_log($e->getMessage());
+} catch (PDOException $e) {
+    error_log("PDO Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "An internal server error occurred.",
-        "error" => $e->getMessage()
+        "message" => "Database error occurred",
+        "error" => $e->getMessage(),
+        "trace" => $e->getTraceAsString()
+    ]);
+} catch (Throwable $e) {
+    error_log("Error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "An internal server error occurred",
+        "error" => $e->getMessage(),
+        "trace" => $e->getTraceAsString()
     ]);
 }
 
