@@ -14,22 +14,26 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
-
+import { useEffect } from "react";
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
 import defaultPfp from "../assets/deault_pfp.png";
-import { useEffect } from "react";
 
-export default function PageHeader({  isOnSearchBar, 
-  isOnCreatePost, 
-  openProfilePage,
+export default function PageHeader({
+  isOnSearchBar,
+  isOnCreatePost,
+  onPostCreated,
   toggleDropDown,
-  isDropDownOpen}) {
+  isDropDownOpen,
+  openProfilePage,
+  openSetting,
+  openNotificationBar,
+  closeNotificationBar
+
+}) {
   const navigate = useNavigate();
-  
-  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false,true);
+
+  const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false, true);
   const { logout } = useAuth();
-
-
 
   const handleSignOut = async () => {
     try {
@@ -39,6 +43,12 @@ export default function PageHeader({  isOnSearchBar,
     } catch (error) {
       console.error("Error signing out:", error);
       toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  const handlePostCreated = () => {
+    if (onPostCreated) {
+      onPostCreated();
     }
   };
 
@@ -69,16 +79,31 @@ export default function PageHeader({  isOnSearchBar,
           >
             <CirclePlus className="circlePlus_svg" /> Create
           </button>
-          <button className="notification_btn">
+          <button className="notification_btn" onClick={closeNotificationBar}>
             <Bell className="bell_svg" />
           </button>
+
+
+
+
+          <div className="notification_container" style={{ display: openNotificationBar ? "flex" : "none" }}>
+                <div className="notification_header_title">Notification</div>
+                <div className="notification_child_container">No notifications</div>
+          </div>
+
+
+
+
           <div className="profile_btn" onClick={toggleDropDown}>
             <img src={defaultPfp} alt="default_pfp" className="profile_img" />
           </div>
         </div>
       </div>
 
-       <div className="dropDown_profile_modal" style={{ display: isDropDownOpen ? 'flex' : 'none' }}>
+      <div
+        className="dropDown_profile_modal"
+        style={{ display: isDropDownOpen ? "flex" : "none" }}
+      >
         <button className="dropDown_btn" onClick={openProfilePage}>
           <UserRound />
           View Profile
@@ -87,7 +112,7 @@ export default function PageHeader({  isOnSearchBar,
           <FolderOpen />
           Drafts
         </button>
-        <button className="dropDown_btn">
+        <button className="dropDown_btn" onClick={openSetting}>
           <Settings />
           Settings
         </button>
@@ -104,6 +129,7 @@ export default function PageHeader({  isOnSearchBar,
       <CreatePostModal
         isOpen={isCreatePostOpen}
         onClose={cycleCreatePostOpen}
+        onPostCreated={handlePostCreated}
       />
     </>
   );

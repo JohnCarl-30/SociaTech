@@ -47,8 +47,6 @@ export default function ForgotPassword({
     setValidationText("");
 
     try {
-      // For now, we only support email reset
-      // You can extend this to support username lookup later
       const response = await forgotPassword(inputValue);
 
       if (response.success) {

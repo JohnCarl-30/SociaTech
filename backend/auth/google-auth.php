@@ -10,7 +10,7 @@ header("Access-Control-Allow-Credentials: true");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Check if session is already started
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

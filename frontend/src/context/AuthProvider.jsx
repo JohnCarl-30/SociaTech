@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       sessionStorage.setItem("userData", userDataString);
       localStorage.removeItem("userData");
-      localStorage.removeItem("rememberMe"); // ✅ Fixed: use removeItem instead of setItem with 1 arg
+      localStorage.removeItem("rememberMe");
     }
     setUser(userData);
     toast.success("Login successful!", {

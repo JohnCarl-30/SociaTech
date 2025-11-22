@@ -20,7 +20,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    // ✅ VERIFY USER EXISTS FIRST
+   
     $checkUser = $db->prepare("SELECT user_id FROM users WHERE user_id = ?");
     $checkUser->execute([$user_id]);
     

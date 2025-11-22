@@ -28,9 +28,9 @@ try {
     $db = $database->getConnection();
 
    
-    $query = "SELECT id, fullname, username, email, profile_image, created_at 
+    $query = "SELECT user_id, fullname, username, email, profile_image, created_at 
               FROM users 
-              WHERE id = :id";
+              WHERE user_id = :user_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(":id", $_SESSION['user_id']);
     $stmt->execute();

@@ -1,184 +1,178 @@
-.createPost_parent_modal{
-    position: fixed;
-    top:0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(1px);
+.createPost_parent_modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
-.createPost_container_modal{
-    background-color: white;
-    border-radius: 0.4rem;
-    width: 25em;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: start;
-    max-height: 35em;
-    padding: 1.5rem;
-    gap: 1rem;
-   
-    
+.createPost_container_modal {
+  background-color: white;
+  border-radius: 0.4rem;
+  width: 25em;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: start;
+  max-height: 35em;
+  padding: 1.5rem;
+  gap: 1rem;
 }
 
-.create_body_field{
-    max-height: 35em;
-    overflow-y: scroll;
+.create_body_field {
+  max-height: 35em;
+  overflow-y: scroll;
 }
-.create_body_field::-webkit-scrollbar{
-    display: none;
+.create_body_field::-webkit-scrollbar {
+  display: none;
 }
 
-.createPost_modal_title{
-    
-    font-weight: 700;
-    font-size: 1.5rem;
+.createPost_modal_title {
+  font-weight: 700;
+  font-size: 1.5rem;
 }
-.category_dropDown{
-    border: solid 2px black;
-    background-color: white;
-    color: black;
-    font-weight: bold;
-    font-size: 1rem;
-    border-radius: .4rem;
-    width: fit-content;
-
-
+.category_dropDown {
+  border: solid 2px black;
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 0.4rem;
+  width: fit-content;
 }
 .create_title_field,
-.create_body_field{
-    display: flex;
-    flex-direction: column;
-    
-    width: 100%;
+.create_body_field {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
 }
 
-.create_field_label{
-    margin-bottom: .2rem;
-    font-weight: 500;
+.create_field_label {
+  margin-bottom: 0.2rem;
+  font-weight: 500;
 }
-.create_field{
-    border-radius: .4rem;
-    border: solid 2px black;
-    height: 2rem;
-    padding: 0 .5rem;
-}
-
-.create_textarea{
-    border-radius: .4rem;
-    border: solid 2px black;
-    height: 10em;
-    resize: none;
-}
-.content_img{
-    /* height: 10em; */
-   max-height: 25em;
-   display: flex; 
-    justify-content: center;
-    align-items: center;
-     border-radius: .4rem;
-    border: solid 2px black;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    position: relative;
+.create_field {
+  border-radius: 0.4rem;
+  border: solid 2px black;
+  height: 2rem;
+  padding: 0 0.5rem;
 }
 
-.content_img::-webkit-scrollbar{
-    display: none;
+.create_textarea {
+  border-radius: 0.4rem;
+  border: solid 2px black;
+  height: 10em;
+  resize: none;
 }
-.content_img img{
-    width: 100%;
-    height: auto;
-    object-fit: fill;
-}
-.removePic_btn{
-    position: absolute;
-    top: 1rem;
-    right:1rem;
-    z-index: 8888;
-    border: none;
-    border-radius: 50%;
-    height: 1.5rem;
-    width: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    background-color: black;
-color: white;
-    outline: none;
-    transition: all 150ms ease-in-out;
-}
-.removePic_btn:hover{
-background-color: white;
-color: black;
-cursor: pointer;
-border: solid 2px black;
-}
-.crossSvg{
-    
-    width: 80%;
-    
+.content_img {
+  /* height: 10em; */
+  max-height: 25em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.4rem;
+  border: solid 2px black;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
 }
 
-.create_field:focus,.create_textarea:focus{
-    outline: none;
+.content_img::-webkit-scrollbar {
+  display: none;
 }
-.create_footer_modal{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
+.content_img img {
+  width: 100%;
+  height: auto;
+  object-fit: fill;
 }
-.upload_img_btn{
-    width: 2em;
-    height: 2em;
-    border: solid 2px black;
-    border-radius: .4rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    transition: all 150ms ease-in-out;
-    background-color: white;
+.removePic_btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 8888;
+  border: none;
+  border-radius: 50%;
+  height: 1.5rem;
+  width: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background-color: black;
+  color: white;
+  outline: none;
+  transition: all 150ms ease-in-out;
 }
-.upload_img_btn:hover{
-     cursor: pointer;
-     background-color: black;
-     color: white;
-}   
+.removePic_btn:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  border: solid 2px black;
+}
+.crossSvg {
+  
+  width: 1.3em;
+  height: 1.3em;
+}
 
-.cancelPost_btn_container{
-    display: flex;
-    flex-direction: row;
-    justify-content: end;
-    width: 20em;
-    
-    gap: 2rem;
-    
+.create_field:focus,
+.create_textarea:focus {
+  outline: none;
 }
-.cancelPost_btn{
-    border-radius: .8rem;
-    border: none;
-    border: solid 2px black;
-    background-color: black;
-    color: white;
-    width: 7em;
-    font-weight: 700;
-    font-size:.9rem;
-    height: 2.25em;
-    
-    transition: all 150ms ease-in-out;
+.create_footer_modal {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 }
-.cancelPost_btn:hover{
-    background-color: white;
-     color: black;
-     cursor: pointer;
+.upload_img_btn {
+  width: 2em;
+  height: 2em;
+  border: solid 2px black;
+  border-radius: 0.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  transition: all 150ms ease-in-out;
+  background-color: white;
+}
+.upload_img_btn:hover {
+  cursor: pointer;
+  background-color: black;
+  color: white;
+}
+
+.cancelPost_btn_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  width: 20em;
+
+  gap: 2rem;
+}
+.cancelPost_btn {
+  border-radius: 0.8rem;
+  border: none;
+  border: solid 2px black;
+  background-color: black;
+  color: white;
+  width: 7em;
+  font-weight: 700;
+  font-size: 0.9rem;
+  height: 2.25em;
+
+  transition: all 150ms ease-in-out;
+}
+.cancelPost_btn:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
 }

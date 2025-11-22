@@ -77,7 +77,7 @@ try {
     $token_hash = hash("sha256", $token);
 
     // Get user
-    $stmt = $db->prepare("SELECT id, reset_token_expires FROM users WHERE reset_token = :token LIMIT 1");
+    $stmt = $db->prepare("SELECT user_id, reset_token_expires FROM users WHERE reset_token = :token LIMIT 1");
     $stmt->bindParam(":token", $token_hash);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -105,10 +105,10 @@ try {
     $update = $db->prepare("
         UPDATE users 
         SET password = :password, reset_token = NULL, reset_token_expires = NULL
-        WHERE id = :id
+        WHERE user_id = :user_id
     ");
     $update->bindParam(":password", $hashed_password);
-    $update->bindParam(":id", $user["id"]);
+    $update->bindParam(":user_id", $user["user_id"]);
     $update->execute();
 
     echo json_encode(['success' => true, 'message' => 'Password has been reset successfully.']);

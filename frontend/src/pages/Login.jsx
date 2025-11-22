@@ -1,23 +1,65 @@
 import { useCycle } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./../config/firebase.js";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
-import { signInWithEmail, googleAuth } from "../services/auth.js";
+import {
+  signInWithEmail,
+  googleAuth,
+  verifyEmail,
+  sendVerificationEmail,
+} from "../services/auth.js";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const [showPass, cycleShowPass] = useCycle(false, true);
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login, user } = useAuth();
   const [rememberMe, setRememberMe] = useState(false);
+  const [loadingVerify, setLoadingVerify] = useState(false);
+  const [showResendLink, setShowResendLink] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    console.log("PARAMS:", params.get("verified"));
+    console.log("FULL LOCATION:", location);
+
+    if (token) {
+      setLoadingVerify(true);
+      verifyEmail(token)
+        .then((data) => {
+          if (data.success) {
+            toast.success("Your email has been verified! You may now log in.");
+            navigate("/login", { replace: true });
+          } else {
+            toast.error(data.message || "Invalid verification link");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error("Verification failed. Please try again.");
+        })
+        .finally(() => setLoadingVerify(false));
+    }
+
+    if (params.get("verified") === "true") {
+      toast.success("Your email has been verified! You may now log in.");
+
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 1500);
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     const saveRememberMe = localStorage.getItem("rememberMe") === "true";
@@ -29,12 +71,38 @@ export default function Login() {
     }
   }, []);
 
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) {
+      toast.error("No email address found");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const data = await sendVerificationEmail(unverifiedEmail);
+
+      if (data.success) {
+        toast.success("Verification email sent! Please check your inbox.");
+        setShowResendLink(false);
+      } else {
+        toast.error(data.message || "Failed to send verification email");
+      }
+    } catch (err) {
+      console.error("Resend error:", err);
+      toast.error(err.message || "Failed to resend verification email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 AUTO-NAVIGATE IF USER LOGGED IN
   useEffect(() => {
     if (user) {
       navigate("/home", { replace: true });
     }
   }, [user, navigate]);
 
+  // 🔹 EMAIL LOGIN
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
 
@@ -45,10 +113,11 @@ export default function Login() {
 
     try {
       setLoading(true);
+      setShowResendLink(false);
       const response = await signInWithEmail(email, password);
 
       const userData = {
-        user_id: response.data.user.user_id,
+        id: response.data.user.user_id,
         email: response.data.user.email,
         displayName: response.data.user.fullname,
         photoURL: response.data.user.profile_image,
@@ -57,10 +126,13 @@ export default function Login() {
       if (rememberMe) {
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("savedEmail", email);
+        localStorage.setItem("rememberedEmail", email);
+        localStorage.setItem("rememberMe", "true");
       } else {
         sessionStorage.setItem("authToken", response.data.token);
         sessionStorage.setItem("user", JSON.stringify(userData));
+        localStorage.removeItem("rememberedEmail");
+        localStorage.setItem("rememberMe", "false");
       }
 
       login(userData, rememberMe);
@@ -68,73 +140,68 @@ export default function Login() {
     } catch (error) {
       console.error("Email sign in error:", error);
 
-      switch (error.code) {
-        case "auth/invalid-email":
-          toast.error("Invalid email address");
-          break;
-        case "auth/too-many-requests":
-          toast.error(
-            "Too many unsuccessful login attempts. Please try again later."
-          );
-          break;
-        case "auth/user-disabled":
-          toast.error("This account has been disabled");
-          break;
-        case "auth/user-not-found":
-          toast.error("No account found with this email");
-          break;
-        case "auth/wrong-password":
-          toast.error("Incorrect password");
-          break;
-        case "auth/invalid-credential":
-          toast.error("Invalid email or password");
-          break;
-        default:
-          toast.error("Login failed. Please try again");
+      const errorMessage = error.message || "";
+      if (
+        errorMessage.includes("verify your email") ||
+        errorMessage.includes("email address before logging")
+      ) {
+        setUnverifiedEmail(email);
+        setShowResendLink(true);
+        toast.error("Please verify your email address before logging in.", {
+          autoClose: 5000,
+        });
+        return;
+      }
+
+      if (errorMessage.includes("Invalid email or password")) {
+        toast.error("Invalid email or password");
+      } else if (errorMessage.includes("too many")) {
+        toast.error(
+          "Too many unsuccessful login attempts. Please try again later."
+        );
+      } else {
+        toast.error(errorMessage || "Login failed. Please try again");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // 🔹 GOOGLE SIGN-IN
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    setLoading(true);
-
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
+    provider.setCustomParameters({ prompt: "select_account" });
 
     try {
+      setLoading(true);
       const result = await signInWithPopup(auth, provider);
-      await googleAuth(result.user);
+      const backendResponse = await googleAuth(result.user);
 
       const userData = {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
+        id: backendResponse.user.user_id,
+        email: backendResponse.user.email,
+        displayName: backendResponse.user.fullname,
+        photoURL: backendResponse.user.profile_image,
         providerId: "google.com",
       };
-      if (rememberMe) {
+
+      const shouldRemember = backendResponse.rememberMe ?? rememberMe;
+      if (shouldRemember) {
         localStorage.setItem("user", JSON.stringify(userData));
       } else {
         sessionStorage.setItem("user", JSON.stringify(userData));
       }
 
-      login(userData, rememberMe);
+      login(userData, shouldRemember);
+      navigate("/home", { replace: true });
     } catch (error) {
       console.error("Google sign in error:", error);
-
-      switch (error.code) {
-        case "auth/popup-closed-by-user":
-          toast.info("Sign in cancelled");
-          break;
-        case "auth/popup-blocked":
-          toast.error("Popup was blocked. Please allow popups for this site");
-          break;
-        default:
-          toast.error("Google sign in failed. Please try again");
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.info("Sign in cancelled");
+      } else if (error.code === "auth/popup-blocked") {
+        toast.error("Popup blocked. Allow popups for this site");
+      } else {
+        toast.error("Google sign in failed. Please try again");
       }
     } finally {
       setLoading(false);
@@ -143,9 +210,37 @@ export default function Login() {
 
   return (
     <>
+      {loadingVerify && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              textAlign: "center",
+            }}
+          >
+            Verifying your email...
+          </div>
+        </div>
+      )}
+
       <div className="system_logo_container">
         <img
-          src="src\assets\SociaTech_logo_whitebg.png"
+          src="src/assets/SociaTech_logo_whitebg.png"
           alt="system_logo"
           className="system_logo"
         />
@@ -154,6 +249,41 @@ export default function Login() {
       <div className="login_parent_container">
         <div className="signIn_container">
           <div className="signIn_title">Sign In</div>
+
+          {showResendLink && (
+            <div
+              style={{
+                padding: "12px",
+                marginBottom: "16px",
+                background: "#fff3cd",
+                border: "1px solid #ffc107",
+                borderRadius: "4px",
+                fontSize: "14px",
+              }}
+            >
+              <p style={{ margin: "0 0 8px 0" }}>
+                Your email is not verified yet. Please check your inbox for the
+                verification link.
+              </p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={loading}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#0066cc",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  padding: 0,
+                  fontSize: "14px",
+                }}
+              >
+                Resend verification email
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleEmailSignIn} className="input_container">
             <div className="input_childContainer">
               <label htmlFor="user_signIn_email">Email</label>
@@ -164,9 +294,10 @@ export default function Login() {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                disabled={loading || loadingVerify}
               />
             </div>
+
             <div className="input_childContainer">
               <label htmlFor="user_signIn_pass">Password</label>
               <div className="password_wrapper">
@@ -178,13 +309,13 @@ export default function Login() {
                   placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
+                  disabled={loading || loadingVerify}
                 />
                 <button
                   type="button"
                   className="showPass_btn"
                   onClick={() => cycleShowPass()}
-                  disabled={loading}
+                  disabled={loading || loadingVerify}
                 >
                   {showPass ? (
                     <Eye className="eye_logo" />
@@ -194,9 +325,11 @@ export default function Login() {
                 </button>
               </div>
             </div>
+
             <a href="/forgot-password" className="forgetPass_link">
               Forgot your password?
             </a>
+
             <div className="rememberMe_container">
               <input
                 type="checkbox"
@@ -207,23 +340,31 @@ export default function Login() {
               />
               <label htmlFor="remember_me">Remember me</label>
             </div>
-            <button type="submit" className="signIn_btn" disabled={loading}>
+
+            <button
+              type="submit"
+              className="signIn_btn"
+              disabled={loading || loadingVerify}
+            >
               {loading ? "Signing In..." : "Sign In"}
             </button>
+
             <div className="createAcc_link">
               Don't have an account?{" "}
               <a href="/signup" className="signUp_link">
                 Sign Up
               </a>
             </div>
+
             <div className="seperator">
               <span className="or_text">or</span>
             </div>
+
             <button
               type="button"
               className="signIn_btn google_signIn_btn"
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={loading || loadingVerify}
             >
               <img
                 src="src/assets/google.svg"
