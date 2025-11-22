@@ -1,0 +1,98 @@
+.visibility_parent_container{
+       position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.visibility_modal{
+background-color: white;
+  border-radius: 0.4rem;
+  width: 24em;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: start;
+  max-height: 35em;
+  padding: 1.5rem;
+  gap: 1.25rem;
+  position: relative;
+}
+.visibility_close_container{
+ position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+
+  background-color: black;
+  color: white;
+
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0;
+  margin: 0;
+}
+.visibility_close_container:hover{
+background-color: white;
+    color: black;
+    cursor: pointer;
+    border: solid 2px rgb(0, 0, 0);
+}
+.vibility_modal_title{
+display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    gap: .5rem;
+    width: 100%;
+}
+
+.visibility_modal_description{
+  width: 100%;
+    font-size: .8rem;
+}
+.visibility_field_container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: .5rem;
+}
+.visibility_select_field{
+    height: 2em;
+    text-align: center;
+    font-size: 1.10rem;
+    border-radius: .4rem;
+}
+.visibility_save_btn{
+ width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.visibility_save_btn button{
+border-radius: .8rem;
+    background-color: black;
+    color: white;
+    padding: .5rem .5rem;
+    font-weight: 700;
+    border: none;
+    width: 8em;
+}
+.visibility_save_btn button:hover{
+    border: solid 2px black;
+cursor: pointer;
+background-color: white;
+color: black;
+}
