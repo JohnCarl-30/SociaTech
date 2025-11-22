@@ -97,8 +97,8 @@
 .profilePage_nav_child {
   border-radius: 1rem;
   border: solid 2px black;
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
   width: fit-content;
   padding: 0.4rem 2rem;
   font-weight: 800;
@@ -108,8 +108,9 @@
 }
 .profilePage_nav_child:hover {
   cursor: pointer;
-  background-color: white;
-  color: black;
+  
+  background-color: black;
+  color: white;
 }
 .profilePage_child_container {
   width: 100%;
@@ -122,10 +123,10 @@
   font-weight: 700;
 }
 .profilePage_post_container {
-  display: none;
+  
 }
 .profilePage_savePost_Container {
-  display: none;
+  
 }
 .profilePage_achievements_Container {
   display: none;
@@ -198,7 +199,8 @@
   width: 12%;
   height: fit-content;
 
-  border: solid 2px black;
+  /* border: solid 2px black; */
+  border: none;
   border-radius: 0.4rem;
   display: flex;
   justify-content: center;

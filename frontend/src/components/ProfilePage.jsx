@@ -7,11 +7,16 @@ import { useState, useEffect } from "react";
 export default function ProfilePage({ style, closeProfilePage }) {
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
+  const [isOpenPage, setOpenPage] = useState('post');
+  
+  
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
     }
   };
+
+ 
 
   useEffect(() => {
     if (!image) return;
@@ -49,69 +54,69 @@ export default function ProfilePage({ style, closeProfilePage }) {
             </div>
           </div>
           <div className="profilePage_nav_container">
-            <button className="profilePage_nav_child">Post</button>
-            <button className="profilePage_nav_child">Saved</button>
+            <button className="profilePage_nav_child" style={isOpenPage=='post'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('post')}>Post</button>
+            <button className="profilePage_nav_child"   style={isOpenPage=='saved'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('saved')}>Saved</button>
             <button className="profilePage_nav_child">Achievements</button>
-            <button className="profilePage_nav_child">Edit Profile</button>
+            <button className="profilePage_nav_child" style={isOpenPage=='EditProfile'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('EditProfile')}>Edit Profile</button>
           </div>
           <div className="profilePage_child_container">
-            <div className="profilePage_post_container">
+            {isOpenPage=='post'&&(<div className="profilePage_post_container">
               <img src={SamplePost} alt="" className="samplePost" />
               <img src={SamplePost} alt="" className="samplePost2" />
               <img src={SamplePost} alt="" className="samplePost" />
               <img src={SamplePost} alt="" className="samplePost" />
               <img src={SamplePost} alt="" className="samplePost" />
-            </div>
-            <div className="profilePage_savePost_Container">
+            </div>)}
+            {isOpenPage=='saved'&&(<div className="profilePage_savePost_Container">
               <div>Saved Post</div>
-            </div>
+            </div>)}
             <div className="profilePage_achievements_Container">
               <div>Achievements</div>
             </div>
-            <div className="profilePage_editProfile_Container">
-              <div className="profilePage_childContainer_title">
-                Edit Profile
-              </div>
-              <div className="change_pfp_container">
-                <img
-                  src={imageURL || pfpImage}
-                  alt="User Profile Pic"
-                  className="changePfp_img"
-                />
+            {isOpenPage=='EditProfile'&&(<div className="profilePage_editProfile_Container">
+                <div className="profilePage_childContainer_title">
+                  Edit Profile
+                </div>
+                <div className="change_pfp_container">
+                  <img
+                    src={imageURL || pfpImage}
+                    alt="User Profile Pic"
+                    className="changePfp_img"
+                  />
 
-                <label className="change_pfp_btn" htmlFor="changePfp_field">
-                  Change
-                </label>
-                <input
-                  id="changePfp_field"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleImageUpload}
-                />
-              </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Bio</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
+                  <label className="change_pfp_btn" htmlFor="changePfp_field">
+                    Change
+                  </label>
+                  <input
+                    id="changePfp_field"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleImageUpload}
+                  />
                 </div>
-              </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Name</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
+                <div className="changeProfile_field_container">
+                  <label htmlFor="">Bio</label>
+                  <div className="changeProfile_field_childContainer">
+                    <input type="text" />|
+                    <button className="changeProfile_btn">Change</button>
+                  </div>
                 </div>
-              </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Username</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
+                <div className="changeProfile_field_container">
+                  <label htmlFor="">Name</label>
+                  <div className="changeProfile_field_childContainer">
+                    <input type="text" />|
+                    <button className="changeProfile_btn">Change</button>
+                  </div>
                 </div>
-              </div>
-            </div>
+                <div className="changeProfile_field_container">
+                  <label htmlFor="">Username</label>
+                  <div className="changeProfile_field_childContainer">
+                    <input type="text" />|
+                    <button className="changeProfile_btn">Change</button>
+                  </div>
+                </div>
+            </div>)}
           </div>
         </div>
         <button className="profilePage_close_btn" onClick={closeProfilePage}>

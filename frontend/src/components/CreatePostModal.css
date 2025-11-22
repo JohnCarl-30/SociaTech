@@ -117,7 +117,9 @@
   border: solid 2px black;
 }
 .crossSvg {
-  width: 80%;
+  
+  width: 1.3em;
+  height: 1.3em;
 }
 
 .create_field:focus,

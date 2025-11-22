@@ -25,6 +25,10 @@ export default function PageHeader({
   toggleDropDown,
   isDropDownOpen,
   openProfilePage,
+  openSetting,
+  openNotificationBar,
+  closeNotificationBar
+
 }) {
   const navigate = useNavigate();
 
@@ -75,9 +79,21 @@ export default function PageHeader({
           >
             <CirclePlus className="circlePlus_svg" /> Create
           </button>
-          <button className="notification_btn">
+          <button className="notification_btn" onClick={closeNotificationBar}>
             <Bell className="bell_svg" />
           </button>
+
+
+
+
+          <div className="notification_container" style={{ display: openNotificationBar ? "flex" : "none" }}>
+                <div className="notification_header_title">Notification</div>
+                <div className="notification_child_container">No notifications</div>
+          </div>
+
+
+
+
           <div className="profile_btn" onClick={toggleDropDown}>
             <img src={defaultPfp} alt="default_pfp" className="profile_img" />
           </div>
@@ -96,7 +112,7 @@ export default function PageHeader({
           <FolderOpen />
           Drafts
         </button>
-        <button className="dropDown_btn">
+        <button className="dropDown_btn" onClick={openSetting}>
           <Settings />
           Settings
         </button>

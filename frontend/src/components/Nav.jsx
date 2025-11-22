@@ -1,36 +1,39 @@
+import { House, Crown, Brain } from "lucide-react";
+import "./Nav.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import {  House,Crown,Brain } from 'lucide-react';
-import "./Nav.css"
-import { useState } from 'react';
+export default function Nav() {
+    const navigate = useNavigate();
+    const location = useLocation();
 
-
-export default function Nav({currentPage}){
-    const [pageName, setPageName] = useState(' home'); //temporary only since wala pang router applied, papalitan pa later
-
-    const isActive = (activePage) =>{
-        return activePage === pageName ? ' active':'';
+    const isActive = (path) => {
+        return location.pathname === path ? " active" : "";
     };
 
-   
-   
+    return (
+        <>
+            <div className="nav_panel">
+                <div 
+                    className={`nav_child nav_child${isActive('/home')}`}
+                    onClick={() => navigate("/home")}
+                >
+                    <House /> Home
+                </div>
 
+                <div 
+                    className={`nav_child nav_child${isActive('/leaderboard')}`}
+                    onClick={() => navigate("/leaderboard")}
+                >
+                    <Crown /> Leaderboards
+                </div>
 
-  
-
-    return(<>
-        <div className="nav_panel">
-                    <div className={`nav_child nav_child${isActive(' home')}`} onClick={()=>{
-                       setPageName(' home');
-
-                    }}><House/> Home</div>
-                    <div className={`nav_child nav_child${isActive(' leaderBoard')}`}onClick={()=>{
-                       setPageName(' leaderBoard');
-
-                    }}><Crown /> Leaderboards</div>
-                    <div className={`nav_child nav_child${isActive(' quizes')}`}onClick={()=>{
-                       setPageName(' quizes');
-
-                    }}><Brain />Quizes</div>
-        </div>
-    </>)
+                <div 
+                    className={`nav_child nav_child${isActive('/quiz')}`}
+                    onClick={() => navigate("/quiz")}
+                >
+                    <Brain /> Quizes
+                </div>
+            </div>
+        </>
+    );
 }

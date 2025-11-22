@@ -1,0 +1,105 @@
+.changePass_parent_container{
+   position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.changePass_modal{
+    background-color: white;
+  border-radius: 0.4rem;
+  width: 25em;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: start;
+  max-height: 35em;
+  padding: 1.5rem;
+  gap: 1rem;
+  position: relative;
+}
+.changePass_modal_title{
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    gap: .5rem;
+    width: 100%;
+}
+.changePass_close_btn{
+     position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+
+  background-color: black;
+  color: white;
+
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0;
+  margin: 0;
+}
+.changePass_close_btn:hover{
+background-color: white;
+    color: black;
+    cursor: pointer;
+    border: solid 2px rgb(0, 0, 0);
+}
+.closeSvg{
+    width: 1em;
+    height: 1em;
+
+}
+.changePass_requirement{
+    width: 100%;
+    font-size: .8rem;
+    
+}
+.changePass_fields{
+    width: 95%;
+    border-radius: .4rem;
+    border: solid 1px black;
+    padding: .25rem .5rem ;
+}
+.forgetPass_container{
+    width: 100%;
+    justify-content: end;
+    display: flex;
+}
+.forgetPass_link{
+    opacity: .8;
+}
+.ChangePass_btn_container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.ChangePass_btn_container button{
+    border-radius: .8rem;
+    background-color: black;
+    color: white;
+    padding: .5rem .5rem;
+    font-weight: 700;
+    border: none;
+    
+}
+.ChangePass_btn_container button:hover{
+border: solid 2px black;
+cursor: pointer;
+background-color: white;
+color: black;
+}
