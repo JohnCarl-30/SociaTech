@@ -11,7 +11,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $data = json_decode(file_get_contents("php://input")); // to read json input
+    $data = json_decode(file_get_contents("php://input")); 
 
     
     if (is_null($data)) {
