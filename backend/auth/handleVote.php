@@ -31,30 +31,10 @@ try {
     $user_id = $data['user_id'] ?? null;
     $vote_type = $data['vote_type'] ?? null;
 
-  if ($post_id === null || $user_id === null || $vote_type === null) {
-    throw new Exception('Missing vote data');
-}
-
-// REMOVE VOTE ACTION
-if ($vote_type === -1) {
-    // delete vote
-    $stmt = $db->prepare("DELETE FROM postvote WHERE user_id=:user AND post_id=:post");
-    $stmt->execute([':user' => $user_id, ':post' => $post_id]);
-
-   
-    $stmt = $db->prepare("SELECT vote_type FROM postvote WHERE user_id=:user AND post_id=:post");
-    $stmt->execute([':user' => $user_id, ':post' => $post_id]);
-    $old = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($old) {
-        $oldColumn = $old['vote_type'] == 1 ? "up" : "down";
-        $stmt = $db->prepare("UPDATE post SET {$oldColumn}_tally_post = {$oldColumn}_tally_post - 1 WHERE post_id=:post");
-        $stmt->execute([':post' => $post_id]);
+    if ($post_id === null || $user_id === null || $vote_type === null) {
+        throw new Exception('Missing vote data');
     }
 
-    echo json_encode(['success' => true, 'message' => 'Vote removed']);
-    exit;
-}
     $voteColumn = $vote_type == 1 ? "up" : "down";
 
     // Check existing vote

@@ -27,7 +27,8 @@ export default function PageHeader({
   openProfilePage,
   openSetting,
   openNotificationBar,
-  closeNotificationBar,
+  closeNotificationBar
+
 }) {
   const navigate = useNavigate();
 
@@ -82,14 +83,16 @@ export default function PageHeader({
             <Bell className="bell_svg" />
           </button>
 
-          <div
-            className="notification_container"
-            style={{ display: openNotificationBar ? "flex" : "none" }}
-          >
-            <div className="notification_header_title">Notification</div>
-            <div className="notification_child_container">No notifications</div>
-            <div className="notif-message">See all</div>
+
+
+
+          <div className="notification_container" style={{ display: openNotificationBar ? "flex" : "none" }}>
+                <div className="notification_header_title">Notification</div>
+                <div className="notification_child_container">No notifications</div>
           </div>
+
+
+
 
           <div className="profile_btn" onClick={toggleDropDown}>
             <img src={defaultPfp} alt="default_pfp" className="profile_img" />

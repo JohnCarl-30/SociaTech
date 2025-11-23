@@ -35,7 +35,7 @@ body {
   max-width: 53.5em;
   width: 100%;
   padding: 7em 4.5em 0 31.5em;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   
 }
 .post_container::-webkit-scrollbar {
@@ -104,8 +104,11 @@ body {
   flex-direction: column;
   padding: 1rem;
   gap: 1rem;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
 
-  margin: 1.5rem 0;
+  margin: 1rem 0;
 }
 .post_card_header {
   display: flex;
@@ -253,89 +256,177 @@ body {
   cursor: pointer;
 }
 
-.comment_backDrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(1px);
+@keyframes fbFadeIn {
+  from {
+    opacity: 0;
+  }
 
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fbSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fbCommentAppear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.commentModal_backDrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: fbFadeIn .2s ease-out;
   z-index: 9999;
+  padding: 20px;
 }
 
 .comment_modal {
-  background-color: white;
-  border-radius: 0.4rem;
-  width: 35em;
-  display: flex;
+  
   justify-content: center;
   flex-direction: column;
-  align-items: start;
-  max-height: 35em;
-  padding: 1.5rem;
-  gap: 1rem;
-
-  overflow-y: scroll;
+  
 }
-.comment_modal::-webkit-scrollbar {
-  display: none;
-}
+.commentModal_container{
+  width: 650px;
+  max-width: 95%;
+  height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+  animation: fbSlideUp .25s cubic-bezier(.08, .52, .52, 1);
+  overflow: hidden;
 
-.comment_modal .Comment_user_title {
-  position: fixed;
-  top: 8em;
-  left: 37em;
+}
+.commentModal_container>span {
+  padding: 14px 16px;
+  font-size: 17px;
+  font-weight: 600;
+  border-bottom: 1px solid #dadde1;
   text-align: center;
-  background-color: gray;
-  width: 20em;
+  background: #fff;
 }
-
-.comment_post_card {
-  width: 33em;
-  max-height: 35em;
-  border-radius: 0.8rem;
-
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  gap: 1rem;
-
-  margin: 1rem 0;
-
-  overflow-y: scroll;
-}
-.comment_post_card::-webkit-scrollbar {
-  display: none;
-}
-.comment_section_container {
-  width: 100%;
-  height: 5em;
-}
-
-.comment_textarea_container {
-  width: 92%;
-  max-height: 20em;
+.commentModal_post {
+  flex: 0 1 auto;
+  overflow-y: auto;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 18px;
+  /* margin-bottom: 10px; */
+  animation: .18s ease-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  width: auto;
   height: auto;
-  box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
-  border-radius: 0.4rem;
+  border: 1px solid #ccd0d5;
+
+
+
+}
+.commentModal_post::-webkit-scrollbar {
+  width: 8px;
+}
+.commentModal_post::-webkit-scrollbar-thumb {
+  background: #ccd0d5;
+  border-radius: 4px;
+}
+.commentModal_postHeader {
+  padding: 15px 16px;
+  border-bottom: 1px solid #dadde1;
+
   display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  margin: 0 auto;
+   align-items: center;
+  justify-content: space-between;
+}
+.commentModal_userInfo {
+  display: flex;
+  
+  align-items: center;
+  gap: 8px;
+}
+.commentModal_pfp {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
-.comment_action_container {
-  width: 100%;
 
-  display: flex;
-  flex-direction: row;
-  justify-content: end;
-  gap: 1rem;
+
+.commentModal_pfp img {
+    width: 100%;
+     height: 100%;
+  object-fit: cover;
+}
+.commentModal_username {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1c1e21;
+}
+
+.commentModal_date {
+  font-size: 12px;
+  color: #65676b;
+}
+
+.commentModal_category {
+  font-size: 12px;
+  color: #65676b;
+  margin-left: 6px;
+}
+
+/* three dotted menu */
+.commentModal_moreMenu {
+  position: relative;
+}
+
+.commentModal_moreBtn {
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+}
+
+.commentModal_moreBtn:hover {
+  background: #f0f2f5;
+}
+
+.commentModal_dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 150px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.commentModal_dropdownItem:hover {
+  background: #f0f2f5;
 }
 
 .comment_textarea_container textarea {
@@ -352,26 +443,642 @@ body {
 .comment_textarea_container textarea:focus {
   outline: none;
 }
-
-.comment_action_btn {
-  border-radius: 0.8rem;
-  border: none;
-  border: solid 2px black;
-  background-color: black;
-  color: white;
-  width: 7em;
-  font-weight: 700;
-  font-size: 0.9rem;
-  height: 2.25em;
-  
-  transition: all 150ms ease-in-out;
+.commentModal_title {
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1e21;
 }
-.comment_action_btn:hover {
-  background-color: white;
+
+/* post content*/
+.commentModal_content {
+  padding: 0 16px 12px;
+  font-size: 15px;
   color: black;
+}
+
+.commentModal_imageContainer {
+  padding: 0 16px 16px;
+}
+
+.commentModal_imageContainer img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+
+.commentModal_btnRow {
+  padding: 12px 16px;
+
+  display: flex;
+  gap: 8px;
+}
+.commentModal_commentBtn {
+  margin-left: auto;
+  background: black;
+  color: white;
+   border: none;
+    padding: 8px 16px;
+  border-radius: 999px;
   cursor: pointer;
 }
+.commentModal_upVote,
+.commentModal_downVote {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.commentModal_upVote.voted,
+.commentModal_downVote.voted {
+  background: black;
+  color: #fff;
+}
+.commentModal_commentSection {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: white;
+  border-top: 1px solid #dadde1;
+}
+.commentModal_commentSection::-webkit-scrollbar {
+  width: 6px;
+}
 
+.commentModal_commentSection::-webkit-scrollbar-thumb {
+  background: #ccd0d5;
+  border-radius: 3px;
+}
+.commentModal_commentItem {
+  background: whitesmoke;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  animation: .18s ease-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.commentModal_commentHeader {
+  display: flex;
+   align-items: center;
+  gap: 8px;
+}
+.commentModal_commentUsername {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1e21;
+}
+.commentModal_commentDate {
+  margin-left: auto;
+  font-size: 12px;
+  color: #65676b;
+}
+.commentModal_commentText {
+  font-size: 14px;
+  color: #1c1e21;
+  padding-left: 44px;
+  margin-top: -4px;
+}
+.commentModal_commentImage {
+  padding-left: 44px;
+  margin-top: 8px;
+}
+
+.commentModal_commentImage img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+}
+.commentModal_commentActions {
+  padding-left: 44px;
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.comment_up_vote_btn,
+.comment_down_vote_btn {
+  background: black;
+  color: white;
+   border: 1px solid #ccd0d5;
+  padding: 4px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.comment_reply_btn {
+  background: transparent;
+  color: black;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.comment_reply_btn:hover {
+  background: #f2f3f5;
+  color: white;
+}
+
+/* Edit/Delete buttons */
+.comment_edit_btn,
+.comment_delete_btn {
+  background: transparent;
+  color: black;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+   gap: 4px;
+  transition: all 0.2s ease;
+}
+.comment_edit_btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: blue;
+}
+.comment_delete_btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Comment sorting styles */
+.comment_sort_container {
+  display: flex;
+  align-items: center;
+   gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.3);
+}
+.comment_sort_label {
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.comment_sort_select {
+  padding: 6px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment_sort_select:hover {
+  border-color: hsl(var(--primary));
+}
+
+.comment_sort_select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
+}
+.undo_delete_banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff3cd;
+  border-left: 4px solid whitesmoke;
+  margin: 12px 16px;
+  border-radius: 4px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.undo_delete_banner span {
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+}
+.undo_delete_btn {
+  background: black;
+  color: whitesmoke;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.undo_delete_btn:hover {
+  background: black;
+  transform: scale(1.05);
+}
+.comment_edit_container {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.comment_edit_textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 14px;
+  border: 1px solid #ccd0d5;
+  border-radius: 18px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  margin-bottom: 8px;
+  background: white;
+  transition: border 0.15s;
+}
+
+.comment_edit_textarea:focus {
+  outline: none;
+  border-color: black;
+  background: white;
+}
+
+.comment_edit_actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.comment_edit_cancel_btn,
+.comment_edit_save_btn {
+  padding: 8px 16px;
+  border: none;
+   border-radius: 8px;
+  cursor: pointer;
+   font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.comment_edit_cancel_btn {
+  background-color: #f0f2f5;
+  color: #374151;
+}
+.comment_edit_cancel_btn:hover {
+  background-color: #e4e6eb;
+}
+
+.comment_edit_save_btn {
+  background-color: black;
+  color: white;
+}
+
+.comment_edit_save_btn:hover {
+  background-color: black;
+}
+.commentModal_inputContainer {
+  padding: 12px 16px;
+  background: #fff;
+  border-top: 1px solid #dadde1;
+}
+
+.commentModal_inputContainer textarea {
+  width: 96%;
+  background: #f0f2f5;
+  /* d ko pa alam ano maganda color para dito*/
+  border: 1px solid #ccd0d5;
+  border-radius: 18px;
+  padding: 10px 14px;
+  font-size: 14px;
+  resize: none;
+  transition: border .15s;
+}
+
+.commentModal_inputContainer textarea:focus {
+  outline: none;
+  background: white;
+  /*pag mag ccomment ka mag iiba yung color ng background para maangas*/
+  border-color: black;
+}
+
+/* Action buttons */
+.commentModal_actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/*upload button sa write a comment*/
+.commentModal_uploadBtn {
+  width: 40px;
+  height: 40px;
+  background: #f0f2f5;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-left: auto;
+}
+.commentModal_uploadBtn:hover {
+  background: lightgray;
+}
+.commentModal_actionBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+.commentModal_actionBtn:first-of-type {
+  background: #d4d6d9;
+  color: black;
+}
+/*comment btn sa write comment*/
+.commentModal_actionBtn:last-of-type {
+  background: black;
+  color: #fff;
+}
+
+
+@media (max-width: 768px) {
+  .commentModal_container {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .commentModal_inputContainer textarea {
+    font-size: 13px;
+  }
+}
+
+.comment_image_preview_container {
+  position: relative;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.comment_image_preview {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.remove_comment_image_btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.undo_delete_banner {
+  background-color: #333;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+}
+.undo_delete_btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.undo_delete_btn:hover {
+  background-color: #45a049;
+}
+
+.editPost_modalContent {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.editPost_formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.editPost_formGroup label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1c1e21;
+}
+
+.editPost_input,
+.editPost_textarea,
+.editPost_select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #dadde1;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.editPost_input:focus,
+.editPost_textarea:focus,
+.editPost_select:focus {
+  outline: none;
+  border-color: #1877f2;
+  box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.1);
+}
+
+.editPost_textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.editPost_imagePreview {
+  position: relative;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dadde1;
+}
+
+.editPost_imagePreview img {
+  width: 100%;
+  display: block;
+}
+
+.editPost_removeImageBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editPost_removeImageBtn:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.editPost_uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.25rem;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.editPost_uploadBtn:hover {
+  background-color: #e4e6eb;
+}
+
+.editPost_actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: .2rem 1.5rem;
+  background-color: white;
+}
+
+.editPost_cancelBtn,
+.editPost_updateBtn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editPost_cancelBtn {
+  background-color: #d4d6d9;
+  color: black;
+}
+
+.editPost_cancelBtn:hover {
+  background-color: #d8dadf;
+}
+
+.editPost_updateBtn {
+  background-color: black;
+  color: white;
+}
+  .editPost_updateBtn:hover {
+  background-color: #166fe5;
+}
+
+.deleteConfirm_modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  padding: 2rem;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+}
+
+.deleteConfirm_header {
+  display: flex;
+   align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.deleteConfirm_header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1c1e21;
+}
+
+.deleteConfirm_message {
+  color: #65676b;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.deleteConfirm_postPreview {
+  background-color: #f0f2f5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.deleteConfirm_postPreview strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #1c1e21;
+}
+
+.deleteConfirm_postPreview p {
+  margin: 0;
+  color: #65676b;
+  font-size: 0.9rem;
+}
+
+.deleteConfirm_actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.deleteConfirm_cancelBtn,
+.deleteConfirm_deleteBtn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deleteConfirm_cancelBtn {
+  background-color: #e4e6eb;
+  color: #1c1e21;
+}
+
+.deleteConfirm_cancelBtn:hover {
+  background-color: #d8dadf;
+}
+
+.deleteConfirm_deleteBtn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.deleteConfirm_deleteBtn:hover {
+  background-color: #b91c1c;
+}
 
 .otherUserProfile_parent_container{
      position: fixed;
