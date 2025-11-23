@@ -34,7 +34,7 @@ export default function Homepage() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const textareaRef = useRef(null);
+
   const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -213,7 +213,7 @@ export default function Homepage() {
     }));
 
     let voteTypeToBackend =
-      newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+      newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : -1;
 
     try {
       const res = await fetch(

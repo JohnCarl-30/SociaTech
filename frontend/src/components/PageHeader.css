@@ -146,35 +146,32 @@
   cursor: pointer;
 }
 
-
-.notification_container{
+.notification_container {
   position: fixed;
   top: 3.5rem;
   right: 5rem;
   width: 25em;
   height: 15em;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  border-radius: .4rem;
+  border-radius: 0.4rem;
   background-color: white;
-
-
 }
 
-.notification_header_title{
+.notification_header_title {
   position: absolute;
   /* border: solid 1px black; */
   width: 96%;
   height: 2em;
   z-index: 200;
   font-weight: 700;
-  padding: .4rem;
+  padding: 0.4rem;
 }
-.notification_child_container{
-  padding: .5rem;
+.notification_child_container {
+  padding: 0.5rem;
   margin-top: 2.5em;
   width: 99%;
   overflow-y: scroll;
 }
-.notification_child_container::-webkit-scrollbar{
+.notification_child_container::-webkit-scrollbar {
   display: none;
 }
