@@ -7,21 +7,18 @@ header('Content-Type: application/json');
 
 require_once '../config/database.php';
 
-// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     echo json_encode(['success' => true, 'message' => 'OPTIONS ok']);
     exit;
 }
 
 try {
-    // Initialize Database and get PDO connection
     $database = new Database();
     $db = $database->getConnection();
     if (!$db) {
         throw new Exception('Failed to connect to database');
     }
 
-    // Get input data
     $data = json_decode(file_get_contents("php://input"), true);
     if (!$data) {
         throw new Exception('No JSON received');
@@ -37,21 +34,18 @@ try {
 
     $voteColumn = $vote_type == 1 ? "up" : "down";
 
-    // Check existing vote
     $stmt = $db->prepare("SELECT vote_type FROM postvote WHERE post_id=:post AND user_id=:user");
     $stmt->execute([':post' => $post_id, ':user' => $user_id]);
     $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existing) {
-        // NEW VOTE
+
         $stmt = $db->prepare("INSERT INTO postvote (user_id, post_id, vote_type) VALUES (?, ?, ?)");
         $stmt->execute([$user_id, $post_id, $vote_type]);
 
         $stmt = $db->prepare("UPDATE post SET {$voteColumn}_tally_post = {$voteColumn}_tally_post + 1 WHERE post_id=:post");
         $stmt->execute([':post' => $post_id]);
-
     } else if ($existing['vote_type'] == $vote_type) {
-        // REMOVE VOTE
         $stmt = $db->prepare("DELETE FROM postvote WHERE user_id=:user AND post_id=:post");
         $stmt->execute([':user' => $user_id, ':post' => $post_id]);
 
@@ -59,12 +53,9 @@ try {
         $stmt->execute([':post' => $post_id]);
 
     } else {
-        // SWITCH VOTE
-        $oldColumn = $existing['vote_type'] == 1 ? "up" : "down";
 
         $stmt = $db->prepare("UPDATE postvote SET vote_type=:vote WHERE user_id=:user AND post_id=:post");
         $stmt->execute([':vote' => $vote_type, ':user' => $user_id, ':post' => $post_id]);
-
         $stmt = $db->prepare("
             UPDATE post
             SET {$oldColumn}_tally_post = {$oldColumn}_tally_post - 1,
@@ -74,12 +65,9 @@ try {
         $stmt->execute([':post' => $post_id]);
     }
 
-    // SUCCESS RESPONSE
     echo json_encode(['success' => true]);
 
 } catch (Exception $e) {
-    // ALWAYS return JSON on error
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
-
