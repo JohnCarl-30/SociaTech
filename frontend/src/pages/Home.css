@@ -98,6 +98,7 @@ body {
 
 .post_card {
   width: 100%;
+ 
   border-radius: 0.8rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   display: flex;
@@ -107,8 +108,9 @@ body {
   white-space: normal;
   word-wrap: break-word;
   word-break: break-word;
+  
 
-  margin: 1rem 0;
+  margin: 1.5em auto;
 }
 .post_card_header {
   display: flex;
@@ -215,9 +217,13 @@ body {
 }
 .post_card_img {
   width: 100%;
+  
 }
 .post_card_img img {
   width: 100%;
+  border-radius: 1rem;
+  
+
 }
 .postCard_btn_containers {
   display: flex;

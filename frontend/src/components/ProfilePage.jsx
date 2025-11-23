@@ -1,5 +1,5 @@
 import "./ProfilePage.css";
-import { X } from "lucide-react";
+import { X,Search } from "lucide-react";
 import pfpImage from "../assets/deault_pfp.png";
 import SamplePost from "../assets/samplePost.png";
 import { useState, useEffect } from "react";
@@ -68,7 +68,12 @@ export default function ProfilePage({ style, closeProfilePage }) {
               <img src={SamplePost} alt="" className="samplePost" />
             </div>)}
             {isOpenPage=='saved'&&(<div className="profilePage_savePost_Container">
-              <div>Saved Post</div>
+              <div className="savePost_header">
+                <div className="profilePage_savePost_title">Saved Post</div>
+                <div className="savedPost_searchBar_container"><Search/><input type="text"  className="savedPost_searchBar_field" placeholder="Search"/></div>
+              </div>
+              <div></div>
+
             </div>)}
             <div className="profilePage_achievements_Container">
               <div>Achievements</div>

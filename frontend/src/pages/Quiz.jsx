@@ -19,6 +19,8 @@ import { arQuizData } from "../../data/arQuizData";
 
 import QuizCard from "../components/QuizCard";
 import QuizNav from "../components/QuizNav";
+import DraftPage from "../components/DraftPage.jsx";
+import HelpPage from "../components/HelpPage.jsx";
 
 export default function Quiz(){
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -30,6 +32,17 @@ export default function Quiz(){
   const [openQuiz, setOpenQuiz] = useState(false);
   const [quizTitle, setQuizTitle] = useState('');
   const [quizList, setQuizList] = useState([]);
+   const [openDraftPage, cycleOpenDraftPage] = useCycle(false,true);
+  const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true);
+
+  const handleOpenDraftPage = ()=>{
+    cycleOpenDraftPage();
+    setIsDropDownOpen(false);
+  }
+  const handleOpenHelpPage = ()=>{
+    cycleOpenHelpPage();
+    setIsDropDownOpen(false);
+  }
 
 
   const handleQuiz =(quizData,quizTitle)=>{
@@ -76,7 +89,7 @@ export default function Quiz(){
             <div className="quizPage_parent_container">
                 <PageHeader
                         isOnCreatePost={false}
-                        isOnSearchBar={true}
+                        isOnSearchBar={false}
                         // onPostCreated={fetchPost}
                         isDropDownOpen={isDropDownOpen}
                         toggleDropDown={toggleDropDown}
@@ -84,12 +97,17 @@ export default function Quiz(){
                         openSetting={openSetting}
                         openNotificationBar={isNotificationBarOpen}
                         closeNotificationBar={()=>cycleNotificationBarOpen()}
+                        openDraftPage={handleOpenDraftPage}
+                        openHelpPage={handleOpenHelpPage}
                         
                       />
                        <ProfilePage
             style={isProfilePageOpen ? "flex" : "none"}
             closeProfilePage={closeProfilePage}
           />
+           <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={cycleOpenDraftPage}/>
+
+                      <HelpPage openPage={openHelpPage} closePage={cycleOpenHelpPage}/>
           <Settings style={isSettingOpen ? 'flex' : 'none'}
           closeSetting={closeSetting}/>
                       <div className="quizPage_body_container">

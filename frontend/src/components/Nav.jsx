@@ -1,4 +1,4 @@
-import { House, Crown, Brain } from "lucide-react";
+import { House, Crown, Brain,ShieldUser  } from "lucide-react";
 import "./Nav.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -32,6 +32,12 @@ export default function Nav() {
                     onClick={() => navigate("/quiz")}
                 >
                     <Brain /> Quizes
+                </div>
+                <div 
+                    className={`nav_child nav_child${isActive('/admin')}`}
+                    onClick={() => navigate("/admin")}
+                >
+                   <ShieldUser /> Admin Panel
                 </div>
             </div>
         </>

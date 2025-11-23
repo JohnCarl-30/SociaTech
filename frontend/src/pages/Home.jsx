@@ -23,7 +23,9 @@ import pfpImage from "../assets/deault_pfp.png";
 
 import Settings from "../components/Settings.jsx";
 import TrippleDots from "../assets/moreBtn.png"
-
+import DraftPage from "../components/DraftPage.jsx";
+import HelpPage from "../components/HelpPage.jsx";
+import AdminPanel from "./AdminPanel.jsx";
 
 export default function Homepage() {
   const [posts, setPosts] = useState([]);
@@ -65,6 +67,8 @@ const [commentUpTally, setCommentUpTally] = useState({});
   const [editPostImagePreview, setEditPostImagePreview] = useState("");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
+  const [openDraftPage, cycleOpenDraftPage] = useCycle(false,true);
+  const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true)
 
   
 
@@ -127,6 +131,14 @@ const [commentUpTally, setCommentUpTally] = useState({});
     setIsSettingOpen(true);
     setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
+  const handleOpenDraftPage = ()=>{
+    cycleOpenDraftPage();
+    setIsDropDownOpen(false);
+  }
+  const handleOpenHelpPage = ()=>{
+    cycleOpenHelpPage();
+    setIsDropDownOpen(false);
+  }
   const closeProfilePage = () => setIsProfilePageOpen(false);
   const closeSetting=()=> setIsSettingOpen(false);
 
@@ -676,6 +688,9 @@ const [commentUpTally, setCommentUpTally] = useState({});
 
   return (
     <>
+    
+
+
     <div className="home_container">
       <PageHeader
         isOnCreatePost={true}
@@ -687,6 +702,8 @@ const [commentUpTally, setCommentUpTally] = useState({});
         openSetting={openSetting}
         openNotificationBar={isNotificationBarOpen}
         closeNotificationBar={()=>cycleNotificationBarOpen()}
+        openDraftPage={handleOpenDraftPage}
+        openHelpPage={handleOpenHelpPage}
         
       />
       <div className="page_body">
@@ -700,6 +717,9 @@ const [commentUpTally, setCommentUpTally] = useState({});
             style={isProfilePageOpen ? "flex" : "none"}
             closeProfilePage={closeProfilePage}
           />
+           <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={cycleOpenDraftPage}/>
+
+            <HelpPage openPage={openHelpPage} closePage={cycleOpenHelpPage}/>
           <Settings style={isSettingOpen ? 'flex' : 'none'}
           closeSetting={closeSetting}/>
           <div className="post_container">
@@ -1311,6 +1331,8 @@ const [commentUpTally, setCommentUpTally] = useState({});
                             <div></div>
                           </div>
                       </div>
+
+                     
 
                         
   </>);

@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
-import { useEffect } from "react";
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
 import defaultPfp from "../assets/deault_pfp.png";
 
@@ -27,7 +26,9 @@ export default function PageHeader({
   openProfilePage,
   openSetting,
   openNotificationBar,
-  closeNotificationBar
+  closeNotificationBar,
+  openDraftPage,
+  openHelpPage
 
 }) {
   const navigate = useNavigate();
@@ -108,7 +109,7 @@ export default function PageHeader({
           <UserRound />
           View Profile
         </button>
-        <button className="dropDown_btn">
+        <button className="dropDown_btn" onClick={openDraftPage}>
           <FolderOpen />
           Drafts
         </button>
@@ -116,7 +117,7 @@ export default function PageHeader({
           <Settings />
           Settings
         </button>
-        <button className="dropDown_btn">
+        <button className="dropDown_btn" onClick={openHelpPage}>
           <HandHelping />
           Help
         </button>
