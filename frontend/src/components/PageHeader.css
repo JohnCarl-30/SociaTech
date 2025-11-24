@@ -156,7 +156,7 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   border-radius: .4rem;
   background-color: white;
-
+  z-index: 9999;
 
 }
 

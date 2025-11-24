@@ -1,0 +1,162 @@
+.adminPanel_parent_container{
+ width: 100%;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+.adminPanel_child_container{    
+   display: flex;
+  flex-direction: row;
+}
+.adminPanel_body{
+    position: absolute;
+    top: 3.5rem;
+    right: 0;
+ padding: 1.5rem 3rem;
+
+  width: 77%;
+  height: calc(100vh - 6.6em);
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  /* border: solid 1px red; */
+  gap: 1rem;
+  
+}
+
+.adminPanel_title{
+    font-weight: 700;
+    font-size: 1.5rem;
+    width: 100%;
+}
+.adminPanel_dashboard_container{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  
+width: 100%;
+}
+.adminPanel_dashboard{
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  border-radius: .4rem;
+}
+.adminPanel_dashboard svg{
+  height: 100%;
+  width: 3.5rem;
+  font-size: 2rem;
+}
+.dashboard_data_container{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.dashboard_data_title{
+  font-weight: 700;
+}
+.dashboard_data{
+  font-weight: 700;
+}
+.adminPanel_filter_container{
+width: 94.5%;
+height: 3.5rem;
+padding: 0 2rem;
+display: flex;
+justify-content: space-between;
+align-items: center;
+box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+border-radius: .8rem;
+}
+.filterTab_container{
+ display: flex;
+ gap: 1rem;
+
+}
+.filterTab_btn{
+  border-radius: .4rem;
+  background-color: black;
+  color: white;
+  width: fit-content;
+  padding: .25rem 1rem;
+  font-weight: 500;
+   border: solid 2.5px black;
+  transition: all 150ms ease-in-out;
+}
+.filterTab_btn:hover{
+ 
+  cursor: pointer;
+  background-color: white;
+  color: black;
+}
+.filterTab_searchBar{
+  display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    border-radius: .8rem;
+    border: solid 3px black;
+    padding: 0 .25rem;
+    height: 60%;
+}
+.filterTab_searchBar svg{
+  height: 80%;
+}
+.filterTab_searchField,.filterTab_searchField:focus{
+ background-color: transparent;
+    border: none;
+    padding: 0 .5rem;
+    outline: none;
+    
+}
+.adminPanel_reportTable_container{
+  
+width: 95.5%;
+border-radius: .4rem;
+padding: 1.5rem;
+overflow-y: scroll;
+
+box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+}
+.adminPanel_reportTable_container::-webkit-scrollbar{
+  display: none;
+}
+.reportTable_title{
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.reportTable thead th {
+  padding: 0.8rem;
+  text-align: start;
+  font-weight: 700;
+  background-color: white;
+  border-bottom: 2px solid #f0f0f0; /* optional */
+}
+
+.reportTable tbody tr {
+  border-bottom: 1px solid #eee; /* line divider */
+}
+
+.reportTable td {
+  padding: 0.8rem;
+}
+
+/* Optional hover effect */
+.reportTable tbody tr:hover {
+  background-color: #fafafa;
+  transition: 0.2s;
+}
