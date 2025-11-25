@@ -68,7 +68,15 @@ const [commentUpTally, setCommentUpTally] = useState({});
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [openDraftPage, cycleOpenDraftPage] = useCycle(false,true);
-  const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true)
+  const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true);
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedOtherUser, setSelectedOtherUser] = useState(null);
+  const [otherUserProfile, setOtherUserProfile] = useState(null);
+  const [otherUserPosts, setOtherUserPosts] = useState([]);
+  const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   
 
@@ -94,6 +102,23 @@ const [commentUpTally, setCommentUpTally] = useState({});
       }
     };
   }, [isCommentModalOpen, selectedPost?.post_id, commentSortOption]);
+
+  // Poll for follow data updates
+  useEffect(() => {
+    let followPollInterval;
+
+    if (isOtherUserProfileOpen && (selectedOtherUser?.user_id || otherUserProfile?.user_id)) {
+      followPollInterval = setInterval(() => {
+        fetchFollowData(selectedOtherUser?.user_id || otherUserProfile?.user_id);
+      }, 5000);
+    }
+
+    return () => {
+      if (followPollInterval) {
+        clearInterval(followPollInterval);
+      }
+    };
+  }, [isOtherUserProfileOpen, selectedOtherUser?.user_id, otherUserProfile?.user_id]);
 
   const handleCommentTextChange = (e) => {
     setCommentText(e.target.value);
@@ -655,13 +680,201 @@ const [commentUpTally, setCommentUpTally] = useState({});
     resetCommentFields();
   };
 
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
+
+  const handleUserClick = (userData) => {
+    setSelectedOtherUser(userData);
+    setIsOtherUserProfileOpen(true);
+  };
+
+  // Fetch other user's profile
+  const fetchOtherUserProfile = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/handlefetchOtherUserProfile.php?user_id=${userId}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setOtherUserProfile(data.otherUserInfo);
+      } else {
+        console.log("Failed to fetch user profile:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
+  // Fetch other user's posts
+  const fetchOtherUserPosts = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${userId}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setOtherUserPosts(data.posts || []);
+      } else {
+        console.log("Failed to fetch user posts:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
+
+  // Fetch follow data
+  const fetchFollowData = async (targetUserId) => {
+    try {
+      const [followersRes, followingRes] = await Promise.all([
+        fetch(`http://localhost/SociaTech/backend/auth/handleOtherUserFollowers.php?user_id=${targetUserId}`),
+        fetch(`http://localhost/SociaTech/backend/auth/handleOtherUserFollowing.php?user_id=${targetUserId}`)
+      ]);
+
+      const followersData = await followersRes.json();
+      const followingData = await followingRes.json();
+
+      if (followersData.success && followersData.followers) {
+        setFollowerCount(followersData.followers.length);
+        const following = followersData.followers.some(
+          (follower) => follower.follower_id == user_id
+        );
+        setIsFollowing(following);
+      }
+
+      if (followingData.success && followingData.following) {
+        setFollowingCount(followingData.following.length);
+      }
+    } catch (error) {
+      console.error("Error fetching follow data:", error);
+    }
+  };
+
+// Handle follow
+const handleFollow = async () => {
+  if (!user_id) {
+    alert("You must be logged in to follow users");
+    return;
+  }
+
+  // 🔹 Add this console log for debugging
+  console.log("Follow request data:", {
+    user_id: user_id,
+    followed_id: selectedOtherUser?.user_id || otherUserProfile?.user_id
+  });
+
+  try {
+    const formData = new FormData();
+    formData.append("user_id", user_id);
+    formData.append("followed_id", selectedOtherUser?.user_id || otherUserProfile?.user_id);
+
+    const response = await fetch("http://localhost/SociaTech/backend/auth/handleFollowUser.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setIsFollowing(true);
+      setFollowerCount((prev) => prev + 1);
+      alert("Followed successfully!");
+    } else {
+      alert(data.message || "Failed to follow user");
+    }
+  } catch (error) {
+    console.error("Error following user:", error);
+    alert("An error occurred while following");
+  }
+};
 
 
-  // Filter posts based on selected category
-  const filteredPosts =
-    selectedCategory === "All"
-      ? posts
-      : posts.filter((post) => post.post_category === selectedCategory);
+  // Handle unfollow
+ const handleUnfollow = async () => {
+  if (!user_id) {
+    alert("You must be logged in to unfollow users");
+    return;
+  }
+
+  const followedId = selectedOtherUser?.user_id || otherUserProfile?.user_id;
+  if (!followedId) {
+    alert("No user selected to unfollow!");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("user_id", user_id);
+    formData.append("followed_id", followedId); // only once!
+
+    const response = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleunFollowUser.php",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      setIsFollowing(false);
+      setFollowerCount((prev) => Math.max(0, prev - 1));
+      alert("Unfollowed successfully!");
+    } else {
+      alert(data.message || "Failed to unfollow user");
+    }
+  } catch (error) {
+    console.error("Error unfollowing user:", error);
+    alert("An error occurred while unfollowing");
+  }
+};
+
+
+  // Handle username click in posts
+  const handleUsernameClick = async (userId, userData) => {
+    setIsLoadingOtherUserData(true);
+    setSelectedOtherUser(userData);
+    setIsOtherUserProfileOpen(true);
+    setOtherUserProfile(null);
+    setOtherUserPosts([]);
+    setIsFollowing(false);
+    setFollowerCount(0);
+    setFollowingCount(0);
+    
+    // Fetch profile, posts, and follow data
+    await Promise.all([
+      fetchOtherUserProfile(userId),
+      fetchOtherUserPosts(userId),
+      fetchFollowData(userId)
+    ]);
+    
+    setIsLoadingOtherUserData(false);
+  };
+
+  const handlePostClick = (post) => {
+    openComments(post);
+  };
+
+  // Filter posts based on selected category AND search results
+  const filteredPosts = (() => {
+    let filtered = posts;
+
+    // First filter by category
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter((post) => post.post_category === selectedCategory);
+    }
+
+    // Then filter by search results if there are any
+    if (searchResults.length > 0) {
+      const searchPostIds = searchResults.map(r => r.post_id);
+      filtered = filtered.filter((post) => searchPostIds.includes(post.post_id));
+    }
+
+    return filtered;
+  })();
 
       const timeAgo = (dateString) => {
     const now = new Date();
@@ -704,7 +917,9 @@ const [commentUpTally, setCommentUpTally] = useState({});
         closeNotificationBar={()=>cycleNotificationBarOpen()}
         openDraftPage={handleOpenDraftPage}
         openHelpPage={handleOpenHelpPage}
-        
+        onSearchResults={handleSearchResults}
+        onUserClick={handleUserClick}
+        onPostClick={handlePostClick}
       />
       <div className="page_body">
         <Nav currentPage="home" />
@@ -735,9 +950,15 @@ const [commentUpTally, setCommentUpTally] = useState({});
                   <div className="post_card_header">
                     <div className="header_user_container">
                       <div className="pfp_container">
-                        <img src={pfpImage} alt="user_pfp" />
+                        <img src={post.profile_image} alt="user_pfp" />
                       </div>
-                      <div className="post_username">{post.username}</div>
+                      <div 
+                        className="post_username" 
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleUsernameClick(post.user_id, post)}
+                      >
+                        {post.username}
+                      </div>
                       <div className="post_date">{timeAgo(post.post_date)}</div>
                       <div className="post_category">{post.post_category}</div>
                     </div>
@@ -850,9 +1071,15 @@ const [commentUpTally, setCommentUpTally] = useState({});
                                <div className="commentModal_postHeader">
                                  <div className="commentModal_userInfo">
                                    <div className="commentModal_pfp">
-                                     <img src={pfpImage} alt="user_pfp" />
+                                     <img src={selectedPost.profile_image} alt="user_pfp" />
                                    </div>
-                                  <div className="commentModal_username">{selectedPost.username}</div>
+                                  <div 
+                                    className="commentModal_username" 
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => handleUsernameClick(selectedPost.user_id, selectedPost)}
+                                  >
+                                    {selectedPost.username}
+                                  </div>
                                   <div className="commentModal_date">{selectedPost.post_date}</div>
                                   <div className="commentModal_category">{selectedPost.post_category}</div>
                                  </div>
@@ -983,7 +1210,11 @@ const [commentUpTally, setCommentUpTally] = useState({});
                                 <div className="commentModal_pfp">
                                   <img src={comment.profile_image || pfpImage} alt="commenter_pfp" />
                                 </div>
-                                <div className="commentModal_commentUsername">
+                                <div 
+                                  className="commentModal_commentUsername"
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => handleUsernameClick(comment.user_id, comment)}
+                                >
                                   {comment.username || "Anonymous"}
                                 </div>
 
@@ -1292,44 +1523,112 @@ const [commentUpTally, setCommentUpTally] = useState({});
                       
                       <div className="otherUserProfile_parent_container" style={isOtherUserProfileOpen?{display:'flex'}:{display:'none'}}>
                           <button className="otherUserProfile_close_btn" onClick={()=>setIsOtherUserProfileOpen(false)}><X className="crossSvg"/></button>
-                          <div className="otherUserProfile_header_container">
+                          
+                          {isLoadingOtherUserData ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
+                              <div>Loading user data...</div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="otherUserProfile_header_container">
                                 <div className="otherUserProfile_detail_container">
-                                  <img src={pfpImage} alt=""  className="otherUserPfp"/>
+                                  <img src={otherUserProfile?.profile_image || selectedOtherUser?.profile_image || pfpImage} alt=""  className="otherUserPfp"/>
                                   <div className="userNameBio_container">
-                                    <div className="otherUserProfile_username">Username</div>
-                                    <div className="otherUserProfile_bio">bio</div>
+                                    <div className="otherUserProfile_username">@{otherUserProfile?.username || selectedOtherUser?.username || "Username"}</div>
+                                    {(otherUserProfile?.full_name || selectedOtherUser?.full_name) && (
+                                      <div className="otherUserProfile_fullname">{otherUserProfile?.full_name || selectedOtherUser?.full_name}</div>
+                                    )}
+                                    <div className="otherUserProfile_bio">{otherUserProfile?.bio || selectedOtherUser?.bio || "No bio available"}</div>
                                   </div>
                                 </div>
                                 <div className="otherUserProfile_stats_container">
                                     <div className="otherUserProfile_stats_childContainer">
-                                        <div>0</div>
+                                        <div>{otherUserPosts.length}</div>
                                         <div>Posts</div>
                                     </div>
                                     <div className="otherUserProfile_stats_childContainer">
-                                        <div>0</div>
+                                        <div>{followingCount}</div>
                                         <div>Following</div>
                                     </div>
                                     <div className="otherUserProfile_stats_childContainer">
-                                        <div>0</div>
+                                        <div>{followerCount}</div>
                                         <div>Followers</div>
                                     </div>
-                            </div>
-                            <button className="otherUserProfile_more_btn"onClick={()=>cycleOpenOtherUserMoreContainer()} ><img src={TrippleDots} alt="" /></button>
-                            <div className="otherUserProfile_more_container" style={openOtherUserMoreContainer?{display:'flex'}:{display:'none'}}>
-                              <div className="otherUserProfile_more_option"><Ban/>Block</div>
-                              <div className="otherUserProfile_more_option"><AlertCircle/>Report</div>
-                            </div>
-                          </div>
-                          <div className="followBtn_container">
-                            <div className="followBtn">Follow</div>
-                            
-                          </div>
-                          <div className="otherUserProfile_parent_postContainer">
-                            <div className="otherUserProfile_container_title">
-                                Posts
-                            </div>
-                            <div></div>
-                          </div>
+                                </div>
+                                <button className="otherUserProfile_more_btn" onClick={()=>cycleOpenOtherUserMoreContainer()}><img src={TrippleDots} alt="" /></button>
+                                <div className="otherUserProfile_more_container" style={openOtherUserMoreContainer?{display:'flex'}:{display:'none'}}>
+                                  <div className="otherUserProfile_more_option"><Ban/>Block</div>
+                                  <div className="otherUserProfile_more_option"><AlertCircle/>Report</div>
+                                </div>
+                              </div>
+                              
+                              <div className="followBtn_container">
+                                <div 
+                                  className="followBtn" 
+                                  onClick={isFollowing ? handleUnfollow : handleFollow}
+                                  style={{ 
+                                    cursor: 'pointer',
+                                    backgroundColor: isFollowing ? '#6c757d' : '#000',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                >
+                                  {isFollowing ? 'Unfollow' : 'Follow'}
+                                </div>
+                              </div>
+                              
+                              <div className="otherUserProfile_parent_postContainer">
+                                <div className="otherUserProfile_container_title">
+                                    Posts
+                                </div>
+                                <div className="otherUserProfile_posts_list">
+                                  {otherUserPosts.length === 0 ? (
+                                    <p style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
+                                      No posts yet
+                                    </p>
+                                  ) : (
+                                    otherUserPosts.map((post) => (
+                                      <div className="post_card" key={post.post_id} style={{ marginBottom: '1rem' }}>
+                                        <div className="post_card_header">
+                                          <div className="header_user_container">
+                                            <div className="pfp_container">
+                                              <img src={post.profile_image || pfpImage} alt="user_pfp" />
+                                            </div>
+                                            <div className="post_username">{post.username}</div>
+                                            <div className="post_date">{timeAgo(post.post_date)}</div>
+                                            <div className="post_category">{post.post_category}</div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="post_card_title">{post.post_title}</div>
+                                        {post.post_content && (
+                                          <div className="post_card_content">{post.post_content}</div>
+                                        )}
+                                        {post.post_image && (
+                                          <div className="post_card_img">
+                                            <img src={post.post_image} alt="post_image" />
+                                          </div>
+                                        )}
+                                        
+                                        <div className="postCard_btn_containers">
+                                          <button className="post_comment_btn" onClick={() => openComments(post)}>
+                                            Comment
+                                          </button>
+                                          <button className="up_vote_btn">
+                                            <ArrowBigUp />
+                                            {post.up_tally_post || 0}
+                                          </button>
+                                          <button className="down_vote_btn">
+                                            <ArrowBigDown />
+                                            {post.down_tally_post || 0}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
                       </div>
 
                      
