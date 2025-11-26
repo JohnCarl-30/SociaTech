@@ -1,5 +1,6 @@
 import "./ProfilePage.css";
-import {  ArrowBigUp,
+import {
+  ArrowBigUp,
   ArrowBigDown,
   Bookmark,
   AlertCircle,
@@ -8,34 +9,83 @@ import {  ArrowBigUp,
   Ban,
   Edit,
   Trash2,
-  Search } from "lucide-react";
+  Search,
+} from "lucide-react";
 import pfpImage from "../assets/deault_pfp.png";
+
 import SamplePost from "../assets/samplePost.png";
 import { useState, useEffect } from "react";
 import { getUser } from "../utils/storage";
 export default function ProfilePage({ style, closeProfilePage }) {
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
-  const [isOpenPage, setOpenPage] = useState('post');
+  const [isOpenPage, setOpenPage] = useState("post");
+
+  // User stats state
   const [username, setUsername] = useState("");
   const [postCount, setPostCount] = useState("");
+  const [savedCount, setSavedCount] = useState(0);
   const [userPosts, setUserPosts] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [Achievements, setAchievements] = useState("");
   const [profileImage, setProfileImage] = useState(pfpImage);
   const [uploading, setUploading] = useState(false);
-  
+
   const user = getUser();
   const user_id = user?.id || null;
-  
-    const handleSaveProfilePhoto = async () => {
+
+  const fetchSavedPosts = async () => {
+    if (!user_id) return;
+
+    setLoadingSaved(true);
+    try {
+      const res = await fetch(
+        `http://localhost/SociaTech/backend/auth/getsavedPosts.php?user_id=${user_id}`
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setSavedPosts(data.posts || []);
+        setSavedCount(data.posts?.length || 0);
+      } else {
+        setSavedPosts([]);
+        setSavedCount(0);
+      }
+    } catch (err) {
+      console.log("Error fetching saved posts:", err);
+      setSavedPosts([]);
+      setSavedCount(0);
+    } finally {
+      setLoadingSaved(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpenPage === "saved") {
+      fetchSavedPosts();
+    } else if (user_id && savedCount === 0) {
+      // Fetch just the count on mount
+      fetch(
+        `http://localhost/SociaTech/backend/auth/getsavedPosts.php?user_id=${user_id}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setSavedCount(data.posts?.length || 0);
+          }
+        })
+        .catch((err) => console.log("Error fetching saved count:", err));
+    }
+  }, [isOpenPage, user_id]);
+
+  const handleSaveProfilePhoto = async () => {
     if (!image || !user_id) return;
-    
+
     setUploading(true);
     const formData = new FormData();
     formData.append("profile_image", image);
     formData.append("user_id", user_id);
-    
+
     try {
       const res = await fetch(
         "http://localhost/SociaTech/backend/auth/updateProfileImage.php",
@@ -45,14 +95,16 @@ export default function ProfilePage({ style, closeProfilePage }) {
         }
       );
       const data = await res.json();
-      
+
       if (data.success) {
         setProfileImage(data.profile_image);
         setImage(null);
         setImageURL(null);
         alert("Profile photo updated successfully!");
       } else {
-        alert("Failed to update profile photo: " + (data.message || "Unknown error"));
+        alert(
+          "Failed to update profile photo: " + (data.message || "Unknown error")
+        );
       }
     } catch (err) {
       console.log("Error uploading profile photo:", err);
@@ -62,8 +114,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
     }
   };
 
-
-    const timeAgo = (dateString) => {
+  const timeAgo = (dateString) => {
     const now = new Date();
     const past = new Date(dateString);
     const diff = Math.floor((now - past) / 1000); // seconds
@@ -86,21 +137,20 @@ export default function ProfilePage({ style, closeProfilePage }) {
     return "just now";
   };
 
-
   // Fetch user stats from backend
   useEffect(() => {
     const fetchUserStats = async () => {
       if (!user_id) return;
-      
+
       try {
         const res = await fetch(
           `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${user_id}`
         );
         const data = await res.json();
-        
+
         if (data.success) {
           setUsername(data.username || "Unknown User");
-          setPostCount(data.post_count || 0); 
+          setPostCount(data.post_count || 0);
           setAchievements(data.Achievements_count || 0);
           setProfileImage(data.profile_image || pfpImage);
         }
@@ -110,21 +160,21 @@ export default function ProfilePage({ style, closeProfilePage }) {
         setLoading(false);
       }
     };
-    
+
     fetchUserStats();
   }, [user_id]);
-  
+
   // Fetch user's posts
   useEffect(() => {
     const fetchUserPosts = async () => {
       if (!user_id) return;
-      
+
       try {
         const res = await fetch(
           `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${user_id}`
         );
         const data = await res.json();
-        
+
         if (data.success) {
           setUserPosts(data.posts || []);
         }
@@ -132,18 +182,15 @@ export default function ProfilePage({ style, closeProfilePage }) {
         console.log("Error fetching user posts:", err);
       }
     };
-    
+
     fetchUserPosts();
   }, [user_id]);
 
-  
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
     }
   };
-
- 
 
   useEffect(() => {
     if (!image) return;
@@ -163,80 +210,136 @@ export default function ProfilePage({ style, closeProfilePage }) {
           <div className="header_profile_container">
             <div className="pfp_username_container">
               <img src={profileImage} alt="" className="profilePic" />
-              <div className="userName_container">{loading ? "Loading..." : username}</div>
+              <div className="userName_container">
+                {loading ? "Loading..." : username}
+              </div>
             </div>
             <div className="profilePage_dashboard">
               <div className="dashBoard_container">
                 <div>{postCount}</div>
                 <div>Post</div>
               </div>
-               
+
+              <div className="dashBoard_container">
+                <div>{savedCount}</div>
+                <div>Saved</div>
+              </div>
               <div className="dashBoard_container">
                 <div>0</div>
                 <div>Followers</div>
               </div>
-               <div className="dashBoard_container">
+              <div className="dashBoard_container">
                 <div>0</div>
                 <div>Following</div>
               </div>
             </div>
           </div>
           <div className="profilePage_nav_container">
-            <button className="profilePage_nav_child" style={isOpenPage=='post'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('post')}>Post</button>
-            <button className="profilePage_nav_child"   style={isOpenPage=='saved'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('saved')}>Saved</button>
-            <button className="profilePage_nav_child" style={isOpenPage=='EditProfile'?{backgroundColor:'black',color:'white'}:{backgroundColor:'white',color:'black'}} onClick={()=>setOpenPage('EditProfile')}>Edit Profile</button>
+            <button
+              className="profilePage_nav_child"
+              style={
+                isOpenPage == "post"
+                  ? { backgroundColor: "black", color: "white" }
+                  : { backgroundColor: "white", color: "black" }
+              }
+              onClick={() => setOpenPage("post")}
+            >
+              Post
+            </button>
+            <button
+              className="profilePage_nav_child"
+              style={
+                isOpenPage == "saved"
+                  ? { backgroundColor: "black", color: "white" }
+                  : { backgroundColor: "white", color: "black" }
+              }
+              onClick={() => setOpenPage("saved")}
+            >
+              Saved
+            </button>
+            <button
+              className="profilePage_nav_child"
+              style={
+                isOpenPage == "EditProfile"
+                  ? { backgroundColor: "black", color: "white" }
+                  : { backgroundColor: "white", color: "black" }
+              }
+              onClick={() => setOpenPage("EditProfile")}
+            >
+              Edit Profile
+            </button>
           </div>
-          
+
           <div className="profilePage_child_container">
-            {isOpenPage=='post'&&(<div className="profilePage_post_container">
-            {userPosts.length > 0 ? (
-                userPosts.map((post) => (
-                   <div className="post_card" key={post.post_id} style={{ marginBottom: '1rem' }}>
-                                        <div className="post_card_header">
-                                          <div className="header_user_container">
-                                            <div className="pfp_container">
-                                              <img src={post.profile_image || pfpImage} alt="user_pfp" />
-                                            </div>
-                                            <div className="post_username">{post.username}</div>
-                                            <div className="post_date">{timeAgo(post.post_date)}</div>
-                                            <div className="post_category">{post.post_category}</div>
-                                          </div>
-                                        </div>
-                                        
-                                        <div className="post_card_title">{post.post_title}</div>
-                                        {post.post_content && (
-                                          <div className="post_card_content">{post.post_content}</div>
-                                        )}
-                                        {post.post_image && (
-                                          <div className="post_card_img">
-                                            <img src={post.post_image} alt="post_image" />
-                                          </div>
-                                        )}
-                                        
-                                        <div className="postCard_btn_containers">
-                                          <button className="post_comment_btn" /*onClick={() => openComments(post)}*/>
-                                            Comment
-                                          </button>
-                                          <button className="up_vote_btn">
-                                            <ArrowBigUp />
-                                            {post.up_tally_post || 0}
-                                          </button>
-                                          <button className="down_vote_btn">
-                                            <ArrowBigDown />
-                                            {post.down_tally_post || 0}
-                                          </button>
-                                        </div>
-                                      </div>
-                ))
-              ) : (
-                <div>No posts yet</div>
-              )}
-              </div>)}
-            {isOpenPage=='saved'&&(<div className="profilePage_savePost_title">Saved Post</div>)}
+            {isOpenPage == "post" && (
+              <div className="profilePage_post_container">
+                {userPosts.length > 0 ? (
+                  userPosts.map((post) => (
+                    <div
+                      className="post_card"
+                      key={post.post_id}
+                      style={{ marginBottom: "1rem" }}
+                    >
+                      <div className="post_card_header">
+                        <div className="header_user_container">
+                          <div className="pfp_container">
+                            <img
+                              src={post.profile_image || pfpImage}
+                              alt="user_pfp"
+                            />
+                          </div>
+                          <div className="post_username">{post.username}</div>
+                          <div className="post_date">
+                            {timeAgo(post.post_date)}
+                          </div>
+                          <div className="post_category">
+                            {post.post_category}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="post_card_title">{post.post_title}</div>
+                      {post.post_content && (
+                        <div className="post_card_content">
+                          {post.post_content}
+                        </div>
+                      )}
+                      {post.post_image && (
+                        <div className="post_card_img">
+                          <img src={post.post_image} alt="post_image" />
+                        </div>
+                      )}
+
+                      <div className="postCard_btn_containers">
+                        <button
+                          className="post_comment_btn" /*onClick={() => openComments(post)}*/
+                        >
+                          Comment
+                        </button>
+                        <button className="up_vote_btn">
+                          <ArrowBigUp />
+                          {post.up_tally_post || 0}
+                        </button>
+                        <button className="down_vote_btn">
+                          <ArrowBigDown />
+                          {post.down_tally_post || 0}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div>No posts yet</div>
+                )}
+              </div>
+            )}
+            {isOpenPage == "saved" && (
+              <div className="profilePage_savePost_title">Saved Post</div>
+            )}
             <div className="profilePage_achievements_Container">
               <div>Achievements</div>
             </div>
-            {isOpenPage=='EditProfile'&&(<div className="profilePage_editProfile_Container">
+            {isOpenPage == "EditProfile" && (
+              <div className="profilePage_editProfile_Container">
                 <div className="profilePage_childContainer_title">
                   Edit Profile
                 </div>
@@ -248,7 +351,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
                   />
 
                   <label className="change_pfp_btn" htmlFor="changePfp_field">
-                     {imageURL ? "Choose Different" : "Change Photo"}
+                    {imageURL ? "Choose Different" : "Change Photo"}
                   </label>
                   <input
                     id="changePfp_field"
@@ -258,11 +361,11 @@ export default function ProfilePage({ style, closeProfilePage }) {
                     onChange={handleImageUpload}
                   />
                   {imageURL && (
-                    <button 
-                      className="change_pfp_btn" 
+                    <button
+                      className="change_pfp_btn"
                       onClick={handleSaveProfilePhoto}
                       disabled={uploading}
-                      style={{ marginLeft: '1rem' }}
+                      style={{ marginLeft: "1rem" }}
                     >
                       {uploading ? "Saving..." : "Save Photo"}
                     </button>
@@ -289,7 +392,8 @@ export default function ProfilePage({ style, closeProfilePage }) {
                     <button className="changeProfile_btn">Change</button>
                   </div>
                 </div>
-            </div>)}
+              </div>
+            )}
           </div>
         </div>
         <button className="profilePage_close_btn" onClick={closeProfilePage}>

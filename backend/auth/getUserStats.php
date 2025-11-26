@@ -1,4 +1,4 @@
-<?php 
+<?php
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
@@ -49,10 +49,10 @@ try {
         'success' => true,
         'username' => $user['username'],
         'profile_image' => $user['profile_image'],
-        'post_count' => (int)($postData['post_count'] ?? 0),
+        'post_count' => (int) ($postData['post_count'] ?? 0),
     ]);
 
-} catch(Exception $e) {
+} catch (Exception $e) {
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage()

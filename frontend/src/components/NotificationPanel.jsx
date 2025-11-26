@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Check, Trash2, X } from "lucide-react";
+import { Bell, Check, X } from "lucide-react";
 import defaultPfp from "../assets/deault_pfp.png";
 import "./NotificationPanel.css";
 
@@ -107,23 +107,6 @@ export default function NotificationPanel({
     }
   };
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "comment":
-        return "💬";
-      case "upvote":
-        return "👍";
-      case "downvote":
-        return "👎";
-      case "reply":
-        return "↩️";
-      case "follow":
-        return "👤";
-      default:
-        return "🔔";
-    }
-  };
-
   const timeAgo = (dateString) => {
     const now = new Date();
     const past = new Date(dateString);
@@ -169,8 +152,18 @@ export default function NotificationPanel({
         <div className="notification_panel_header">
           <div className="notification_title_section">
             <h2>Notifications</h2>
+            {unreadCount > 0 && (
+              <span className="unread_badge">{unreadCount}</span>
+            )}
           </div>
           <div className="notification_actions">
+            {unreadCount > 0 && (
+              <button
+                className="mark_all_read_btn"
+                onClick={markAllAsRead}
+                title="Mark all as read"
+              ></button>
+            )}
             <button className="close_notification_btn" onClick={onClose}>
               <X size={20} />
             </button>
@@ -219,6 +212,10 @@ export default function NotificationPanel({
                           {timeAgo(notif.created_at)}
                         </span>
                       </div>
+
+                      {!notif.is_read && (
+                        <div className="notification_unread_dot"></div>
+                      )}
                     </div>
                   ))}
                 </>
@@ -256,42 +253,72 @@ export default function NotificationPanel({
                           {timeAgo(notif.created_at)}
                         </span>
                       </div>
+
+                      {!notif.is_read && (
+                        <div className="notification_unread_dot"></div>
+                      )}
                     </div>
                   ))}
                 </>
               )}
 
               {/* Older Notifications */}
-              {olderNotifs.length > 0 &&
-                olderNotifs.map((notif) => (
-                  <div
-                    key={notif.notification_id}
-                    className={`notification_item ${
-                      notif.is_read ? "" : "unread"
-                    }`}
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <div className="notification_icon">
-                      <img
-                        src={notif.actor_profile_image || defaultPfp}
-                        alt="user"
-                        className="notification_avatar"
-                      />
-                    </div>
-
-                    <div className="notification_content">
-                      <p className="notification_message">
-                        <strong>{notif.actor_username}</strong> {notif.message}
-                      </p>
-                      <span className="notification_time">
-                        {timeAgo(notif.created_at)}
+              {olderNotifs.length > 0 && (
+                <>
+                  {(newNotifs.length > 0 || todayNotifs.length > 0) && (
+                    <div className="notification_section_header">
+                      <span className="notification_section_title">
+                        Earlier
                       </span>
                     </div>
-                  </div>
-                ))}
+                  )}
+                  {olderNotifs.map((notif) => (
+                    <div
+                      key={notif.notification_id}
+                      className={`notification_item ${
+                        notif.is_read ? "" : "unread"
+                      }`}
+                      onClick={() => handleNotificationClick(notif)}
+                    >
+                      <div className="notification_icon">
+                        <img
+                          src={notif.actor_profile_image || defaultPfp}
+                          alt="user"
+                          className="notification_avatar"
+                        />
+                      </div>
+
+                      <div className="notification_content">
+                        <p className="notification_message">
+                          <strong>{notif.actor_username}</strong>{" "}
+                          {notif.message}
+                        </p>
+                        <span className="notification_time">
+                          {timeAgo(notif.created_at)}
+                        </span>
+                      </div>
+
+                      {!notif.is_read && (
+                        <div className="notification_unread_dot"></div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
             </>
           )}
         </div>
+
+        {notifications.length > 0 && unreadCount > 0 && (
+          <div className="notification_footer">
+            <button
+              className="mark_all_read_footer_btn"
+              onClick={markAllAsRead}
+            >
+              Mark all as read
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

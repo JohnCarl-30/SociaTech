@@ -15,30 +15,36 @@ require_once '../config/database.php';
 try {
     $user_id = $_GET['user_id'] ?? null;
 
-    $db = (new Database())->getConnection();
-
-    if ($user_id) {
-        // Fetch posts for specific user from "post" table
-        $stmt = $db->prepare("
-            SELECT p.*, u.username, u.profile_image
-            FROM post p
-            JOIN users u ON p.user_id = u.user_id
-            WHERE p.user_id = :user_id
-            ORDER BY p.post_date DESC
-        ");
-        $stmt->bindParam(':user_id', $user_id);
-
-    } else {
-        // Fetch all posts
-        $stmt = $db->prepare("
-            SELECT p.*, u.username, u.profile_image
-            FROM post p
-            JOIN users u ON p.user_id = u.user_id
-            ORDER BY p.post_date DESC
-        ");
+    if (!$user_id) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'User ID is required'
+        ]);
+        exit;
     }
 
+    $db = (new Database())->getConnection();
+
+    if (!$db) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Database connection not established'
+        ]);
+        exit;
+    }
+
+    // Fetch saved posts with user info
+    $stmt = $db->prepare("
+        SELECT p.*, u.username, u.profile_image
+        FROM saved_posts sp
+        INNER JOIN post p ON sp.post_id = p.post_id
+        INNER JOIN users u ON p.user_id = u.user_id
+        WHERE sp.user_id = :user_id
+        ORDER BY sp.saved_at DESC
+    ");
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
+
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([

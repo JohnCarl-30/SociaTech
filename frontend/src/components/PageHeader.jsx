@@ -28,16 +28,16 @@ export default function PageHeader({
   openProfilePage,
   openSetting,
   openNotificationBar,
-   onNotificationClick,
+  onNotificationClick,
   openDraftPage,
   openHelpPage,
   userId,
   notifEnabled,
- onSearchResults,
+  onSearchResults,
   pfpProfile,
   onUserClick,
-  onPostClick
-
+  onPostClick,
+  onClearSearch,
 }) {
   const navigate = useNavigate();
 
@@ -45,14 +45,14 @@ export default function PageHeader({
   const { logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
-   const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
-   const [headerPfp, setHeaderPfp] = useState('');
+  const [headerPfp, setHeaderPfp] = useState("");
   const [loading, setLoading] = useState(false);
 
-    const user = getUser();
+  const user = getUser();
   const user_id = user?.id || null;
 
   useEffect(() => {
@@ -66,7 +66,6 @@ export default function PageHeader({
         const data = await res.json();
 
         if (data.success) {
-
           setHeaderPfp(data.profile_image || "");
         }
       } catch (err) {
@@ -79,9 +78,6 @@ export default function PageHeader({
     fetchUserStats();
   }, [user_id]);
 
-
-  
-
   const handleSignOut = async () => {
     try {
       await logout();
@@ -93,20 +89,22 @@ export default function PageHeader({
     }
   };
 
-   const handleSearch = async (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
     if (!query.trim()) {
       setSearchResults([]);
       setShowResults(false);
-       if (onSearchResults) {
-        onSearchResults(null); // Pass null to signal reset
+      if (onSearchResults) {
+        onSearchResults([]); // Pass null to signal reset
       }
       return;
     }
 
     try {
       const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/searchPosts.php?query=${encodeURIComponent(query)}`
+        `http://localhost/SociaTech/backend/auth/searchPosts.php?query=${encodeURIComponent(
+          query
+        )}`
       );
       const data = await response.json();
 
@@ -131,24 +129,28 @@ export default function PageHeader({
     handleSearch(value);
   };
 
-   const handleUsernameClick = (e, result) => {
+  const handleUsernameClick = (e, result) => {
     e.stopPropagation();
     setShowResults(false);
     setSearchQuery("");
-   if (onUserClick) {
+    setSearchResults([]);
+    if (onUserClick) {
       onUserClick(result.user_id, result);
     }
   };
 
-    const handlePostClick = (result) => {
+  const handlePostClick = (result) => {
     setShowResults(false);
     setSearchQuery("");
+    setSearchResults([]);
+    if (onSearchResults) {
+      onSearchResults([]); // Clear search results in parent
+    }
 
     if (onPostClick) {
       onPostClick(result);
     }
   };
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -205,35 +207,44 @@ export default function PageHeader({
         <div
           className="search_bar_wrapper"
           style={{ display: isOnSearchBar ? "block" : "none" }}
-            ref={searchRef}
-        ><div className="search_bar_container">
-          
+          ref={searchRef}
+        >
+          <div className="search_bar_container">
             <Search />
-            <input type="text"
+            <input
+              type="text"
               placeholder="Search posts, users..."
               className="search_bar"
               value={searchQuery}
-              onChange={handleSearchChange} />
-        </div>
-        {showResults && searchResults.length > 0 && (
+              onChange={handleSearchChange}
+            />
+          </div>
+          {showResults && searchResults.length > 0 && (
             <div className="search_results_dropdown">
               {searchResults.map((result) => (
                 <div
                   key={result.post_id}
                   className="search_result_item"
-                    onClick={() => handlePostClick(result)}
+                  onClick={() => handlePostClick(result)}
                 >
                   <img
-                  src={result.profile_image || defaultPfp}
+                    src={result.profile_image || defaultPfp}
                     alt={result.username}
                     className="search_result_avatar"
-                     onClick={(e) => handleUsernameClick(e, result)}
-                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => handleUsernameClick(e, result)}
+                    style={{ cursor: "pointer" }}
                   />
                   <div className="search_result_content">
-                    <div className="search_result_username" onClick={(e) => handleUsernameClick(e, result)}
-                      style={{ cursor: 'pointer' }}>@{result.username}</div>
-                    <div className="search_result_title">{result.post_title}</div>
+                    <div
+                      className="search_result_username"
+                      onClick={(e) => handleUsernameClick(e, result)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      @{result.username}
+                    </div>
+                    <div className="search_result_title">
+                      {result.post_title}
+                    </div>
                     <div className="search_result_excerpt">
                       {result.post_content?.substring(0, 60)}...
                     </div>
@@ -269,7 +280,11 @@ export default function PageHeader({
             )}
           </button>
           <div className="profile_btn" onClick={toggleDropDown}>
-             <img src={headerPfp || defaultPfp} alt="profile_img" className="profile_img" />
+            <img
+              src={headerPfp || defaultPfp}
+              alt="profile_img"
+              className="profile_img"
+            />
           </div>
         </div>
       </div>
