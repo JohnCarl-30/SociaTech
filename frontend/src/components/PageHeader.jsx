@@ -16,7 +16,7 @@ import { useState, useEffect, useRef } from "react";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
-import defaultPfp from "../assets/deault_pfp.png";
+import { getUser } from "../utils/storage";
 
 export default function PageHeader({
   isOnSearchBar,
@@ -30,8 +30,10 @@ export default function PageHeader({
   closeNotificationBar,
   openDraftPage,
   openHelpPage,
-  onSearchResults
-
+  onSearchResults,
+  pfpProfile,
+  onUserClick,
+  onPostClick
 }) {
   const navigate = useNavigate();
 
@@ -41,6 +43,35 @@ export default function PageHeader({
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
+  const [headerPfp, setHeaderPfp] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const user = getUser();
+  const user_id = user?.id || null;
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user_id) return;
+
+      try {
+        const res = await fetch(
+          `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${user_id}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+
+          setHeaderPfp(data.profile_image || "");
+        }
+      } catch (err) {
+        console.log("Error fetching user stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserStats();
+  }, [user_id]);
 
   const handleSignOut = async () => {
     try {
@@ -60,9 +91,15 @@ export default function PageHeader({
   };
 
   const handleSearch = async (query) => {
+    setSearchQuery(query);
+
     if (!query.trim()) {
       setSearchResults([]);
       setShowResults(false);
+      // IMPORTANT: Call callback to reset posts
+      if (onSearchResults) {
+        onSearchResults(null); // Pass null to signal reset
+      }
       return;
     }
 
@@ -93,13 +130,25 @@ export default function PageHeader({
     handleSearch(value);
   };
 
-  const handleResultClick = (post) => {
+  const handleUsernameClick = (e, result) => {
+    e.stopPropagation();
     setShowResults(false);
     setSearchQuery("");
-    if (onSearchResults) {
-      onSearchResults([post]);
+
+    if (onUserClick) {
+      onUserClick(result.user_id, result);
     }
   };
+
+  const handlePostClick = (result) => {
+    setShowResults(false);
+    setSearchQuery("");
+
+    if (onPostClick) {
+      onPostClick(result);
+    }
+  };
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -145,15 +194,23 @@ export default function PageHeader({
                 <div
                   key={result.post_id}
                   className="search_result_item"
-                  onClick={() => handleResultClick(result)}
+                  onClick={() => handlePostClick(result)}
                 >
                   <img
-                    src={result.profile_image || defaultPfp}
+                    src={result.profile_image || pfpImage}
                     alt={result.username}
                     className="search_result_avatar"
+                    onClick={(e) => handleUsernameClick(e, result)}
+                    style={{ cursor: 'pointer' }}
                   />
                   <div className="search_result_content">
-                    <div className="search_result_username">@{result.username}</div>
+                    <div
+                      className="search_result_username"
+                      onClick={(e) => handleUsernameClick(e, result)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      @{result.username}
+                    </div>
                     <div className="search_result_title">{result.post_title}</div>
                     <div className="search_result_excerpt">
                       {result.post_content?.substring(0, 60)}...
@@ -187,15 +244,17 @@ export default function PageHeader({
 
 
           <div className="notification_container" style={{ display: openNotificationBar ? "flex" : "none" }}>
-                <div className="notification_header_title">Notification</div>
-                <div className="notification_child_container">No notifications</div>
+            <div className="notification_header_title">Notification</div>
+            <div className="notification_child_container">No notifications</div>
           </div>
 
 
 
 
           <div className="profile_btn" onClick={toggleDropDown}>
-            <img src={defaultPfp} alt="default_pfp" className="profile_img" />
+            {headerPfp ? (
+  <img src={headerPfp} alt="profile_img" className="profile_img" />
+) : null}
           </div>
         </div>
       </div>

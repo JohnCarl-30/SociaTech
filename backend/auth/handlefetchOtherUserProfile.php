@@ -13,40 +13,39 @@ require_once '../config/database.php';
 $database = new Database();
 $db = $database->getConnection();
 
-$user_id = $_POST['user_id'] ?? null;
+// Check if user_id is provided
+$user_id = $_GET['user_id'] ?? null;  // Changed from $_POST to $_GET
 if (!$user_id) {
     echo json_encode(["success" => false, "message" => "Missing user_id"]);
     exit;
 }
+
+// Prepare and execute query
 $stmt = $db->prepare("SELECT user_id, username, fullname, bio, profile_image 
-        FROM users 
-        WHERE user_id = ?");
-        
-        $stmt->execute([
-            $user_id
-        ]);
-        $otherUserInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode(['success'=>true, 'otherUserInfo' => $otherUserInfo]);
+    FROM users 
+    WHERE user_id = ?");
+
 if (!$stmt) {
     echo json_encode([
         "success" => false,
-        "message" => "SQL prepare failed: " . $conn->error
+        "message" => "SQL prepare failed: " . $db->errorInfo()[2]
     ]);
     exit;
 }
 
+$stmt->execute([$user_id]);
+$otherUserInfo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-if ($result->num_rows > 0) {
+// Check if user was found
+if ($otherUserInfo) {
     echo json_encode([
-        "success" => true,
-        "user" => $result->fetch_assoc()
+        'success' => true, 
+        'otherUserInfo' => $otherUserInfo
     ]);
-    exit;
 } else {
     echo json_encode([
-        "success" => false,
-        "message" => "User not found"
+        'success' => false, 
+        'message' => 'User not found'
     ]);
-    exit;
 }
+exit;

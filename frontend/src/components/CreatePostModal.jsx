@@ -28,8 +28,8 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const handleBodyChange = (e) => {
     setBody(e.target.value);
     if (e.target.value.length > 0) {
-      setImage(null);
-      setIsImage(false);
+      // setImage(null);
+      // setIsImage(false);
     }
   };
 

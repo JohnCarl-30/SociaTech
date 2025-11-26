@@ -28,12 +28,14 @@
   padding: 0.2rem;
   border-radius: 0.8rem;
 }
+
 .search_bar {
   height: 90%;
   width: 90%;
   padding: 0 0.5rem;
   border: none;
 }
+
 .search_bar:focus {
   outline: none;
 }
@@ -137,6 +139,7 @@
   transition: all 150ms ease-in-out;
   margin-right: 1rem;
 }
+
 .createPost_btn:hover {
   background-color: rgb(37, 37, 37);
 }
@@ -161,10 +164,12 @@
   color: white;
   transition: all 150ms ease-in-out;
 }
+
 .notification_btn .bell_svg:hover {
   cursor: pointer;
   color: rgb(205, 205, 205);
 }
+
 .notification_btn:focus {
   outline: none;
 }
@@ -180,10 +185,13 @@
   width: 2.05em;
   height: 2.05em;
 }
+
 .profile_img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
 }
+
 .dropDown_profile_modal {
   position: fixed;
   right: 0em;
@@ -221,7 +229,7 @@
 }
 
 
-.notification_container{
+.notification_container {
   position: fixed;
   top: 3.5rem;
   right: 5rem;
@@ -234,7 +242,7 @@
 
 }
 
-.notification_header_title{
+.notification_header_title {
   position: absolute;
   /* border: solid 1px black; */
   width: 96%;
@@ -243,12 +251,14 @@
   font-weight: 700;
   padding: .4rem;
 }
-.notification_child_container{
+
+.notification_child_container {
   padding: .5rem;
   margin-top: 2.5em;
   width: 99%;
   overflow-y: scroll;
 }
-.notification_child_container::-webkit-scrollbar{
+
+.notification_child_container::-webkit-scrollbar {
   display: none;
 }
