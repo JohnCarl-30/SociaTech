@@ -36,6 +36,7 @@ body {
   width: 100%;
   padding: 7em 4.5em 0 31.5em;
   margin-top: 1.5rem;
+
 }
 
 .post_container::-webkit-scrollbar {
@@ -99,8 +100,9 @@ body {
 
 .post_card {
   width: 100%;
+
   border-radius: 0.8rem;
-  border: solid 2px black;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   padding: 1rem;
@@ -109,7 +111,8 @@ body {
   word-wrap: break-word;
   word-break: break-word;
 
-  margin: 1rem 0;
+
+  margin: 1.5em auto;
 }
 
 .post_card_header {
@@ -128,6 +131,12 @@ body {
 
 .post_username {
   font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.post_username:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .post_date {
@@ -142,6 +151,7 @@ body {
 .pfp_container img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
 }
 
 .post_category {
@@ -167,7 +177,7 @@ body {
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  border: solid 2px black;
+
   width: 25px;
   height: 25px;
   transition: all 150ms ease-in-out;
@@ -232,10 +242,14 @@ body {
 
 .post_card_img {
   width: 100%;
+
 }
 
 .post_card_img img {
   width: 100%;
+  border-radius: 1rem;
+
+
 }
 
 .postCard_btn_containers {
@@ -277,8 +291,6 @@ body {
   color: black;
   cursor: pointer;
 }
-
-/*comment modals styles >__<*/
 
 @keyframes fbFadeIn {
   from {
@@ -328,6 +340,13 @@ body {
   padding: 20px;
 }
 
+.comment_modal {
+
+  justify-content: center;
+  flex-direction: column;
+
+}
+
 .commentModal_container {
   width: 650px;
   max-width: 95%;
@@ -339,9 +358,9 @@ body {
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
   animation: fbSlideUp .25s cubic-bezier(.08, .52, .52, 1);
   overflow: hidden;
+
 }
 
-/* Title bar */
 .commentModal_container>span {
   padding: 14px 16px;
   font-size: 17px;
@@ -380,6 +399,7 @@ body {
 .commentModal_postHeader {
   padding: 15px 16px;
   border-bottom: 1px solid #dadde1;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -387,6 +407,7 @@ body {
 
 .commentModal_userInfo {
   display: flex;
+
   align-items: center;
   gap: 8px;
 }
@@ -398,6 +419,8 @@ body {
   overflow: hidden;
 }
 
+
+
 .commentModal_pfp img {
   width: 100%;
   height: 100%;
@@ -408,6 +431,12 @@ body {
   font-size: 15px;
   font-weight: 600;
   color: #1c1e21;
+  transition: color 0.2s ease;
+}
+
+.commentModal_username:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .commentModal_date {
@@ -447,16 +476,25 @@ body {
   overflow: hidden;
 }
 
-.commentModal_dropdownItem {
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
 .commentModal_dropdownItem:hover {
   background: #f0f2f5;
+}
+
+.comment_textarea_container textarea {
+  resize: none;
+  border: none;
+  width: 97%;
+
+  padding: 0.5rem 0.5rem 0.8rem 0.5rem;
+  box-sizing: border-box;
+}
+
+.comment_textarea_container textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.comment_textarea_container textarea:focus {
+  outline: none;
 }
 
 .commentModal_title {
@@ -501,7 +539,6 @@ body {
   cursor: pointer;
 }
 
-/*up and down vote sa post mismo*/
 .commentModal_upVote,
 .commentModal_downVote {
   background: black;
@@ -520,7 +557,6 @@ body {
   background: black;
   color: #fff;
 }
-
 
 .commentModal_commentSection {
   flex: 1;
@@ -546,10 +582,8 @@ body {
   margin-bottom: 10px;
   animation: .18s ease-out;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-
 }
 
-/* Comment Header */
 .commentModal_commentHeader {
   display: flex;
   align-items: center;
@@ -560,6 +594,12 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: #1c1e21;
+  transition: color 0.2s ease;
+}
+
+.commentModal_commentUsername:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .commentModal_commentDate {
@@ -568,7 +608,6 @@ body {
   color: #65676b;
 }
 
-/* Text + Image */
 .commentModal_commentText {
   font-size: 14px;
   color: #1c1e21;
@@ -587,7 +626,6 @@ body {
   border-radius: 8px;
 }
 
-
 .commentModal_commentActions {
   padding-left: 44px;
   margin-top: 8px;
@@ -596,7 +634,6 @@ body {
   align-items: center;
 }
 
-/*vote sa comment section*/
 .comment_up_vote_btn,
 .comment_down_vote_btn {
   background: black;
@@ -612,7 +649,6 @@ body {
   font-weight: 500;
   transition: all 0.2s ease;
 }
-
 
 .comment_reply_btn {
   background: transparent;
@@ -648,7 +684,6 @@ body {
   transition: all 0.2s ease;
 }
 
-/*pag tinapatan ng pointer*/
 .comment_edit_btn:hover {
   background: rgba(59, 130, 246, 0.1);
   color: blue;
@@ -696,7 +731,6 @@ body {
   box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1);
 }
 
-/* Undo Delete Banner */
 .undo_delete_banner {
   display: flex;
   align-items: center;
@@ -721,7 +755,6 @@ body {
   }
 }
 
-/* mismong undo text*/
 .undo_delete_banner span {
   font-size: 14px;
   color: white;
@@ -745,7 +778,6 @@ body {
   transform: scale(1.05);
 }
 
-/* Edit mode styles */
 .comment_edit_container {
   width: 100%;
   margin-top: 8px;
@@ -806,8 +838,6 @@ body {
   background-color: black;
 }
 
-
-
 .commentModal_inputContainer {
   padding: 12px 16px;
   background: #fff;
@@ -865,7 +895,6 @@ body {
   border: none;
 }
 
-/* cancel button sa write comment*/
 .commentModal_actionBtn:first-of-type {
   background: #d4d6d9;
   color: black;
@@ -1066,8 +1095,6 @@ body {
   background-color: #166fe5;
 }
 
-/*confirm delete*/
-
 .deleteConfirm_modal {
   background: white;
   border-radius: 12px;
@@ -1147,4 +1174,214 @@ body {
 
 .deleteConfirm_deleteBtn:hover {
   background-color: #b91c1c;
+}
+
+.otherUserProfile_parent_container {
+  position: fixed;
+  width: 82.85%;
+  height: calc(100vh - 3.5em);
+  top: 3.5em;
+  left: 16.1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  background-color: white;
+  overflow-y: scroll;
+  z-index: 8888;
+  padding-top: 1rem;
+
+}
+
+.otherUserProfile_parent_container::-webkit-scrollbar {
+  display: none;
+}
+
+.otherUserProfile_close_btn {
+  position: absolute;
+  right: 10rem;
+  top: 2rem;
+  border: none;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 0;
+  background-color: black;
+  color: white;
+  outline: none;
+  transition: all 150ms ease-in-out;
+}
+
+.otherUserProfile_close_btn:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  border: solid 2px black;
+}
+
+.otherUserProfile_header_container {
+  display: flex;
+  flex-direction: row;
+  width: 60%;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1rem;
+  gap: 5rem;
+  margin: 0 0 0 9rem;
+}
+
+.otherUserProfile_detail_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userNameBio_container {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.otherUserProfile_username {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.otherUserProfile_bio {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.otherUserProfile_stats_container {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  font-weight: 600;
+
+}
+
+.otherUserProfile_stats_childContainer {
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.otherUserProfile_more_btn {
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  width: fit-content;
+  height: fit-content;
+  cursor: pointer;
+  border-radius: .4rem;
+  transition: all 150ms ease-in-out;
+}
+
+.otherUserProfile_more_container {
+  position: absolute;
+  right: 25rem;
+  top: 5rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  height: 5em;
+  width: 7em;
+  border-radius: .4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+
+}
+
+.otherUserProfile_more_option {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: .5rem;
+  height: fit-content;
+  gap: .5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  background-color: white;
+  padding: .5rem;
+  border-radius: .4rem;
+  transition: all 150ms ease-in-out;
+
+}
+
+.otherUserProfile_more_option:hover {
+  background-color: rgb(226, 226, 226);
+  cursor: pointer;
+}
+
+.otherUserProfile_more_btn:hover {
+  cursor: pointer;
+  background-color: #dfdcdc;
+
+}
+
+.otherUserProfile_more_btn img {
+  width: 2em;
+}
+
+.otherUserPfp {
+  width: 5em;
+  height: 5em;
+  border: solid 2px black;
+  border-radius: 50%;
+  background-color: white;
+}
+
+.followBtn_container {
+  width: 53%;
+  display: flex;
+  margin: 0 auto;
+  justify-content: start;
+
+}
+
+.followBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 1rem;
+
+  background-color: black;
+  color: white;
+  width: fit-content;
+  padding: .5rem 1rem;
+  font-weight: 700;
+  font-size: .9rem;
+  height: 1em;
+  transition: all 150ms ease-in-out;
+}
+
+.followBtn:hover {
+  background-color: rgb(45, 45, 45);
+  cursor: pointer;
+}
+
+.otherUserProfile_parent_postContainer {
+
+  padding: 1.5rem 1.5rem;
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 2.5rem auto 0 auto;
+  width: 60%;
+  border-radius: 0.8rem;
+}
+
+.otherUserProfile_container_title {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
