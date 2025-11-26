@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
+import AdminPanel from "./pages/AdminPanel";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { ToastContainer } from "react-toastify";
@@ -12,6 +13,8 @@ import { useAuth } from "./hooks/useAuth";
 
 
 function App() {
+
+
   const [forgetPassType, setForgetPassType] = useState("email");
 
   const { user, loading } = useAuth();
@@ -55,6 +58,8 @@ function App() {
 
         <Route path="/home" element={user ? <Home /> : <Navigate to="/" />} />
         <Route path="/quiz" element={user ? <Quiz /> : <Navigate to="/" />} />
+        <Route path="/admin" element={user ?  <AdminPanel/>: <Navigate to="/" />} />
+
         
         <Route
           path="/update-password"

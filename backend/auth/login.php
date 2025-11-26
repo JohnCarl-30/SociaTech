@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -42,18 +42,52 @@ try {
     $db = $database->getConnection(); 
     
     // Get user with email_verified field
-    $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$user || !password_verify($password, $user['password'])) {
-        http_response_code(401);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid email or password'
-        ]);
-        exit();
-    }
+   $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+$stmt->execute([$email]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    throw new Exception("User not found");
+}
+
+// Normalize status
+$status = strtolower(trim($user['status'] ?? ''));
+
+// 🔹 Check ban first
+if ($status === 'ban') {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Your account has been banned due to violation of our terms and condition',
+    ]);
+    exit();
+}
+
+// 🔹 Check suspended
+$suspended_until = $user['suspended_until'] ?? null;
+if (!empty($suspended_until) && strtotime($suspended_until) > time()) {
+     $dt = new DateTime($suspended_until);
+    $formatted = $dt->format('F j, Y \a\t g:i A');
+
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Your account has been suspended until ' . $formatted
+    ]);
+    exit();
+}
+
+// 🔹 Then password verification
+if (!password_verify($password, $user['password'])) {
+    http_response_code(401);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Invalid email or password'
+    ]);
+    exit();
+}
+
+  
     
     // Check if email is verified (skip for Google users)
     if (isset($user['email_verified']) && $user['email_verified'] == 0 && empty($user['google_id'])) {
@@ -76,10 +110,16 @@ try {
     }
     
     $token = generateToken($userId);
+
+    
     
     unset($user['password']); 
-    
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['role'] = strtolower($user['role']);
     http_response_code(200);
+
+   
+
     echo json_encode([
         'success' => true,
         'message' => 'Login successful',

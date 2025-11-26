@@ -19,6 +19,10 @@ import { arQuizData } from "../../data/arQuizData";
 
 import QuizCard from "../components/QuizCard";
 import QuizNav from "../components/QuizNav";
+import DraftPage from "../components/DraftPage.jsx";
+import HelpPage from "../components/HelpPage.jsx";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 export default function Quiz(){
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -30,14 +34,52 @@ export default function Quiz(){
   const [openQuiz, setOpenQuiz] = useState(false);
   const [quizTitle, setQuizTitle] = useState('');
   const [quizList, setQuizList] = useState([]);
+   const [openDraftPage, setOpenDraftPage] = useState(false);
+  const [openHelpPage,setOpenHelpPage] = useState(false);
+  const [quizInfo, setQuizInfo] = useState({});
+
+  const QUIZ_INFO = {
+    "AI Assessment 1": { id: 1, category: "Artificial Intelligence" },
+    "Cyber Security Assessment 1": { id: 2, category: "Cyber Security" },
+    "Networking Assessment 1": { id: 3, category: "Networking" },
+    "Cloud Engineering Assessment 1": { id: 4, category: "Cloud Engineering" },
+    "Software Development Assessment 1": {
+      id: 5,
+      category: "Software Development",
+    },
+    "DevOps Assessment 1": { id: 6, category: "DevOps" },
+    "Machine Learning Assessment 1": { id: 7, category: "Machine Learning" },
+    "Virtual Reality Assessment 1": { id: 8, category: "Virtual Reality" },
+    "Augmented Reality Assessment 1": { id: 9, category: "Augmented Reality" },
+  };
+
+  const { user } = useContext(AuthContext);
+  const userId = user?.id;
+
+  const handleQuiz = (quizData, quizTitle) => {
+    setOpenQuiz(true);
+    setQuizList(quizData);
+    setQuizTitle(quizTitle);
+    setCurrentIndex(0);
+    setAnswers({});
+    setQuizInfo({
+      quiz_id: QUIZ_INFO[quizTitle].id,
+      category: QUIZ_INFO[quizTitle].category,
+    });
+  };
 
 
-  const handleQuiz =(quizData,quizTitle)=>{
-      setOpenQuiz(true);
-      setQuizList(quizData);
-      setQuizTitle(quizTitle);
-
+const closeAllModals =()=>{
+  setIsProfilePageOpen(false);
+    setIsDropDownOpen(false); 
+    setIsSettingOpen(false);
+    setOpenHelpPage(false);
+    setOpenDraftPage(false);
   }
+
+ 
+
+  
 
    const current = quizList[currentIndex];
 
@@ -53,11 +95,43 @@ export default function Quiz(){
   };
 
   const handleNext = () => {
-    if (currentIndex < aiQuizData.length - 1) setCurrentIndex(currentIndex + 1);
+    if (currentIndex < quizList.length - 1) setCurrentIndex(currentIndex + 1);
   };
 
   const handleSubmit = () => {
-    console.log("Submitted answers:", answers);
+     let score = 0;
+
+    quizList.forEach((q) => {
+      const userAnswer = answers[q.id];
+      if (userAnswer === q.correct) score++;
+    });
+
+    const resultData = {
+      user_id: userId,
+      quiz_id: quizInfo.quiz_id,
+      quiz_title: quizTitle,
+      category: quizInfo.category,
+      score: score,
+      date_taken: new Date().toISOString().slice(0, 19).replace("T", " "),
+    };
+
+    console.log("Score data to send:", resultData);
+
+    fetch("http://localhost/Sociatech/backend/auth/save-score.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(resultData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(`Your Score: ${score}/${quizList.length}\n${data.message}`);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to save score.");
+      });
+
+    setOpenQuiz(false);
   };
 
   const openProfilePage = () => {
@@ -76,7 +150,7 @@ export default function Quiz(){
             <div className="quizPage_parent_container">
                 <PageHeader
                         isOnCreatePost={false}
-                        isOnSearchBar={true}
+                        isOnSearchBar={false}
                         // onPostCreated={fetchPost}
                         isDropDownOpen={isDropDownOpen}
                         toggleDropDown={toggleDropDown}
@@ -90,6 +164,9 @@ export default function Quiz(){
             style={isProfilePageOpen ? "flex" : "none"}
             closeProfilePage={closeProfilePage}
           />
+           <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={()=>setOpenDraftPage(false)}/>
+
+                      <HelpPage openPage={openHelpPage} closePage={()=>setOpenHelpPage(false)}/>
           <Settings style={isSettingOpen ? 'flex' : 'none'}
           closeSetting={closeSetting}/>
                       <div className="quizPage_body_container">
@@ -210,10 +287,10 @@ export default function Quiz(){
       <QuizNav 
         onPrev={handlePrev} 
         onNext={handleNext} 
-        isLast={currentIndex === aiQuizData.length - 1} 
+        isLast={currentIndex === quizList.length - 1} 
       />
 
-      {currentIndex === aiQuizData.length - 1 && (
+      {currentIndex === quizList.length - 1 && (
         <button className="submit_btn" onClick={handleSubmit}>
           Submit
         </button>

@@ -4,13 +4,14 @@ import { useState } from 'react';
 import ChangePass from "./ChangePass.jsx";
 import Visibility from './Visibility.jsx';
 
-export default function Settings({ style, closeSetting }){
+export default function Settings({ style, closeSetting,notifEnabled,
+  setNotifEnabled, }){
      const [isOn, setIsOn] = useState(false);
      const [openChangePass,setOpenChangePass] = useState(false);
      const [openVisibility,setOpenVisibility] =useState(false)
 
   function handleToggle() {
-    setIsOn(!isOn);
+    setNotifEnabled(!notifEnabled);
   }
     return(<>
             <ChangePass openChangePass={openChangePass} closeChangePass={()=> setOpenChangePass(false)}/>
@@ -64,9 +65,11 @@ export default function Settings({ style, closeSetting }){
        className='toggleBody'
     >
       <div
-        style={{
-          transform: isOn ? "translateX(1.5em)" : "translateX(0)",
-        }}
+         style={{
+                    transform: notifEnabled
+                      ? "translateX(1.5em)"
+                      : "translateX(0)",
+                  }}
         className='toggleCircle'
       ></div>
     </div>

@@ -1,0 +1,245 @@
+.notification_overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: auto;
+  background: transparent;
+  display: flex;
+  justify-content: flex-end;
+  padding: 7px;
+  z-index: 1000;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.notification_panel {
+  width: 300px;
+  height: 420px;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 14px; /* rounded card look */
+  margin: 50px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeDown 0.25s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.notification_panel_header {
+  padding: px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.notification_title_section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification_title_section h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.unread_badge {
+  background: #dc2626;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.notification_actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mark_all_read_btn,
+.close_notification_btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mark_all_read_btn:hover,
+.close_notification_btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.notification_list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.notification_loading,
+.notification_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #666;
+  text-align: center;
+  gap: 10px;
+}
+
+.notification_empty svg {
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.notification_empty p {
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.notification_empty span {
+  font-size: 14px;
+  color: #999;
+}
+
+.notification_item {
+  display: flex;
+  gap: 12px;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification_item:hover {
+  background: #f8f9fa;
+}
+
+.notification_item.unread {
+  background: #f0f7ff;
+}
+
+.notification_item.unread:hover {
+  background: #e6f2ff;
+}
+
+.notification_icon {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notification_avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notification_type_badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.notification_content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification_message {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.notification_message strong {
+  font-weight: 600;
+  color: #000;
+}
+
+.notification_post_title {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification_time {
+  font-size: 12px;
+  color: #999;
+}
+
+.notification_unread_dot {
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .notification_panel {
+    width: 100%;
+  }
+}
+
+/* Scrollbar styling */
+.notification_list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification_list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification_list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.notification_list::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

@@ -1,0 +1,74 @@
+.draftPage_parent_container{
+    position: fixed;
+    top: 3.5rem;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 8888;
+    width: calc(83% - 8rem);
+    height: calc(91.90% - 10rem);
+    padding: 5rem 4rem;
+
+    background-color: white;
+   
+}
+.draftPage_parent_container::-webkit-scrollbar{
+    display: none;
+}
+.draftPage_header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    
+}
+.draftPage_title{
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.searchBar_container_draftPage{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    border-radius: .8rem;
+    border: solid 2px black;
+    padding: 0 .25rem;
+}
+.searchBar_container_draftPage svg{
+    height: 80%;
+}
+.searchBar_field,.searchBar_field:focus{
+    background-color: transparent;
+    border: none;
+    padding: 0 .5rem;
+    outline: none;
+
+}
+
+.drafts_container{
+
+}
+.draftPage_close_btn{
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+  border: none;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background-color: black;
+  border: solid 2px black;
+  color: white;
+  outline: none;
+  transition: all 150ms ease-in-out;
+}
+.draftPage_close_btn:hover{
+background-color: white;
+  color: black;
+  cursor: pointer;
+  
+}

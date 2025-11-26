@@ -6,13 +6,32 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 require_once '../config/database.php';
 
-try{
-    $db = (new Database()) ->getConnection();
-    $stmt = $db->prepare("
-    SELECT P.*, u.username, u.profile_image
-    FROM post p
-    JOIN users u ON p.user_id = u.user_id
-    ORDER BY p.post_date DESC");
+
+   try {
+    $user_id = $_GET['user_id'] ?? null;
+    
+    $db = (new Database())->getConnection();
+    
+    if ($user_id) {
+        // Fetch posts for specific user from "post" table
+        $stmt = $db->prepare("
+            SELECT p.*, u.username, u.profile_image
+            FROM post p
+            JOIN users u ON p.user_id = u.user_id
+            WHERE p.user_id = :user_id
+            ORDER BY p.post_date DESC
+        ");
+        $stmt->bindParam(':user_id', $user_id);
+
+    } else {
+        // Fetch all posts
+        $stmt = $db->prepare("
+            SELECT p.*, u.username, u.profile_image
+            FROM post p
+            JOIN users u ON p.user_id = u.user_id
+            ORDER BY p.post_date DESC
+        ");
+    }
     $stmt->execute();
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

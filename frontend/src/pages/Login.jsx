@@ -121,7 +121,9 @@ export default function Login() {
         email: response.data.user.email,
         displayName: response.data.user.fullname,
         photoURL: response.data.user.profile_image,
+        role: response.data.user.role
       };
+      
 
       if (rememberMe) {
         localStorage.setItem("authToken", response.data.token);
