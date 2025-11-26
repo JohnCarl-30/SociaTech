@@ -10,7 +10,8 @@ import {
   Ban,
   Edit,
   Trash2,
-  Search
+  Search,
+  Eye
 } from "lucide-react";
 import pfpImage from "../assets/deault_pfp.png";
 import SamplePost from "../assets/samplePost.png";
@@ -24,6 +25,8 @@ export default function ProfilePage({ style, closeProfilePage }) {
 
   // User stats state
   const [username, setUsername] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [bio, setBio] = useState("");
   const [postCount, setPostCount] = useState("");
   const [savedCount, setSavedCount] = useState(0);
   const [userPosts, setUserPosts] = useState([]);
@@ -32,10 +35,16 @@ export default function ProfilePage({ style, closeProfilePage }) {
   const [profileImage, setProfileImage] = useState(pfpImage);
   const [uploading, setUploading] = useState(false);
 
+  // Edit Profile states
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editFullname, setEditFullname] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [updating, setUpdating] = useState(false);
+
   const user = getUser();
   const user_id = user?.id || null;
 
-  // Add these at the top of your component, after other useState hooks:
   const [savedPosts, setSavedPosts] = useState([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
 
@@ -71,7 +80,6 @@ export default function ProfilePage({ style, closeProfilePage }) {
     if (isOpenPage === "saved") {
       fetchSavedPosts();
     } else if (user_id && savedCount === 0) {
-      // Fetch just the count on mount
       fetch(`http://localhost/SociaTech/backend/auth/getsavedPosts.php?user_id=${user_id}`)
         .then(res => res.json())
         .then(data => {
@@ -82,7 +90,6 @@ export default function ProfilePage({ style, closeProfilePage }) {
         .catch(err => console.log("Error fetching saved count:", err));
     }
   }, [isOpenPage, user_id]);
-
 
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -100,7 +107,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
 
     try {
       const res = await fetch(
-        "/backend/auth/updateProfileImage.php",
+        "http://localhost/SociaTech/backend/auth/updateProfileImage.php",
         {
           method: "POST",
           body: formData,
@@ -124,11 +131,10 @@ export default function ProfilePage({ style, closeProfilePage }) {
     }
   };
 
-
   const timeAgo = (dateString) => {
     const now = new Date();
     const past = new Date(dateString);
-    const diff = Math.floor((now - past) / 1000); // seconds
+    const diff = Math.floor((now - past) / 1000);
 
     const units = [
       { name: "second", seconds: 1 },
@@ -148,32 +154,54 @@ export default function ProfilePage({ style, closeProfilePage }) {
     return "just now";
   };
 
-
-  // Fetch user stats from backend
+  // Fetch user profile data (includes fullname and bio)
   useEffect(() => {
-    const fetchUserStats = async () => {
+    const fetchUserProfile = async () => {
       if (!user_id) return;
 
       try {
         const res = await fetch(
-          `/backend/auth/getUserStats.php?user_id=${user_id}`
+          `http://localhost/SociaTech/backend/auth/getUserProfile.php?user_id=${user_id}`
         );
         const data = await res.json();
 
         if (data.success) {
-          setUsername(data.username || "Unknown User");
-          setPostCount(data.post_count || 0);
-          setAchievements(data.Achievements_count || 0);
-          setProfileImage(data.profile_image || pfpImage);
+          setUsername(data.user.username || "Unknown User");
+          setFullname(data.user.fullname || "");
+          setBio(data.user.bio || "");
+          setProfileImage(data.user.profile_image || pfpImage);
+          setAchievements(data.user.achievements || 0);
         }
       } catch (err) {
-        console.log("Error fetching user stats:", err);
+        console.log("Error fetching user profile:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserStats();
+    fetchUserProfile();
+  }, [user_id]);
+
+  // Fetch post count
+  useEffect(() => {
+    const fetchPostCount = async () => {
+      if (!user_id) return;
+
+      try {
+        const res = await fetch(
+          `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${user_id}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          setPostCount(data.post_count || 0);
+        }
+      } catch (err) {
+        console.log("Error fetching post count:", err);
+      }
+    };
+
+    fetchPostCount();
   }, [user_id]);
 
   // Fetch user's posts
@@ -183,7 +211,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
 
       try {
         const res = await fetch(
-          `/backend/auth/fetchPost.php?user_id=${user_id}`
+          `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${user_id}`
         );
         const data = await res.json();
 
@@ -209,6 +237,63 @@ export default function ProfilePage({ style, closeProfilePage }) {
     };
   }, [image]);
 
+  // Handle Edit Profile
+  const handleEditClick = () => {
+    setEditFullname(fullname);
+    setEditUsername(username);
+    setEditBio(bio);
+    setIsEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setEditFullname("");
+    setEditUsername("");
+    setEditBio("");
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user_id) return;
+
+    setUpdating(true);
+
+    try {
+      const res = await fetch(
+        "http://localhost/SociaTech/backend/auth/updateUserProfile.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user_id,
+            fullname: editFullname,
+            username: editUsername,
+            bio: editBio,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Update local state
+        setFullname(data.user.fullname);
+        setUsername(data.user.username);
+        setBio(data.user.bio);
+        setIsEditMode(false);
+        alert("Profile updated successfully!");
+      } else {
+        alert("Failed to update profile: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.log("Error updating profile:", err);
+      alert("Error updating profile");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <>
       <div className="profilePage_parent_container" style={{ display: style }}>
@@ -216,7 +301,11 @@ export default function ProfilePage({ style, closeProfilePage }) {
           <div className="header_profile_container">
             <div className="pfp_username_container">
               <img src={profileImage} alt="" className="profilePic" />
-              <div className="userName_container">{loading ? "Loading..." : username}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: '0.3rem' }}>
+                <div className="userName_container">{loading ? "Loading..." : username}</div>
+                {fullname && <div style={{ fontSize: '1rem', fontWeight: '600', color: '#555' }}>{fullname}</div>}
+                {bio && <div style={{ fontSize: '0.875rem', color: '#777', maxWidth: '300px' }}>{bio}</div>}
+              </div>
             </div>
             <div className="profilePage_dashboard">
               <div className="dashBoard_container">
@@ -224,14 +313,12 @@ export default function ProfilePage({ style, closeProfilePage }) {
                 <div>Post</div>
               </div>
               <div className="dashBoard_container">
-                <div>{savedCount}</div>
-                <div>Saved</div>
-              </div>
-              <div className="dashBoard_container">
-                <div>Achievements</div>
-              </div>
-              <div className="dashBoard_container">
+                <div>0</div>
                 <div>Followers</div>
+              </div>
+              <div className="dashBoard_container">
+                <div>0</div>
+                <div>Following</div>
               </div>
             </div>
           </div>
@@ -239,7 +326,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
             <button className="profilePage_nav_child" style={isOpenPage == 'post' ? { backgroundColor: 'black', color: 'white' } : { backgroundColor: 'white', color: 'black' }} onClick={() => setOpenPage('post')}>Post</button>
             <button className="profilePage_nav_child" style={isOpenPage == 'saved' ? { backgroundColor: 'black', color: 'white' } : { backgroundColor: 'white', color: 'black' }} onClick={() => setOpenPage('saved')}>Saved</button>
             <button className="profilePage_nav_child">Achievements</button>
-            <button className="profilePage_nav_child" style={isOpenPage == 'EditProfile' ? { backgroundColor: 'black', color: 'white' } : { backgroundColor: 'white', color: 'black' }} onClick={() => setOpenPage('EditProfile')}>Edit Profile</button>
+            <button className="profilePage_nav_child" style={isOpenPage == 'EditProfile' ? { backgroundColor: 'black', color: 'white' } : { backgroundColor: 'white', color: 'black' }} onClick={() => { setOpenPage('EditProfile'); setIsEditMode(false); }}>Edit Profile</button>
           </div>
           <div className="profilePage_child_container">
             {isOpenPage == 'post' && (<div className="profilePage_post_container">
@@ -268,7 +355,7 @@ export default function ProfilePage({ style, closeProfilePage }) {
                     )}
 
                     <div className="postCard_btn_containers">
-                      <button className="post_comment_btn" /*onClick={() => openComments(post)}*/>
+                      <button className="post_comment_btn">
                         Comment
                       </button>
                       <button className="up_vote_btn">
@@ -350,60 +437,233 @@ export default function ProfilePage({ style, closeProfilePage }) {
             <div className="profilePage_achievements_Container">
               <div>Achievements</div>
             </div>
-            {isOpenPage == 'EditProfile' && (<div className="profilePage_editProfile_Container">
-              <div className="profilePage_childContainer_title">
-                Edit Profile
-              </div>
-              <div className="change_pfp_container">
-                <img
-                  src={imageURL || profileImage}
-                  alt="User Profile Pic"
-                  className="changePfp_img"
-                />
+            {isOpenPage == 'EditProfile' && (
+              <div className="profilePage_editProfile_Container">
+                <div className="profilePage_childContainer_title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <span>Edit Profile</span>
+                  {!isEditMode && (
+                    <button
+                      className="edit_mode_btn"
+                      onClick={handleEditClick}
+                      style={{
+                        padding: '0.5rem 1.5rem',
+                        backgroundColor: 'black',
+                        color: 'white',
+                        border: '2px solid black',
+                        borderRadius: '0.5rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        transition: 'all 150ms ease-in-out'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'white';
+                        e.target.style.color = 'black';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'black';
+                        e.target.style.color = 'white';
+                      }}
+                    >
+                      <Edit size={16} />
+                      Edit
+                    </button>
+                  )}
+                </div>
 
-                <label className="change_pfp_btn" htmlFor="changePfp_field">
-                  {imageURL ? "Choose Different" : "Change Photo"}
-                </label>
-                <input
-                  id="changePfp_field"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleImageUpload}
-                />
-                {imageURL && (
-                  <button
-                    className="change_pfp_btn"
-                    onClick={handleSaveProfilePhoto}
-                    disabled={uploading}
-                    style={{ marginLeft: '1rem' }}
-                  >
-                    {uploading ? "Saving..." : "Save Photo"}
-                  </button>
+                {/* Profile Photo Section */}
+                <div className="change_pfp_container">
+                  <img
+                    src={imageURL || profileImage}
+                    alt="User Profile Pic"
+                    className="changePfp_img"
+                  />
+
+                  <label className="change_pfp_btn" htmlFor="changePfp_field">
+                    {imageURL ? "Choose Different" : "Change Photo"}
+                  </label>
+                  <input
+                    id="changePfp_field"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleImageUpload}
+                  />
+                  {imageURL && (
+                    <button
+                      className="save_photo_btn"
+                      onClick={handleSaveProfilePhoto}
+                      disabled={uploading}
+                    >
+                      <span>{uploading ? "Saving..." : "Save Photo"}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Preview Mode */}
+                {!isEditMode && (
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{
+                      padding: '1.5rem',
+                      border: '2px solid black',
+                      borderRadius: '0.5rem',
+                      backgroundColor: '#f9f9f9'
+                    }}>
+                      <h3 style={{ marginBottom: '1rem', fontWeight: '700' }}>Profile Preview</h3>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                          <label style={{ fontWeight: '600', fontSize: '0.875rem', color: '#666' }}>Full Name</label>
+                          <div style={{ marginTop: '0.25rem', fontSize: '1rem', fontWeight: '500' }}>
+                            {fullname || "Not set"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ fontWeight: '600', fontSize: '0.875rem', color: '#666' }}>Username</label>
+                          <div style={{ marginTop: '0.25rem', fontSize: '1rem', fontWeight: '500' }}>
+                            @{username}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ fontWeight: '600', fontSize: '0.875rem', color: '#666' }}>Bio</label>
+                          <div style={{ marginTop: '0.25rem', fontSize: '1rem', fontWeight: '500' }}>
+                            {bio || "No bio added yet"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Edit Mode */}
+                {isEditMode && (
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div className="changeProfile_field_container">
+                      <label htmlFor="fullname" style={{ fontWeight: '700', marginBottom: '0.5rem' }}>Full Name</label>
+                      <input
+                        id="fullname"
+                        type="text"
+                        value={editFullname}
+                        onChange={(e) => setEditFullname(e.target.value)}
+                        placeholder="Enter your full name"
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: '2px solid black',
+                          borderRadius: '0.5rem',
+                          fontSize: '1rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div className="changeProfile_field_container">
+                      <label htmlFor="username" style={{ fontWeight: '700', marginBottom: '0.5rem' }}>Username</label>
+                      <input
+                        id="username"
+                        type="text"
+                        value={editUsername}
+                        onChange={(e) => setEditUsername(e.target.value)}
+                        placeholder="Enter your username"
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: '2px solid black',
+                          borderRadius: '0.5rem',
+                          fontSize: '1rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div className="changeProfile_field_container">
+                      <label htmlFor="bio" style={{ fontWeight: '700', marginBottom: '0.5rem' }}>Bio</label>
+                      <textarea
+                        id="bio"
+                        value={editBio}
+                        onChange={(e) => setEditBio(e.target.value)}
+                        placeholder="Tell us about yourself..."
+                        rows="4"
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: '2px solid black',
+                          borderRadius: '0.5rem',
+                          fontSize: '1rem',
+                          outline: 'none',
+                          resize: 'vertical'
+                        }}
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                      <button
+                        onClick={handleUpdateProfile}
+                        disabled={updating}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          backgroundColor: 'black',
+                          color: 'white',
+                          border: '2px solid black',
+                          borderRadius: '0.5rem',
+                          fontWeight: '700',
+                          fontSize: '1rem',
+                          cursor: updating ? 'not-allowed' : 'pointer',
+                          transition: 'all 150ms ease-in-out'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!updating) {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = 'black';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'black';
+                          e.target.style.color = 'white';
+                        }}
+                      >
+                        {updating ? "Updating..." : "Update Profile"}
+                      </button>
+
+                      <button
+                        onClick={handleCancelEdit}
+                        disabled={updating}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          backgroundColor: 'white',
+                          color: 'black',
+                          border: '2px solid black',
+                          borderRadius: '0.5rem',
+                          fontWeight: '700',
+                          fontSize: '1rem',
+                          cursor: updating ? 'not-allowed' : 'pointer',
+                          transition: 'all 150ms ease-in-out'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!updating) {
+                            e.target.style.backgroundColor = 'black';
+                            e.target.style.color = 'white';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'white';
+                          e.target.style.color = 'black';
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Bio</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
-                </div>
-              </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Name</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
-                </div>
-              </div>
-              <div className="changeProfile_field_container">
-                <label htmlFor="">Username</label>
-                <div className="changeProfile_field_childContainer">
-                  <input type="text" />|
-                  <button className="changeProfile_btn">Change</button>
-                </div>
-              </div>
-            </div>)}
+            )}
           </div>
         </div>
         <button className="profilePage_close_btn" onClick={closeProfilePage}>

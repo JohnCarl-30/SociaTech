@@ -29,13 +29,13 @@ try {
 
     $file = $_FILES['profile_image'];
 
-    // Validate file
+    // Validation
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($file['type'], $allowedTypes)) {
         throw new Exception('Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.');
     }
 
-    // Check file size (max 5MB)
+    // max size
     if ($file['size'] > 5 * 1024 * 1024) {
         throw new Exception('File size must be less than 5MB');
     }

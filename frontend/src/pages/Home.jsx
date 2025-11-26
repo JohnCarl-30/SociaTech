@@ -1581,8 +1581,8 @@ export default function Homepage() {
                 <img src={otherUserProfile?.profile_image || selectedOtherUser?.profile_image || pfpImage} alt="" className="otherUserPfp" />
                 <div className="userNameBio_container">
                   <div className="otherUserProfile_username">@{otherUserProfile?.username || selectedOtherUser?.username || "Username"}</div>
-                  {(otherUserProfile?.full_name || selectedOtherUser?.full_name) && (
-                    <div className="otherUserProfile_fullname">{otherUserProfile?.full_name || selectedOtherUser?.full_name}</div>
+                  {(otherUserProfile?.fullname || selectedOtherUser?.fullname) && (
+                    <div className="otherUserProfile_fullname">{otherUserProfile?.fullname || selectedOtherUser?.fullname}</div>
                   )}
                   <div className="otherUserProfile_bio">{otherUserProfile?.bio || selectedOtherUser?.bio || "No bio available"}</div>
                 </div>
