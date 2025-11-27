@@ -14,7 +14,7 @@ export default function AdminPanel(){
     const [isNotificationBarOpen,cycleNotificationBarOpen]=useCycle(false,true);
     
     const [isSettingOpen, setIsSettingOpen] = useState(false);
-    
+    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true);
     const [reports,setReports] = useState([]);
     const [previewPost, setPreviewPost] = useState([]);
@@ -44,7 +44,11 @@ export default function AdminPanel(){
         setPreviewComment([]);
         
     },[]);
-
+const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); 
+  };
+  const closeProfilePage = () => setIsProfilePageOpen(false);
     const fetchDashboard= async() => {
         try{
             const res = await fetch('http://localhost/SociaTech/backend/auth/adminDashboard.php', {
@@ -244,11 +248,26 @@ export default function AdminPanel(){
                 openSetting={openSetting}
                 openNotificationBar={isNotificationBarOpen}
                 closeNotificationBar={()=>cycleNotificationBarOpen()}
-               isActive={'admin'}
+             openProfilePage={openProfilePage}
                 openHelpPage={handleOpenHelpPage}
             />
            
-          
+          <PageHeader
+                                  isOnCreatePost={false}
+                                  isOnSearchBar={false}
+                                  // onPostCreated={fetchPost}
+                                  isDropDownOpen={isDropDownOpen}
+                                  toggleDropDown={toggleDropDown}
+                                  openProfilePage={openProfilePage}
+                                  openSetting={openSetting}
+                                  openNotificationBar={isNotificationBarOpen}
+                                  closeNotificationBar={()=>cycleNotificationBarOpen()}
+                                  
+                                />
+                                 <ProfilePage
+                      style={isProfilePageOpen ? "flex" : "none"}
+                      closeProfilePage={closeProfilePage}
+                    />
             <HelpPage openPage={openHelpPage} closePage={cycleOpenHelpPage}/>
             <Settings style={isSettingOpen ? 'flex' : 'none'} closeSetting={closeSetting}/>
 

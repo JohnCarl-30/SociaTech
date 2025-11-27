@@ -34,7 +34,7 @@ export default function PageHeader({
   onSearchResults,
   onUserClick,
   onPostClick,
-  isActive
+
 }) {
   const navigate = useNavigate();
 
@@ -76,11 +76,7 @@ export default function PageHeader({
     fetchUserStats();
   }, [user_id]);
 
-  useEffect(()=>{
-
-    setIsActivePage(isActive);
-
-  },[isActive])
+ 
 
   const handleSignOut = async () => {
     try {
@@ -297,10 +293,10 @@ export default function PageHeader({
         className="dropDown_profile_modal"
         style={{ display: isDropDownOpen ? "flex" : "none" }}
       >
-        {isActivePage === 'home'&&(<button className="dropDown_btn" onClick={openProfilePage}>
+    <button className="dropDown_btn" onClick={openProfilePage}>
           <UserRound />
           View Profile
-        </button>)}
+        </button>
         
         <button className="dropDown_btn" onClick={openSetting}>
           <Settings />

@@ -1089,7 +1089,7 @@ export default function Homepage() {
           onUserClick={handleUserClick}
           onPostClick={handlePostClick}
           onClearSearch={clearSearch}
-          isActive={'home'}
+          
         />
         <NotificationPanel
           isOpen={isNotificationPanelOpen}

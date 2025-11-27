@@ -10,12 +10,16 @@ import { useCycle } from "framer-motion";
 export default function DraftPage(){
      const [isDropDownOpen, setIsDropDownOpen] = useState(false);
     const [isNotificationBarOpen,cycleNotificationBarOpen]=useCycle(false,true);
-  
+  const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [isSettingOpen, setIsSettingOpen] = useState(false);
     const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true);
 
 
-  
+  const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); 
+  };
+  const closeProfilePage = () => setIsProfilePageOpen(false);
     const openSetting = () => {
         setIsSettingOpen(true);
         setIsDropDownOpen(false);
@@ -32,19 +36,22 @@ export default function DraftPage(){
     }
     return(<>
         <div className="draftPage_parent_container" >
-            <PageHeader
-                isOnCreatePost={false}
-                isOnSearchBar={false}
-                isDropDownOpen={isDropDownOpen}
-                toggleDropDown={toggleDropDown}
-               
-                openSetting={openSetting}
-                openNotificationBar={isNotificationBarOpen}
-                closeNotificationBar={()=>cycleNotificationBarOpen()}
-                isActive={'draft'}
-               
-                openHelpPage={handleOpenHelpPage}
-            />
+           <PageHeader
+                                   isOnCreatePost={false}
+                                   isOnSearchBar={false}
+                                   // onPostCreated={fetchPost}
+                                   isDropDownOpen={isDropDownOpen}
+                                   toggleDropDown={toggleDropDown}
+                                   openProfilePage={openProfilePage}
+                                   openSetting={openSetting}
+                                   openNotificationBar={isNotificationBarOpen}
+                                   closeNotificationBar={()=>cycleNotificationBarOpen()}
+                                   
+                                 />
+                                  <ProfilePage
+                       style={isProfilePageOpen ? "flex" : "none"}
+                       closeProfilePage={closeProfilePage}
+                     />
             
           
             <HelpPage openPage={openHelpPage} closePage={cycleOpenHelpPage}/>

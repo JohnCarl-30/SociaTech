@@ -26,13 +26,14 @@ import { AuthContext } from "../context/AuthContext.jsx";
 export default function Quiz(){
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [isNotificationBarOpen,cycleNotificationBarOpen]=useCycle(false,true);
-    
+    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
   const [isSettingOpen, setIsSettingOpen] = useState(false);
    const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [openQuiz, setOpenQuiz] = useState(false);
   const [quizTitle, setQuizTitle] = useState('');
   const [quizList, setQuizList] = useState([]);
+   
   const [openHelpPage,setOpenHelpPage] = useState(false);
   const [quizInfo, setQuizInfo] = useState({});
 
@@ -137,7 +138,11 @@ const closeAllModals =()=>{
     setIsSettingOpen(true);
     setIsDropDownOpen(false);
   };
- 
+   const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); 
+  };
+  const closeProfilePage = () => setIsProfilePageOpen(false);
   const closeSetting=()=> setIsSettingOpen(false);
 
    const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
@@ -149,16 +154,17 @@ const closeAllModals =()=>{
                         // onPostCreated={fetchPost}
                         isDropDownOpen={isDropDownOpen}
                         toggleDropDown={toggleDropDown}
-                      
+                        openProfilePage={openProfilePage}
                         openSetting={openSetting}
                         openNotificationBar={isNotificationBarOpen}
                         closeNotificationBar={()=>cycleNotificationBarOpen()}
-                        isActive={'quiz'}
                         
                       />
-                       
-       
-          
+                       <ProfilePage
+            style={isProfilePageOpen ? "flex" : "none"}
+            closeProfilePage={closeProfilePage}
+          />
+           
 
                       <HelpPage openPage={openHelpPage} closePage={()=>setOpenHelpPage(false)}/>
           <Settings style={isSettingOpen ? 'flex' : 'none'}
