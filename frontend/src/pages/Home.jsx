@@ -89,21 +89,37 @@ export default function Homepage() {
     fetchPost();
   }, []);
 
+
   useEffect(() => {
-    let pollInterval;
+    const fetchSavedPostIds = async () => {
+      if (!user_id || posts.length === 0) return;
 
-    if (isCommentModalOpen && selectedPost?.post_id) {
-      pollInterval = setInterval(() => {
-        fetchComments(selectedPost.post_id, commentSortOption);
-      }, 5000);
-    }
+      try {
+        const postIds = posts.map(p => p.post_id);
 
-    return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
+        const res = await fetch(
+          'http://localhost/SociaTech/backend/auth/checkSavedPosts.php',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user_id,
+              post_ids: postIds
+            })
+          }
+        );
+
+        const data = await res.json();
+        if (data.success) {
+          setSavedPostIds(new Set(data.saved_post_ids));
+        }
+      } catch (err) {
+        console.error('Error fetching saved posts:', err);
       }
     };
-  }, [isCommentModalOpen, selectedPost?.post_id, commentSortOption]);
+
+    fetchSavedPostIds();
+  }, [posts, user_id]);
 
   // Poll for follow data updates
   useEffect(() => {
@@ -201,6 +217,52 @@ export default function Homepage() {
       }
     } catch (err) {
       console.log("Error fetching posts:", err);
+    }
+  };
+
+  const handleSavePost = async (postId) => {
+    if (!user_id) {
+      alert('You must be logged in to save posts');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('user_id', user_id);
+      formData.append('post_id', postId);
+
+      const res = await fetch(
+        'http://localhost/SociaTech/backend/auth/handleSavePost.php',
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Update local state
+        setSavedPostIds(prev => {
+          const newSet = new Set(prev);
+          if (data.action === 'saved') {
+            newSet.add(postId);
+            alert('Post saved successfully!');
+          } else {
+            newSet.delete(postId);
+            alert('Post unsaved successfully!');
+          }
+          return newSet;
+        });
+
+        setOpenMorePost(null); // Close dropdown
+        setOpenMoreComment(null); // Close comment modal dropdown if open
+      } else {
+        alert(data.message || 'Failed to save/unsave post');
+      }
+    } catch (err) {
+      console.error('Error saving post:', err);
+      alert('An error occurred while saving the post');
     }
   };
 
@@ -957,6 +1019,7 @@ export default function Homepage() {
             <ProfilePage
               style={isProfilePageOpen ? "flex" : "none"}
               closeProfilePage={closeProfilePage}
+              onPostClick={openComments}
             />
             <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={cycleOpenDraftPage} />
 
@@ -972,7 +1035,12 @@ export default function Homepage() {
                 </p>
               ) : (
                 filteredPosts.map((post) => (
-                  <div className="post_card" key={post.post_id}>
+                  <div
+                    className="post_card"
+                    key={post.post_id}
+                    onClick={() => openComments(post)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="post_card_header">
                       <div className="header_user_container">
                         <div className="pfp_container">
@@ -991,7 +1059,10 @@ export default function Homepage() {
                       <div className="more_menu_container">
                         <div
                           className="more_btn"
-                          onClick={() => toggleMorePost(post.post_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMorePost(post.post_id);
+                          }}
                         >
                           <img src={moreBtn} alt="" className="more" />
                         </div>
@@ -1062,16 +1133,20 @@ export default function Homepage() {
                     <div className="postCard_btn_containers">
                       <button
                         className="post_comment_btn"
-                        onClick={() => openComments(post)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openComments(post);
+                        }}
                       >
                         Comment
                       </button>
                       <button
                         className={`up_vote_btn ${voteState[post.post_id] === "up" ? "voted" : ""
                           }`}
-                        onClick={() =>
-                          handleToggleVote(user_id, post.post_id, "up")
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleVote(user_id, post.post_id, "up");
+                        }}
                       >
                         <ArrowBigUp />
                         {upTally[post.post_id]}
@@ -1080,9 +1155,10 @@ export default function Homepage() {
                       <button
                         className={`down_vote_btn ${voteState[post.post_id] === "down" ? "voted" : ""
                           }`}
-                        onClick={() =>
-                          handleToggleVote(user_id, post.post_id, "down")
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleVote(user_id, post.post_id, "down");
+                        }}
                       >
                         <ArrowBigDown />
                         {downTally[post.post_id]}

@@ -417,3 +417,189 @@
   padding: 0 .5rem;
   outline: none;
 }
+
+/* New classes for inline styles */
+.user_info_container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.3rem;
+}
+
+.user_fullname {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.user_bio {
+  font-size: 0.875rem;
+  color: #777;
+  max-width: 300px;
+}
+
+.nav_btn_active {
+  background-color: black !important;
+  color: white !important;
+}
+
+.post_card_spacing {
+  margin-bottom: 1rem;
+}
+
+.edit_profile_title_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.edit_mode_btn {
+  padding: 0.5rem 1.5rem;
+  background-color: black;
+  color: white;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 150ms ease-in-out;
+}
+
+.edit_mode_btn:hover {
+  background-color: white;
+  color: black;
+}
+
+.hidden_file_input {
+  display: none;
+}
+
+.profile_preview_wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile_preview_container {
+  padding: 1.5rem;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  background-color: #f9f9f9;
+}
+
+.profile_preview_title {
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.profile_preview_fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile_field_label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.profile_field_value {
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.edit_form_wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.edit_form_label {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.edit_form_input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+}
+
+.edit_form_textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+  resize: vertical;
+}
+
+.edit_action_buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.update_profile_btn {
+  flex: 1;
+  padding: 0.75rem;
+  background-color: black;
+  color: white;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 150ms ease-in-out;
+}
+
+.update_profile_btn:hover:not(:disabled) {
+  background-color: white;
+  color: black;
+}
+
+.update_profile_btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cancel_edit_btn {
+  flex: 1;
+  padding: 0.75rem;
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 150ms ease-in-out;
+}
+
+.cancel_edit_btn:hover:not(:disabled) {
+  background-color: black;
+  color: white;
+}
+
+.cancel_edit_btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.change_pfp_container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
