@@ -23,7 +23,6 @@ import pfpImage from "../assets/deault_pfp.png";
 
 import Settings from "../components/Settings.jsx";
 import TrippleDots from "../assets/moreBtn.png";
-import DraftPage from "../components/DraftPage.jsx";
 import HelpPage from "../components/HelpPage.jsx";
 
 import NotificationPanel from "../components/NotificationPanel.jsx";
@@ -80,7 +79,6 @@ export default function Homepage() {
   const [editPostImagePreview, setEditPostImagePreview] = useState("");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
-  const [openDraftPage, setOpenDraftPage] = useState(false);
   const [openHelpPage, setOpenHelpPage] = useState(false);
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
@@ -99,6 +97,8 @@ export default function Homepage() {
   const [reportedBy, setReportedBy] = useState(null);
   const [reportedUID, setReportedUID] = useState(null);
   const [contentId, setContentId] = useState(null);
+  const [savedPostIds, setSavedPostIds] = useState(new Set());
+  const [savedPosts, setSavedPosts] = useState([]);
 
   const clearSearch = () => {
     setSearchResults([]);
@@ -114,15 +114,12 @@ export default function Homepage() {
     setIsOtherUserProfileOpen(true);
     setOtherUserProfile(null);
     setOtherUserPosts([]);
-    setIsFollowing(false);
-    setFollowerCount(0);
-    setFollowingCount(0);
     clearSearch();
 
     await Promise.all([
       fetchOtherUserProfile(userId),
       fetchOtherUserPosts(userId),
-      fetchFollowData(userId),
+      fetchFollowStats(userId),
     ]);
 
     setIsLoadingOtherUserData(false);
@@ -140,7 +137,7 @@ export default function Homepage() {
   const fetchOtherUserProfile = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/handlefetchOtherUserProfile.php?user_id=${userId}`
+        `http://localhost/SociaTech/backend/auth/handleFetchOtherUserProfile.php?user_id=${userId}`
       );
       const data = await response.json();
 
@@ -171,33 +168,51 @@ export default function Homepage() {
     }
   };
 
-  const fetchFollowData = async (targetUserId) => {
+  // const fetchFollowData = async (targetUserId) => {
+  //   try {
+  //     const [followersRes, followingRes] = await Promise.all([
+  //       fetch(
+  //         `http://localhost/SociaTech/backend/auth/handleOtherUserFollowers.php?user_id=${targetUserId}`
+  //       ),
+  //       fetch(
+  //         `http://localhost/SociaTech/backend/auth/handleOtherUserFollowing.php?user_id=${targetUserId}`
+  //       ),
+  //     ]);
+
+  //     const followersData = await followersRes.json();
+  //     const followingData = await followingRes.json();
+
+  //     if (followersData.success && followersData.followers) {
+  //       setFollowerCount(followersData.followers.length);
+  //       const following = followersData.followers.some(
+  //         (follower) => follower.follower_id == user_id
+  //       );
+  //       setIsFollowing(following);
+  //     }
+
+  //     if (followingData.success && followingData.following) {
+  //       setFollowingCount(followingData.following.length);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching follow data:", error);
+  //   }
+  // };
+
+  const fetchFollowStats = async (targetUserId) => {
     try {
-      const [followersRes, followingRes] = await Promise.all([
-        fetch(
-          `http://localhost/SociaTech/backend/auth/handleOtherUserFollowers.php?user_id=${targetUserId}`
-        ),
-        fetch(
-          `http://localhost/SociaTech/backend/auth/handleOtherUserFollowing.php?user_id=${targetUserId}`
-        ),
-      ]);
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${targetUserId}&current_user_id=${user_id}`
+      );
+      const data = await response.json();
 
-      const followersData = await followersRes.json();
-      const followingData = await followingRes.json();
-
-      if (followersData.success && followersData.followers) {
-        setFollowerCount(followersData.followers.length);
-        const following = followersData.followers.some(
-          (follower) => follower.follower_id == user_id
-        );
-        setIsFollowing(following);
-      }
-
-      if (followingData.success && followingData.following) {
-        setFollowingCount(followingData.following.length);
+      if (data.success) {
+        setFollowerCount(data.follower_count);
+        setFollowingCount(data.following_count);
+        setIsFollowing(data.is_following);
+        return data;
       }
     } catch (error) {
-      console.error("Error fetching follow data:", error);
+      console.error("Error fetching follow stats:", error);
     }
   };
 
@@ -207,19 +222,22 @@ export default function Homepage() {
       return;
     }
 
-    // 🔹 Add this console log for debugging
-    console.log("Follow request data:", {
-      user_id: user_id,
-      followed_id: selectedOtherUser?.user_id || otherUserProfile?.user_id,
-    });
+    const followedId = selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
+    if (!followedId) {
+      alert("Unable to follow this user");
+      return;
+    }
+
+    if (followedId == user_id) {
+      alert("You cannot follow yourself");
+      return;
+    }
 
     try {
       const formData = new FormData();
       formData.append("user_id", user_id);
-      formData.append(
-        "followed_id",
-        selectedOtherUser?.user_id || otherUserProfile?.user_id
-      );
+      formData.append("followed_id", followedId);
 
       const response = await fetch(
         "http://localhost/SociaTech/backend/auth/handleFollowUser.php",
@@ -233,7 +251,8 @@ export default function Homepage() {
 
       if (data.success) {
         setIsFollowing(true);
-        setFollowerCount((prev) => prev + 1);
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
         alert("Followed successfully!");
       } else {
         alert(data.message || "Failed to follow user");
@@ -243,6 +262,7 @@ export default function Homepage() {
       alert("An error occurred while following");
     }
   };
+
   const handleUnfollow = async () => {
     if (!user_id) {
       alert("You must be logged in to unfollow users");
@@ -250,18 +270,19 @@ export default function Homepage() {
     }
 
     const followedId = selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
     if (!followedId) {
-      alert("No user selected to unfollow!");
+      alert("Unable to unfollow this user");
       return;
     }
 
     try {
       const formData = new FormData();
       formData.append("user_id", user_id);
-      formData.append("followed_id", followedId); // only once!
+      formData.append("followed_id", followedId);
 
       const response = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleunFollowUser.php",
+        "http://localhost/SociaTech/backend/auth/handleUnfollowUser.php",
         {
           method: "POST",
           body: formData,
@@ -272,7 +293,8 @@ export default function Homepage() {
 
       if (data.success) {
         setIsFollowing(false);
-        setFollowerCount((prev) => Math.max(0, prev - 1));
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
         alert("Unfollowed successfully!");
       } else {
         alert(data.message || "Failed to unfollow user");
@@ -282,7 +304,56 @@ export default function Homepage() {
       alert("An error occurred while unfollowing");
     }
   };
+  useEffect(() => {
+    let intervalId;
 
+    if (
+      isOtherUserProfileOpen &&
+      (selectedOtherUser?.user_id || otherUserProfile?.user_id)
+    ) {
+      const targetUserId =
+        selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
+      // Refresh counts every 10 seconds
+      intervalId = setInterval(() => {
+        fetchFollowStats(targetUserId);
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [
+    isOtherUserProfileOpen,
+    selectedOtherUser?.user_id,
+    otherUserProfile?.user_id,
+  ]);
+
+  // Alternative: Refresh on window focus (when user comes back to tab)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (
+        isOtherUserProfileOpen &&
+        (selectedOtherUser?.user_id || otherUserProfile?.user_id)
+      ) {
+        const targetUserId =
+          selectedOtherUser?.user_id || otherUserProfile?.user_id;
+        fetchFollowStats(targetUserId);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [
+    isOtherUserProfileOpen,
+    selectedOtherUser?.user_id,
+    otherUserProfile?.user_id,
+  ]);
   const handleUsernameClick = async (userId, userData) => {
     setIsLoadingOtherUserData(true);
     setSelectedOtherUser(userData);
@@ -296,7 +367,7 @@ export default function Homepage() {
     await Promise.all([
       fetchOtherUserProfile(userId),
       fetchOtherUserPosts(userId),
-      fetchFollowData(userId),
+      fetchFollowStats(userId),
     ]);
 
     setIsLoadingOtherUserData(false);
@@ -333,9 +404,85 @@ export default function Homepage() {
     setIsDropDownOpen(false);
     setIsSettingOpen(false);
     setOpenHelpPage(false);
-    setOpenDraftPage(false);
   };
   const user_id = user?.id || null;
+
+  useEffect(() => {
+    const fetchSavedPostIds = async () => {
+      if (!user_id || posts.length === 0) return;
+
+      try {
+        const postIds = posts.map((p) => p.post_id);
+
+        const res = await fetch(
+          "http://localhost/SociaTech/backend/auth/checkSavedPosts.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user_id,
+              post_ids: postIds,
+            }),
+          }
+        );
+
+        const data = await res.json();
+        if (data.success) {
+          setSavedPostIds(new Set(data.saved_post_ids));
+        }
+      } catch (err) {
+        console.error("Error fetching saved posts:", err);
+      }
+    };
+
+    fetchSavedPostIds();
+  }, [posts, user_id]);
+
+  const handleSavePost = async (postId) => {
+    if (!user_id) {
+      alert("You must be logged in to save posts");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user_id);
+      formData.append("post_id", postId);
+
+      const res = await fetch(
+        "http://localhost/SociaTech/backend/auth/handleSavedPost.php",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Update local state
+        setSavedPostIds((prev) => {
+          const newSet = new Set(prev);
+          if (data.action === "saved") {
+            newSet.add(postId);
+            alert("Post saved successfully!");
+          } else {
+            newSet.delete(postId);
+            alert("Post unsaved successfully!");
+          }
+          return newSet;
+        });
+
+        setOpenMorePost(null); // Close dropdown
+        setOpenMoreComment(null); // Close comment modal dropdown if open
+      } else {
+        alert(data.message || "Failed to save/unsave post");
+      }
+    } catch (err) {
+      console.error("Error saving post:", err);
+      alert("An error occurred while saving the post");
+    }
+  };
 
   useEffect(() => {
     fetchPost();
@@ -412,10 +559,7 @@ export default function Homepage() {
     setIsSettingOpen(true);
     setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
-  const handleOpenDraftPage = () => {
-    setOpenDraftPage(true);
-    setIsDropDownOpen(false);
-  };
+
   const handleOpenHelpPage = () => {
     setOpenHelpPage(true);
     setIsDropDownOpen(false);
@@ -1012,7 +1156,6 @@ export default function Homepage() {
           openProfilePage={openProfilePage}
           openSetting={openSetting}
           onNotificationClick={() => setIsNotificationPanelOpen(true)}
-          openDraftPage={handleOpenDraftPage}
           openHelpPage={handleOpenHelpPage}
           userId={user_id}
           notifEnabled={notifEnabled}
@@ -1037,10 +1180,7 @@ export default function Homepage() {
             <ProfilePage
               style={isProfilePageOpen ? "flex" : "none"}
               closeProfilePage={closeProfilePage}
-            />
-            <DraftPage
-              isDraftPageOn={openDraftPage}
-              closeDraftPage={() => setOpenDraftPage(false)}
+              onPostClick={openComments}
             />
 
             <HelpPage
@@ -1090,7 +1230,10 @@ export default function Homepage() {
                       <div className="more_menu_container">
                         <div
                           className="more_btn"
-                          onClick={() => toggleMorePost(post.post_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMorePost(post.post_id);
+                          }}
                         >
                           <img src={moreBtn} alt="" className="more" />
                         </div>
@@ -1120,9 +1263,26 @@ export default function Homepage() {
                                 </div>
                               </>
                             )}
-                            <div className="dropdown_item">
-                              <Bookmark size={18} />
-                              <span>Save</span>
+                            <div
+                              className="dropdown_item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSavePost(post.post_id);
+                              }}
+                            >
+                              <Bookmark
+                                size={18}
+                                fill={
+                                  savedPostIds.has(post.post_id)
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                              />
+                              <span>
+                                {savedPostIds.has(post.post_id)
+                                  ? "Unsave"
+                                  : "Save"}
+                              </span>
                             </div>
                             {post.user_id !== user_id && (
                               <div
@@ -1162,7 +1322,10 @@ export default function Homepage() {
                     <div className="postCard_btn_containers">
                       <button
                         className="post_comment_btn"
-                        onClick={() => openComments(post)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openComments(post);
+                        }}
                       >
                         Comment
                       </button>
@@ -1269,9 +1432,26 @@ export default function Homepage() {
                                   </div>
                                 </>
                               )}
-                              <div className="commentModal_dropdownItem">
-                                <Bookmark size={18} />
-                                <span>Save</span>
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSavePost(selectedPost.post_id);
+                                }}
+                              >
+                                <Bookmark
+                                  size={18}
+                                  fill={
+                                    savedPostIds.has(selectedPost.post_id)
+                                      ? "currentColor"
+                                      : "none"
+                                  }
+                                />
+                                <span>
+                                  {savedPostIds.has(selectedPost.post_id)
+                                    ? "Unsave"
+                                    : "Save"}
+                                </span>
                               </div>
                               {selectedPost.user_id !== user_id && (
                                 <div
@@ -1901,16 +2081,22 @@ export default function Homepage() {
             </div>
 
             <div className="followBtn_container">
-              <div
+              <button
                 className="followBtn"
+                onClick={isFollowing ? handleUnfollow : handleFollow}
                 style={{
                   cursor: "pointer",
                   backgroundColor: isFollowing ? "#6c757d" : "#000",
                   transition: "all 0.2s ease",
+                  border: "none",
+                  color: "white",
+                  padding: "10px 20px",
+                  borderRadius: "5px",
+                  fontSize: "16px",
                 }}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
-              </div>
+              </button>
             </div>
 
             <div className="otherUserProfile_parent_postContainer">

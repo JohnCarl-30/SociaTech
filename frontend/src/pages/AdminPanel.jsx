@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 import { useCycle } from "framer-motion";
 import ProfilePage from "../components/ProfilePage";
 import Settings from "../components/Settings";
-import DraftPage from "../components/DraftPage.jsx";
+
 import HelpPage from "../components/HelpPage.jsx";
 import './AdminPanel.css';
 
 export default function AdminPanel(){
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
     const [isNotificationBarOpen,cycleNotificationBarOpen]=useCycle(false,true);
-    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
+    
     const [isSettingOpen, setIsSettingOpen] = useState(false);
-    const [openDraftPage, cycleOpenDraftPage] = useCycle(false,true);
+    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
     const [openHelpPage,cycleOpenHelpPage] = useCycle(false,true);
     const [reports,setReports] = useState([]);
     const [previewPost, setPreviewPost] = useState([]);
@@ -25,6 +25,8 @@ export default function AdminPanel(){
     const [totalComments, setTotalComments] = useState();
     const [totalReports, setTotalReports] = useState();
     
+    
+    
 
     
     
@@ -34,6 +36,7 @@ export default function AdminPanel(){
     const [selectedFilterOption,setSelectedFilterOption] =useState('all');
     const [searchTerm, setSearchTerm] = useState("");
 
+
     useEffect(()=>{
         fetchReports();
         fetchDashboard();
@@ -41,7 +44,11 @@ export default function AdminPanel(){
         setPreviewComment([]);
         
     },[]);
-
+const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); 
+  };
+  const closeProfilePage = () => setIsProfilePageOpen(false);
     const fetchDashboard= async() => {
         try{
             const res = await fetch('http://localhost/SociaTech/backend/auth/adminDashboard.php', {
@@ -134,23 +141,17 @@ export default function AdminPanel(){
         return matchesSearch && matchesStatus;
     });
 
-    const openProfilePage = () => {
-        setIsProfilePageOpen(true);
-        setIsDropDownOpen(false); 
-    };
+   
     const openSetting = () => {
         setIsSettingOpen(true);
         setIsDropDownOpen(false);
     };
-    const closeProfilePage = () => setIsProfilePageOpen(false);
+   
     const closeSetting=()=> setIsSettingOpen(false);
 
     const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
 
-    const handleOpenDraftPage = ()=>{
-        cycleOpenDraftPage();
-        setIsDropDownOpen(false);
-    }
+
     const handleOpenHelpPage = ()=>{
         cycleOpenHelpPage();
         setIsDropDownOpen(false);
@@ -244,15 +245,29 @@ export default function AdminPanel(){
                 isOnSearchBar={false}
                 isDropDownOpen={isDropDownOpen}
                 toggleDropDown={toggleDropDown}
-                openProfilePage={openProfilePage}
                 openSetting={openSetting}
                 openNotificationBar={isNotificationBarOpen}
                 closeNotificationBar={()=>cycleNotificationBarOpen()}
-                openDraftPage={handleOpenDraftPage}
+             openProfilePage={openProfilePage}
                 openHelpPage={handleOpenHelpPage}
             />
-            <ProfilePage style={isProfilePageOpen ? "flex" : "none"} closeProfilePage={closeProfilePage}/>
-            <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={cycleOpenDraftPage}/>
+           
+          <PageHeader
+                                  isOnCreatePost={false}
+                                  isOnSearchBar={false}
+                                  // onPostCreated={fetchPost}
+                                  isDropDownOpen={isDropDownOpen}
+                                  toggleDropDown={toggleDropDown}
+                                  openProfilePage={openProfilePage}
+                                  openSetting={openSetting}
+                                  openNotificationBar={isNotificationBarOpen}
+                                  closeNotificationBar={()=>cycleNotificationBarOpen()}
+                                  
+                                />
+                                 <ProfilePage
+                      style={isProfilePageOpen ? "flex" : "none"}
+                      closeProfilePage={closeProfilePage}
+                    />
             <HelpPage openPage={openHelpPage} closePage={cycleOpenHelpPage}/>
             <Settings style={isSettingOpen ? 'flex' : 'none'} closeSetting={closeSetting}/>
 

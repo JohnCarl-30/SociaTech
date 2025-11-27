@@ -12,6 +12,7 @@ export default function Settings({ style, closeSetting,notifEnabled,
 
   function handleToggle() {
     setNotifEnabled(!notifEnabled);
+    setIsOn(true);
   }
     return(<>
             <ChangePass openChangePass={openChangePass} closeChangePass={()=> setOpenChangePass(false)}/>

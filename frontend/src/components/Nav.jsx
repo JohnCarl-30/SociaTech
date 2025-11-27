@@ -1,4 +1,4 @@
-import { House, Crown, Brain,ShieldUser  } from "lucide-react";
+import { House, Crown, Brain,ShieldUser,  FolderOpen,  } from "lucide-react";
 import "./Nav.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -40,6 +40,17 @@ const isAdmin = user?.role === "admin";
                     }}
                 >
                     <Brain /> Quizes
+                </div>
+                
+                <div 
+                    className={`nav_child nav_child${isActive('/draft')}`}
+                    onClick={() =>{
+                        closeModals;
+                        navigate('/draft');
+                        
+                    }}
+                >
+                    <FolderOpen /> Draft Page
                 </div>
                 {isAdmin&&(<div 
                     className={`nav_child nav_child${isActive('/admin')}`}

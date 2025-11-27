@@ -6,7 +6,7 @@ import {
   Settings,
   HandHelping,
   LogOut,
-  FolderOpen,
+
 } from "lucide-react";
 import "./PageHeader.css";
 import { useCycle } from "framer-motion";
@@ -27,17 +27,14 @@ export default function PageHeader({
   isDropDownOpen,
   openProfilePage,
   openSetting,
-  openNotificationBar,
   onNotificationClick,
-  openDraftPage,
   openHelpPage,
   userId,
   notifEnabled,
   onSearchResults,
-  pfpProfile,
   onUserClick,
   onPostClick,
-  onClearSearch,
+
 }) {
   const navigate = useNavigate();
 
@@ -51,6 +48,7 @@ export default function PageHeader({
   const searchRef = useRef(null);
   const [headerPfp, setHeaderPfp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isActivePage,setIsActivePage] = useState('home');
 
   const user = getUser();
   const user_id = user?.id || null;
@@ -77,6 +75,8 @@ export default function PageHeader({
 
     fetchUserStats();
   }, [user_id]);
+
+ 
 
   const handleSignOut = async () => {
     try {
@@ -293,14 +293,11 @@ export default function PageHeader({
         className="dropDown_profile_modal"
         style={{ display: isDropDownOpen ? "flex" : "none" }}
       >
-        <button className="dropDown_btn" onClick={openProfilePage}>
+    <button className="dropDown_btn" onClick={openProfilePage}>
           <UserRound />
           View Profile
         </button>
-        <button className="dropDown_btn" onClick={openDraftPage}>
-          <FolderOpen />
-          Drafts
-        </button>
+        
         <button className="dropDown_btn" onClick={openSetting}>
           <Settings />
           Settings

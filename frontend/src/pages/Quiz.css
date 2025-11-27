@@ -20,11 +20,12 @@ padding: 1rem 0;
   flex-direction: column;
   justify-content: start;
   align-items: center;
+  
 
 }
 .quiz_parent_container{
     position: absolute;
-    left: 27rem;
+    left: 21rem;
     top: 9rem;
     display: flex;
     flex-direction: column;
@@ -32,6 +33,7 @@ padding: 1rem 0;
     justify-content: center;
     align-items: center;
     gap: 1.75rem;
+    
 }
 .quiz_container_title{
     font-weight: 700;
@@ -45,20 +47,21 @@ padding: 1rem 0;
     display: grid;
     grid-template-columns: auto auto;
     justify-content: space-evenly;
-    gap: 1.5rem;
+    gap: 2rem;
    
     
 }
 .quiz_card{
-    width: 20em;
+    width: 24em;
     border-radius: .8rem;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    height: 13em;
+    height: 12em;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    gap: 1.1rem;
+    
+    gap: 1rem;
     
 }
 .quizCard_header{
@@ -83,6 +86,7 @@ padding: 1rem 0;
 }
 .quizCard_title{
     width: 100%;
+    font-size: .8rem;
     font-weight: 700;
 }
 .quizCard_description{
@@ -93,7 +97,14 @@ padding: 1rem 0;
 .takeQuiz_btn_container{
     width: 100%;
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
+    
+}
+.quiz_score{
+  font-weight: 700;
+  font-size: .9rem;
+  flex: display;
+  align-items: center;
 }
 .takeQuiz_btn{
     font-size: .8rem;
