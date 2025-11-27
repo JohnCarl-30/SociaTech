@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../pages/Home.css";
 
 export default function otherUserProfile({openModal, closeModal, userId}){
     const [comments, setComments] = useState([]);

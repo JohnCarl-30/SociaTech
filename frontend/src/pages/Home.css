@@ -1281,14 +1281,15 @@ cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 1rem;
+  border-radius: .8rem;
+  border: none;
   
   background-color: black;
   color: white;
   width: fit-content;
-  padding: .5rem 1rem ;
+  padding:  1rem ;
   font-weight: 700;
-  font-size: .9rem;
+  font-size: 1rem;
   height: 1em;
   transition: all 150ms ease-in-out;
 }
