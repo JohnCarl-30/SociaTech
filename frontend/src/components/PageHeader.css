@@ -28,14 +28,12 @@
   padding: 0.2rem;
   border-radius: 0.8rem;
 }
-
 .search_bar {
   height: 90%;
   width: 90%;
   padding: 0 0.5rem;
   border: none;
 }
-
 .search_bar:focus {
   outline: none;
 }
@@ -139,7 +137,6 @@
   transition: all 150ms ease-in-out;
   margin-right: 1rem;
 }
-
 .createPost_btn:hover {
   background-color: rgb(37, 37, 37);
 }
@@ -164,12 +161,10 @@
   color: white;
   transition: all 150ms ease-in-out;
 }
-
 .notification_btn .bell_svg:hover {
   cursor: pointer;
   color: rgb(205, 205, 205);
 }
-
 .notification_btn:focus {
   outline: none;
 }
@@ -177,6 +172,7 @@
 .profile_btn {
   width: 2em;
   height: 2em;
+  border-radius: 50%;
   transition: all 150ms ease-in-out;
 }
 
@@ -185,13 +181,11 @@
   width: 2.05em;
   height: 2.05em;
 }
-
 .profile_img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
 }
-
 .dropDown_profile_modal {
   position: fixed;
   right: 0em;
@@ -229,7 +223,7 @@
 }
 
 
-.notification_container {
+.notification_container{
   position: fixed;
   top: 3.5rem;
   right: 5rem;
@@ -237,12 +231,13 @@
   height: 15em;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   border-radius: .4rem;
+  border-radius: 0.4rem;
   background-color: white;
   z-index: 9999;
 
 }
 
-.notification_header_title {
+.notification_header_title{
   position: absolute;
   /* border: solid 1px black; */
   width: 96%;
@@ -251,14 +246,60 @@
   font-weight: 700;
   padding: .4rem;
 }
-
-.notification_child_container {
+.notification_child_container{
   padding: .5rem;
   margin-top: 2.5em;
   width: 99%;
   overflow-y: scroll;
 }
-
-.notification_child_container::-webkit-scrollbar {
+.notification_child_container::-webkit-scrollbar{
   display: none;
+}
+
+.notification_btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.notification_badge {
+  position: absolute;
+  top: .1rem;
+  right: 1px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  min-width: .6rem;
+  height: .6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: 1px 1px;
+  border: 2px solid white;
+  animation: pulse 2s infinite;
+}
+.notification_btn .bell_svg {
+  transition: all 0.3s ease;
+}
+.notification_btn.has_notifications .bell_svg {
+  fill: #3b82f6;
+  color: #3b82f6;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }

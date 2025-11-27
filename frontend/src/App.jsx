@@ -13,6 +13,8 @@ import { useAuth } from "./hooks/useAuth";
 
 
 function App() {
+
+
   const [forgetPassType, setForgetPassType] = useState("email");
 
   const { user, loading } = useAuth();

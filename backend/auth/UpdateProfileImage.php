@@ -1,3 +1,4 @@
+
 <?php
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
@@ -28,7 +29,7 @@ try {
     }
 
     $file = $_FILES['profile_image'];
-    
+
     // Validate file
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($file['type'], $allowedTypes)) {
@@ -41,7 +42,7 @@ try {
     }
 
     $uploadDir = '../uploads/profile_images/';
-    
+
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
     }
@@ -57,7 +58,7 @@ try {
     $imageUrl = 'http://localhost/SociaTech/backend/uploads/profile_images/' . $fileName;
 
     $db = (new Database())->getConnection();
-    
+
     $stmt = $db->prepare("UPDATE users SET profile_image = :profile_image WHERE user_id = :user_id");
     $stmt->bindParam(':profile_image', $imageUrl);
     $stmt->bindParam(':user_id', $user_id);
@@ -72,7 +73,7 @@ try {
         'message' => 'Profile image updated successfully'
     ]);
 
-} catch(Exception $e) {
+} catch (Exception $e) {
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage()

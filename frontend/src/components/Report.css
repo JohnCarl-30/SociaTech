@@ -35,6 +35,7 @@
 
 .report_post_subtitle {
   font-size: 0.8rem;
+  font-weight: 600;
 }
 .report_post_option_container {
   display: flex;

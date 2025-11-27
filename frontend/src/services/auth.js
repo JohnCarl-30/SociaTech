@@ -52,21 +52,21 @@ export const signInWithEmail = async (email, password) => {
 
     const data = await response.json();
 
-    if (data.success === false && data.data?.needsVerification) {
-      throw new Error("Please verify your email address before logging in.");
-    }
-
-    if (!response.ok) {
+    // Throw error if login was not successful
+    if (!data.success) {
       throw new Error(data.message || "Login failed");
     }
 
+    // Only store user info if login succeeded
     localStorage.setItem("userData", JSON.stringify(data.data.user));
+
     return data;
   } catch (error) {
     console.error("Login service error:", error);
     throw error;
   }
 };
+
 
 export const googleAuth = async (user) => {
   try {

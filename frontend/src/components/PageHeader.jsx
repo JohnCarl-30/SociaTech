@@ -12,10 +12,11 @@ import "./PageHeader.css";
 import { useCycle } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useState, useEffect, useRef } from "react";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
 import logoImage from "../assets/SociaTech_logo_blackbg.png";
+import defaultPfp from "../assets/deault_pfp.png";
+import { useState, useEffect, useRef } from "react";
 import { getUser } from "../utils/storage";
 
 export default function PageHeader({
@@ -27,23 +28,28 @@ export default function PageHeader({
   openProfilePage,
   openSetting,
   openNotificationBar,
-  closeNotificationBar,
+  onNotificationClick,
   openDraftPage,
   openHelpPage,
+  userId,
+  notifEnabled,
   onSearchResults,
   pfpProfile,
   onUserClick,
-  onPostClick
+  onPostClick,
+  onClearSearch,
 }) {
   const navigate = useNavigate();
 
   const [isCreatePostOpen, cycleCreatePostOpen] = useCycle(false, true);
   const { logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
-  const [headerPfp, setHeaderPfp] = useState('');
+  const [headerPfp, setHeaderPfp] = useState("");
   const [loading, setLoading] = useState(false);
 
   const user = getUser();
@@ -60,7 +66,6 @@ export default function PageHeader({
         const data = await res.json();
 
         if (data.success) {
-
           setHeaderPfp(data.profile_image || "");
         }
       } catch (err) {
@@ -84,28 +89,22 @@ export default function PageHeader({
     }
   };
 
-  const handlePostCreated = () => {
-    if (onPostCreated) {
-      onPostCreated();
-    }
-  };
-
   const handleSearch = async (query) => {
     setSearchQuery(query);
-
     if (!query.trim()) {
       setSearchResults([]);
       setShowResults(false);
-      // IMPORTANT: Call callback to reset posts
       if (onSearchResults) {
-        onSearchResults(null); // Pass null to signal reset
+        onSearchResults([]); // Pass null to signal reset
       }
       return;
     }
 
     try {
       const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/searchPosts.php?query=${encodeURIComponent(query)}`
+        `http://localhost/SociaTech/backend/auth/searchPosts.php?query=${encodeURIComponent(
+          query
+        )}`
       );
       const data = await response.json();
 
@@ -134,7 +133,7 @@ export default function PageHeader({
     e.stopPropagation();
     setShowResults(false);
     setSearchQuery("");
-
+    setSearchResults([]);
     if (onUserClick) {
       onUserClick(result.user_id, result);
     }
@@ -143,12 +142,15 @@ export default function PageHeader({
   const handlePostClick = (result) => {
     setShowResults(false);
     setSearchQuery("");
+    setSearchResults([]);
+    if (onSearchResults) {
+      onSearchResults([]); // Clear search results in parent
+    }
 
     if (onPostClick) {
       onPostClick(result);
     }
   };
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -160,6 +162,36 @@ export default function PageHeader({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUnreadCount();
+
+      const interval = setInterval(fetchUnreadCount, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [userId]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchNotifications.php?user_id=${userId}`
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setUnreadCount(data.unread_count);
+      }
+    } catch (err) {
+      console.error("Error fetching unread count:", err);
+    }
+  };
+
+  const handlePostCreated = () => {
+    if (onPostCreated) {
+      onPostCreated();
+    }
+  };
 
   return (
     <>
@@ -187,7 +219,6 @@ export default function PageHeader({
               onChange={handleSearchChange}
             />
           </div>
-
           {showResults && searchResults.length > 0 && (
             <div className="search_results_dropdown">
               {searchResults.map((result) => (
@@ -197,21 +228,23 @@ export default function PageHeader({
                   onClick={() => handlePostClick(result)}
                 >
                   <img
-                    src={result.profile_image || pfpImage}
+                    src={result.profile_image || defaultPfp}
                     alt={result.username}
                     className="search_result_avatar"
                     onClick={(e) => handleUsernameClick(e, result)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   />
                   <div className="search_result_content">
                     <div
                       className="search_result_username"
                       onClick={(e) => handleUsernameClick(e, result)}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     >
                       @{result.username}
                     </div>
-                    <div className="search_result_title">{result.post_title}</div>
+                    <div className="search_result_title">
+                      {result.post_title}
+                    </div>
                     <div className="search_result_excerpt">
                       {result.post_content?.substring(0, 60)}...
                     </div>
@@ -236,25 +269,22 @@ export default function PageHeader({
           >
             <CirclePlus className="circlePlus_svg" /> Create
           </button>
-          <button className="notification_btn" onClick={closeNotificationBar}>
+          <button
+            className="notification_btn"
+            onClick={onNotificationClick}
+            style={{ position: "relative" }}
+          >
             <Bell className="bell_svg" />
+            {notifEnabled && unreadCount > 0 && (
+              <span className="notification_badge">{unreadCount}</span>
+            )}
           </button>
-
-
-
-
-          <div className="notification_container" style={{ display: openNotificationBar ? "flex" : "none" }}>
-            <div className="notification_header_title">Notification</div>
-            <div className="notification_child_container">No notifications</div>
-          </div>
-
-
-
-
           <div className="profile_btn" onClick={toggleDropDown}>
-            {headerPfp ? (
-  <img src={headerPfp} alt="profile_img" className="profile_img" />
-) : null}
+            <img
+              src={headerPfp || defaultPfp}
+              alt="profile_img"
+              className="profile_img"
+            />
           </div>
         </div>
       </div>

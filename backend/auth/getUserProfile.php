@@ -1,9 +1,10 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Content-Type: application/json');
+// MUST be the first thing before any output
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -25,8 +26,19 @@ try {
 
     $db = (new Database())->getConnection();
 
-    // Fetch user with profile_image
-    $stmt = $db->prepare("SELECT username, profile_image FROM users WHERE user_id = :user_id");
+    $stmt = $db->prepare("
+        SELECT 
+            user_id,
+            fullname, 
+            username, 
+            email, 
+            bio, 
+            profile_image,
+            followers,
+            created_at
+        FROM users 
+        WHERE user_id = :user_id
+    ");
     $stmt->bindParam(':user_id', $user_id);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -39,17 +51,9 @@ try {
         exit;
     }
 
-    // Post Count
-    $stmt = $db->prepare("SELECT COUNT(*) AS post_count FROM post WHERE user_id = :user_id");
-    $stmt->bindParam(':user_id', $user_id);
-    $stmt->execute();
-    $postData = $stmt->fetch(PDO::FETCH_ASSOC);
-
     echo json_encode([
         'success' => true,
-        'username' => $user['username'],
-        'profile_image' => $user['profile_image'],
-        'post_count' => (int) ($postData['post_count'] ?? 0),
+        'user' => $user
     ]);
 
 } catch (Exception $e) {
@@ -58,4 +62,3 @@ try {
         'message' => $e->getMessage()
     ]);
 }
-?>
