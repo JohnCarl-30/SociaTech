@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
+import DraftPage from "./pages/DraftPage";
 import AdminPanel from "./pages/AdminPanel";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -58,7 +59,9 @@ function App() {
 
         <Route path="/home" element={user ? <Home /> : <Navigate to="/" />} />
         <Route path="/quiz" element={user ? <Quiz /> : <Navigate to="/" />} />
+        <Route path="/draft" element={user ?  <DraftPage/>: <Navigate to="/" />} />
         <Route path="/admin" element={user ?  <AdminPanel/>: <Navigate to="/" />} />
+        
 
         
         <Route

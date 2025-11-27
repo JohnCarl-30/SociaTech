@@ -19,7 +19,6 @@ import { arQuizData } from "../../data/arQuizData";
 
 import QuizCard from "../components/QuizCard";
 import QuizNav from "../components/QuizNav";
-import DraftPage from "../components/DraftPage.jsx";
 import HelpPage from "../components/HelpPage.jsx";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext.jsx";
@@ -27,14 +26,13 @@ import { AuthContext } from "../context/AuthContext.jsx";
 export default function Quiz(){
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [isNotificationBarOpen,cycleNotificationBarOpen]=useCycle(false,true);
-    const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
+    
   const [isSettingOpen, setIsSettingOpen] = useState(false);
    const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [openQuiz, setOpenQuiz] = useState(false);
   const [quizTitle, setQuizTitle] = useState('');
   const [quizList, setQuizList] = useState([]);
-   const [openDraftPage, setOpenDraftPage] = useState(false);
   const [openHelpPage,setOpenHelpPage] = useState(false);
   const [quizInfo, setQuizInfo] = useState({});
 
@@ -74,7 +72,7 @@ const closeAllModals =()=>{
     setIsDropDownOpen(false); 
     setIsSettingOpen(false);
     setOpenHelpPage(false);
-    setOpenDraftPage(false);
+  
   }
 
  
@@ -134,15 +132,12 @@ const closeAllModals =()=>{
     setOpenQuiz(false);
   };
 
-  const openProfilePage = () => {
-    setIsProfilePageOpen(true);
-    setIsDropDownOpen(false); 
-  };
+ 
   const openSetting = () => {
     setIsSettingOpen(true);
     setIsDropDownOpen(false);
   };
-  const closeProfilePage = () => setIsProfilePageOpen(false);
+ 
   const closeSetting=()=> setIsSettingOpen(false);
 
    const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
@@ -154,17 +149,16 @@ const closeAllModals =()=>{
                         // onPostCreated={fetchPost}
                         isDropDownOpen={isDropDownOpen}
                         toggleDropDown={toggleDropDown}
-                        openProfilePage={openProfilePage}
+                      
                         openSetting={openSetting}
                         openNotificationBar={isNotificationBarOpen}
                         closeNotificationBar={()=>cycleNotificationBarOpen()}
+                        isActive={'quiz'}
                         
                       />
-                       <ProfilePage
-            style={isProfilePageOpen ? "flex" : "none"}
-            closeProfilePage={closeProfilePage}
-          />
-           <DraftPage isDraftPageOn={openDraftPage} closeDraftPage={()=>setOpenDraftPage(false)}/>
+                       
+       
+          
 
                       <HelpPage openPage={openHelpPage} closePage={()=>setOpenHelpPage(false)}/>
           <Settings style={isSettingOpen ? 'flex' : 'none'}

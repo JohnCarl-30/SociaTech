@@ -23,7 +23,6 @@ import pfpImage from "../assets/deault_pfp.png";
 
 import Settings from "../components/Settings.jsx";
 import TrippleDots from "../assets/moreBtn.png";
-import DraftPage from "../components/DraftPage.jsx";
 import HelpPage from "../components/HelpPage.jsx";
 
 import NotificationPanel from "../components/NotificationPanel.jsx";
@@ -80,7 +79,6 @@ export default function Homepage() {
   const [editPostImagePreview, setEditPostImagePreview] = useState("");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
-  const [openDraftPage, setOpenDraftPage] = useState(false);
   const [openHelpPage, setOpenHelpPage] = useState(false);
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
@@ -330,7 +328,7 @@ export default function Homepage() {
     setIsDropDownOpen(false);
     setIsSettingOpen(false);
     setOpenHelpPage(false);
-    setOpenDraftPage(false);
+    
   };
   const user_id = user?.id || null;
 
@@ -487,10 +485,7 @@ export default function Homepage() {
     setIsSettingOpen(true);
     setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
-  const handleOpenDraftPage = () => {
-    setOpenDraftPage(true);
-    setIsDropDownOpen(false);
-  };
+  
   const handleOpenHelpPage = () => {
     setOpenHelpPage(true);
     setIsDropDownOpen(false);
@@ -1087,7 +1082,6 @@ export default function Homepage() {
           openProfilePage={openProfilePage}
           openSetting={openSetting}
           onNotificationClick={() => setIsNotificationPanelOpen(true)}
-          openDraftPage={handleOpenDraftPage}
           openHelpPage={handleOpenHelpPage}
           userId={user_id}
           notifEnabled={notifEnabled}
@@ -1095,6 +1089,7 @@ export default function Homepage() {
           onUserClick={handleUserClick}
           onPostClick={handlePostClick}
           onClearSearch={clearSearch}
+          isActive={'home'}
         />
         <NotificationPanel
           isOpen={isNotificationPanelOpen}
@@ -1114,10 +1109,7 @@ export default function Homepage() {
               closeProfilePage={closeProfilePage}
                onPostClick={openComments}
             />
-            <DraftPage
-              isDraftPageOn={openDraftPage}
-              closeDraftPage={() => setOpenDraftPage(false)}
-            />
+           
 
             <HelpPage
               openPage={openHelpPage}
