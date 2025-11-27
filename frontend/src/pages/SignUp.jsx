@@ -11,8 +11,11 @@ import systemLogo from "../assets/SociaTech_logo_whitebg.png";
 import googleLogo from "../assets/google.svg";
 import { useAuth } from "../hooks/useAuth";
 import { sendVerificationEmail } from "../services/auth";
+import TermsofService from "../components/TermsofService.jsx";
+import PrivacyPolicies from "../components/PrivacyPolicies.jsx";
 
 export default function SignUp() {
+  
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -28,8 +31,27 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
-
+const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); // New state for Privacy modal
   const navigate = useNavigate();
+
+  const handleTermsClick = (e) => {
+    e.preventDefault();
+    setIsTermsOpen(true);
+  };
+
+  const handleTermsClose = () => {
+    setIsTermsOpen(false);
+  };
+
+  const handlePrivacyClick = (e) => {
+    e.preventDefault();
+    setIsPrivacyOpen(true);
+  };
+
+  const handlePrivacyClose = () => {
+    setIsPrivacyOpen(false);
+  };
 
   // Password validation
   const validatePasswordRules = (password) => {
@@ -386,8 +408,11 @@ export default function SignUp() {
               />
               <label htmlFor="term_checkbox" className="term_checkbox_text">
                 I agree to the{" "}
-                <span className="term_link">Terms of Service</span> and{" "}
-                <span className="privacy_link">Privacy Policies</span> of
+                 <span className="term_link" onClick={handleTermsClick}>
+                  Terms of Service
+                </span>{" "}
+                and{" "}
+                <span className="privacy_link" onClick={handlePrivacyClick}>Privacy Policies</span> of
                 SociaTech
               </label>
             </div>
@@ -424,6 +449,9 @@ export default function SignUp() {
           </div>
         </div>
       </div>
+
+      <TermsofService isOpen={isTermsOpen} onClose={handleTermsClose} />
+      <PrivacyPolicies isOpen={isPrivacyOpen} onClose={handlePrivacyClose} />
     </>
   );
 }
