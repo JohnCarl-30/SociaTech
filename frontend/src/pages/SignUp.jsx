@@ -1,4 +1,6 @@
 import "./SignUp.css";
+import TermsofService from "../components/TermsofService.jsx";
+import PrivacyPolicies from "../components/PrivacyPolicies.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import { useCycle } from "framer-motion";
 import { toast } from "react-toastify";
@@ -28,6 +30,8 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); // New state for Privacy modal
 
   const navigate = useNavigate();
 
@@ -207,7 +211,7 @@ export default function SignUp() {
       const backendResponse = await googleAuth(result.user);
 
       const userData = {
-        id: backendResponse.user.user_id, // ✅ Use user_id from backend
+        id: backendResponse.user.user_id,
         email: backendResponse.user.email,
         displayName: backendResponse.user.fullname,
         photoURL: backendResponse.user.profile_image,
@@ -239,6 +243,24 @@ export default function SignUp() {
     if (e.key === "Enter" && !loading && !googleLoading && checkbox) {
       handleSubmit();
     }
+  };
+
+  const handleTermsClick = (e) => {
+    e.preventDefault();
+    setIsTermsOpen(true);
+  };
+
+  const handleTermsClose = () => {
+    setIsTermsOpen(false);
+  };
+
+  const handlePrivacyClick = (e) => {
+    e.preventDefault();
+    setIsPrivacyOpen(true);
+  };
+
+  const handlePrivacyClose = () => {
+    setIsPrivacyOpen(false);
   };
 
   return (
@@ -386,8 +408,11 @@ export default function SignUp() {
               />
               <label htmlFor="term_checkbox" className="term_checkbox_text">
                 I agree to the{" "}
-                <span className="term_link">Terms of Service</span> and{" "}
-                <span className="privacy_link">Privacy Policies</span> of
+                <span className="term_link" onClick={handleTermsClick}>
+                  Terms of Service
+                </span>{" "}
+                and{" "}
+                <span className="privacy_link" onClick={handlePrivacyClick}>Privacy Policies</span> of
                 SociaTech
               </label>
             </div>
@@ -424,6 +449,9 @@ export default function SignUp() {
           </div>
         </div>
       </div>
+
+      <TermsofService isOpen={isTermsOpen} onClose={handleTermsClose} />
+      <PrivacyPolicies isOpen={isPrivacyOpen} onClose={handlePrivacyClose} />
     </>
   );
 }
