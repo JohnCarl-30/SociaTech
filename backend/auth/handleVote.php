@@ -31,11 +31,9 @@ try {
     $user_id = $data['user_id'] ?? null;
     $vote_type = $data['vote_type'] ?? null;
 
-    if ($post_id === null || $user_id === null || $vote_type === null) {
+    if ($post_id === null || $user_id === null) {
         throw new Exception('Missing vote data');
     }
-
-    $voteColumn = $vote_type == 1 ? "up" : "down";
 
     // Check existing vote
     $stmt = $db->prepare("SELECT vote_type FROM postvote WHERE post_id=:post AND user_id=:user");
@@ -43,36 +41,43 @@ try {
     $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existing) {
-        // NEW VOTE
-        $stmt = $db->prepare("INSERT INTO postvote (user_id, post_id, vote_type) VALUES (?, ?, ?)");
-        $stmt->execute([$user_id, $post_id, $vote_type]);
+        // NEW VOTE - No existing vote, insert new one
+        if ($vote_type !== null) {
+            $stmt = $db->prepare("INSERT INTO postvote (user_id, post_id, vote_type) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $post_id, $vote_type]);
 
-        $stmt = $db->prepare("UPDATE post SET {$voteColumn}_tally_post = {$voteColumn}_tally_post + 1 WHERE post_id=:post");
-        $stmt->execute([':post' => $post_id]);
+            $voteColumn = $vote_type == 1 ? "up_tally_post" : "down_tally_post";
+            $stmt = $db->prepare("UPDATE post SET {$voteColumn} = {$voteColumn} + 1 WHERE post_id=:post");
+            $stmt->execute([':post' => $post_id]);
+        }
 
-    } else if ($existing['vote_type'] == $vote_type) {
-        // REMOVE VOTE
+    } else if ($vote_type === null) {
+        // REMOVE VOTE - User is removing their vote
+        $oldColumn = $existing['vote_type'] == 1 ? "up_tally_post" : "down_tally_post";
+
         $stmt = $db->prepare("DELETE FROM postvote WHERE user_id=:user AND post_id=:post");
         $stmt->execute([':user' => $user_id, ':post' => $post_id]);
 
-        $stmt = $db->prepare("UPDATE post SET {$voteColumn}_tally_post = {$voteColumn}_tally_post - 1 WHERE post_id=:post");
+        $stmt = $db->prepare("UPDATE post SET {$oldColumn} = {$oldColumn} - 1 WHERE post_id=:post");
         $stmt->execute([':post' => $post_id]);
 
-    } else {
-        // SWITCH VOTE
-        $oldColumn = $existing['vote_type'] == 1 ? "up" : "down";
+    } else if ($existing['vote_type'] != $vote_type) {
+        // SWITCH VOTE - User is changing from up to down or vice versa
+        $oldColumn = $existing['vote_type'] == 1 ? "up_tally_post" : "down_tally_post";
+        $newColumn = $vote_type == 1 ? "up_tally_post" : "down_tally_post";
 
         $stmt = $db->prepare("UPDATE postvote SET vote_type=:vote WHERE user_id=:user AND post_id=:post");
         $stmt->execute([':vote' => $vote_type, ':user' => $user_id, ':post' => $post_id]);
 
         $stmt = $db->prepare("
             UPDATE post
-            SET {$oldColumn}_tally_post = {$oldColumn}_tally_post - 1,
-                {$voteColumn}_tally_post = {$voteColumn}_tally_post + 1
+            SET {$oldColumn} = {$oldColumn} - 1,
+                {$newColumn} = {$newColumn} + 1
             WHERE post_id=:post
         ");
         $stmt->execute([':post' => $post_id]);
     }
+    // If vote_type matches existing vote_type, do nothing (already voted the same way)
 
     // SUCCESS RESPONSE
     echo json_encode(['success' => true]);
@@ -82,4 +87,3 @@ try {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
-

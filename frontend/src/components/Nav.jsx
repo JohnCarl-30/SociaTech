@@ -1,4 +1,4 @@
-import { House, Crown, Brain,ShieldUser,  FolderOpen,  } from "lucide-react";
+import { House, Crown, Brain,ShieldUser,  FolderOpen,BookOpenText   } from "lucide-react";
 import "./Nav.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -61,6 +61,16 @@ const isAdmin = user?.role === "admin";
                     }}
                 >
                    <ShieldUser /> Admin Panel
+                </div>)}
+                {isAdmin&&(<div 
+                    className={`nav_child nav_child${isActive('/audit')}`}
+                    onClick={() => {
+                        closeModals;
+                        navigate('/audit');
+                        
+                    }}
+                >
+                   <BookOpenText /> Audit Log
                 </div>)}
             </div>
         </>

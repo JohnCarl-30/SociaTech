@@ -32,7 +32,7 @@
 .nav_child.active,
 .nav_child:hover {
   cursor: pointer;
-  background-color: white;
+  background-color: whitesmoke;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   
 }

@@ -54,6 +54,7 @@ padding: 1rem 0;
 .quiz_card{
     width: 24em;
     border-radius: .8rem;
+    background-color: whitesmoke;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
     height: 12em;
     padding: 1.5rem;

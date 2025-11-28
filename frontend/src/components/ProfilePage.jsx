@@ -560,7 +560,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                                   </div>
                                 </>
                               )}
-                              <div
+                              {post.user_id !== user_id &&( <div
                                 className="dropdown_item"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -572,8 +572,8 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                                   fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
                                 />
                                 <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
-                              </div>
-                              <div
+                              </div>)}
+                              {post.user_id !== user_id &&(<div
                                 className="dropdown_item"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -582,7 +582,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               >
                                 <AlertCircle size={18} />
                                 <span>Report</span>
-                              </div>
+                              </div>)}
                             </div>
                           )}
                         </div>

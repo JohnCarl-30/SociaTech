@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useCycle } from "framer-motion";
 import ProfilePage from "../components/ProfilePage";
 import Settings from "../components/Settings";
+import OtherUserProfile from "../components/otherUserProfile.jsx";
+import { getUser } from "../utils/storage.js";
 
 import HelpPage from "../components/HelpPage.jsx";
 import './AdminPanel.css';
@@ -24,7 +26,9 @@ export default function AdminPanel(){
     const [totalPosts, setTotalPosts] = useState();
     const [totalComments, setTotalComments] = useState();
     const [totalReports, setTotalReports] = useState();
-    
+    const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
+    const [selectedUserId,setSelectedUserId] = useState('');
+    const [viewProfileData, setViewProfileData]= useState({});
     
     
 
@@ -36,18 +40,39 @@ export default function AdminPanel(){
     const [selectedFilterOption,setSelectedFilterOption] =useState('all');
     const [searchTerm, setSearchTerm] = useState("");
 
+    const user = getUser();
+  const user_id = user?.id || null;
+  const admin_username = user?.username || null;
+  
+
+
+     const closeOtherUserProfile = () => {
+    setIsOtherUserProfileOpen(false);
+    
+  };
 
     useEffect(()=>{
         fetchReports();
         fetchDashboard();
         setPreviewPost([]);
         setPreviewComment([]);
+        setPostType([]);
         
     },[]);
-const openProfilePage = () => {
-    setIsProfilePageOpen(true);
-    setIsDropDownOpen(false); 
-  };
+
+
+    const handleViewProfile =(userId)=>{
+        if(userId === user_id){
+            openProfilePage();
+            return;
+        }
+        setIsOtherUserProfileOpen(true);
+        setSelectedUserId(userId);
+    }
+
+
+
+
   const closeProfilePage = () => setIsProfilePageOpen(false);
     const fetchDashboard= async() => {
         try{
@@ -87,7 +112,7 @@ const openProfilePage = () => {
 
     
 
-    const handleExecute = async (reportId,reportedUID,contentId) => {
+    const handleExecute = async (reportId,reportedUID,contentId,type,reason) => {
         const userAction = rowUserActions[reportId] || 'no_action';
         const contentAction = rowContentActions[reportId] || 'no_action';
         console.log(contentAction);
@@ -97,6 +122,9 @@ const openProfilePage = () => {
         formData.append('reportId', reportId);
         formData.append('reportedUID',reportedUID);
         formData.append('contentId',contentId);
+        formData.append('admin',admin_username);
+        formData.append('type',type);
+        formData.append('reason',reason);
 
         try{
       const res = await fetch('http://localhost/SociaTech/backend/auth/handleReportAction.php',{
@@ -141,6 +169,12 @@ const openProfilePage = () => {
         return matchesSearch && matchesStatus;
     });
 
+
+    const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); 
+  };
+
    
     const openSetting = () => {
         setIsSettingOpen(true);
@@ -177,6 +211,7 @@ const openProfilePage = () => {
     }
 
     const fetchComment=async(contentId)=>{
+        
         if(!contentId){
             alert('Preview Failed! Missing contentId');
         }
@@ -189,15 +224,17 @@ const openProfilePage = () => {
                 body: formData,
             });
 
-        const data = await res.json();
-
-      if(data.success){
-        setPreviewComment(data.comment);
-        
-      }
+             const data = await res.json();
+                    if(data.success){
+                        setPreviewComment(data.comment);
+                        
+                        
+                    }else{
+                        alert(data.message);
+                    }
          }  catch(err){
-            console.error("Error creating post:", err);
-      alert("Something went wrong. Please try again.");
+            console.error("Error fetching comments comment:", err);
+            alert("Something went wrong. Please try again.");
          }  
     }
     const fetchPost=async(contentId)=>{
@@ -226,7 +263,7 @@ const openProfilePage = () => {
             setPostType('image');
         }
     } else {
-        alert("No data found for this post");
+        alert("No content found! Post already deleted!");
     }
 }
 
@@ -332,9 +369,9 @@ const openProfilePage = () => {
                     
                     <div className="adminPanel_filter_container">
                         <div className="filterTab_container">
-                            <div className="filterTab_btn" style={selectedFilterOption === 'all'? {backgroundColor:'white',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('all')}>All</div>
-                            <div className="filterTab_btn" style={selectedFilterOption === 'pending'? {backgroundColor:'white',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('pending')}>Pending</div>
-                            <div className="filterTab_btn"style={selectedFilterOption === 'resolved'? {backgroundColor:'white',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('resolved')}>Resolved</div>
+                            <div className="filterTab_btn" style={selectedFilterOption === 'all'? {backgroundColor:'whitesmoke',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('all')}>All</div>
+                            <div className="filterTab_btn" style={selectedFilterOption === 'pending'? {backgroundColor:'whitesmoke',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('pending')}>Pending</div>
+                            <div className="filterTab_btn"style={selectedFilterOption === 'resolved'? {backgroundColor:'whitesmoke',color:"black"}:{backgroundColor:'black',color:"white"}} onClick={()=>setSelectedFilterOption('resolved')}>Resolved</div>
                         </div>
                         <div className="filterTab_searchBar"><Search/><input type="text" className="filterTab_searchField" placeholder="Search" onChange={(e) => setSearchTerm(e.target.value)}/></div>
                     </div>
@@ -361,22 +398,25 @@ const openProfilePage = () => {
                                         <td>{report.report_id}</td>
                                         <td>{report.report_date}</td>
                                         <td><span className="">UID: {report.reported_by}</span></td>
-                                        <td><span className="reportTable_viewUser">UID: {report.reported_uid}</span></td>
+                                        <td><span className="reportTable_viewUser" onClick={()=>handleViewProfile(report.reported_uid)}>UID: {report.reported_uid}</span></td>
                                         <td>{Array.isArray(report.report_reason)
                                             ? report.report_reason.map(reason => reason.replace(/\"/g, '').trim()).join(', ')
                                             : String(report.report_reason).replace(/[[\]"]/g, '').trim().split(',').join(', ')
                                         }</td>
                                         <td>
-                                            {report.report_type === 'N/A' 
+                                            {report.type === 'N/A' 
                                                 ? 'N/A' 
                                                 : report.type === 'post' 
                                                 ? <span className="reportTable_viewContent"onClick={()=>{
                                                     fetchPost(report.content_id);
                                                     setPreviewComment([]);
+                                                    setPostType('post');
                                                 }}>View post</span> 
                                                 : <span className="reportTable_viewContent" onClick={()=>{
                                                     fetchComment(report.content_id);
+                                                    console.log(report.content_id);
                                                     setPreviewPost([]);
+                                                    setPostType('comment');
                                                 }}>View comment</span>
                                             }
                                         </td>
@@ -392,20 +432,20 @@ const openProfilePage = () => {
                                                 <option value="suspend">Suspend User</option>
                                                 <option value="ban">Ban User</option>
                                             </select>
-                                            <select 
+                                            {report.type !== 'N/A' &&(<select 
                                                 value={rowContentActions[report.report_id] || 'no_action'}
                                                 onChange={(e) => handleContentActionChange(report.report_id, e.target.value)} 
                                                 className="reportTable_select"
                                             >
                                                 <option value="no_action">Content Action</option>
-                                                <option value="delete_comment">Delete Comment</option>
-                                                <option value="delete_post">Delete Post</option>
-                                            </select>
+                                                {report.type === 'comment' &&(<option value="delete_comment">Delete Comment</option>)}
+                                                {report.type === 'post' &&(<option value="delete_post">Delete Post</option>)}
+                                            </select>)}
                                         </td>
 
                                         <td>
                                             <button 
-                                                onClick={() => handleExecute(report.report_id,report.reported_uid,report.content_id)}
+                                                onClick={() => handleExecute(report.report_id,report.reported_uid,report.content_id, postType, report.report_reason )}
                                                 className="reportTable_execute_btn" 
                                             >
                                                 Execute
@@ -454,5 +494,7 @@ const openProfilePage = () => {
                         ))}
                     </div>
                     )}
+
+                    <OtherUserProfile openModal={isOtherUserProfileOpen} uid={selectedUserId} closeModal={closeOtherUserProfile}/>
     </>);
 }

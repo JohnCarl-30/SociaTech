@@ -100,6 +100,7 @@ body {
   width: 100%;
  
   border-radius: 0.8rem;
+  background-color: whitesmoke;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
@@ -122,6 +123,7 @@ body {
   width: 90%;
   flex-direction: row;
   align-items: center;
+  
   gap: 0.5rem;
 }
 .post_username {

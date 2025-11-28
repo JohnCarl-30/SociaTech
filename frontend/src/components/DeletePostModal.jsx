@@ -24,35 +24,52 @@ const DeletePostModal = forwardRef(({ user_id, onDelete }, ref) => {
   };
 
   const confirmDeletePost = async () => {
-    if (!postToDelete) return;
+  if (!postToDelete) return;
 
-    try {
-      const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/deletePost.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            post_id: postToDelete.post_id,
-            user_id: user_id,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-        alert("Post deleted successfully!");
-        // Notify parent to remove post from list
-        onDelete?.(postToDelete.post_id);
-        closeModal();
-      } else {
-        alert("Failed to delete post: " + (data.error || "Unknown error"));
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/deletePost.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_id: postToDelete.post_id,
+          user_id: user_id,
+        }),
       }
-    } catch (err) {
+    );
+
+    // Check muna kung HTTP response is OK (status 200-299)
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("HTTP error:", res.status, text);
       alert("Something went wrong. Please try again.");
+      return;
     }
-  };
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      alert("Something went wrong. Please try again.");
+      return;
+    }
+
+    if (data.success) {
+      alert("Post deleted successfully!");
+      onDelete?.(postToDelete.post_id);
+      closeModal();
+    } else {
+      alert("Failed to delete post: " + (data.error || "Unknown error"));
+    }
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <>

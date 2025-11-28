@@ -27,16 +27,22 @@ import Settings from "../components/Settings.jsx";
 import TrippleDots from "../assets/moreBtn.png";
 import HelpPage from "../components/HelpPage.jsx";
 
-import NotificationPanel from "../components/NotificationPanel.jsx";
+
+import {
+  notifyPostComment,
+  notifyPostUpvote,
+  notifyCommentUpvote,
+} from "../services/notificationHelper.js";
 
 
 
 
-export default function CommentModal({openModal,user_id,closeModal, postData, fetchPosts}){
+export default function CommentModal({openModal,user_id,closeModal, postData, fetchPosts, onDelete}){
     const [comments, setComments] = useState([]);
     const [commentText, setCommentText] = useState("");
   const [commentImage, setCommentImage] = useState(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  
  
   const [selectedPost, setSelectedPost] = useState(null);
    const deleteModalRef = useRef();
@@ -50,7 +56,7 @@ export default function CommentModal({openModal,user_id,closeModal, postData, fe
   const [contentId, setContentId] = useState(null);
    const [isReportOpen, setIsReportOpen] = useState(false);
    const [openMoreModalPost, setOpenMoreModalPost] = useState(null);
-   const [openMorePost, setOpenMorePost] = useState(null);
+  
    const [openMoreComment, setOpenMoreComment] = useState(null);
    const [commentSortOption, setCommentSortOption] = useState("newest");
    const [deletedComment, setDeletedComment] = useState(null);
@@ -62,13 +68,173 @@ const [commentVoteState, setCommentVoteState] = useState({});
  const [upTally, setUpTally] = useState({});
   const [downTally, setDownTally] = useState({});
   const [voteState, setVoteState] = useState({});;
+   const user = getUser();
+  const username = user?.username || null;
 
   useEffect(()=>{
     if(postData){
-      setSelectedPost(postData)
+      console.log(postData);
+      setSelectedPost(postData);
+      
+      setUpTally(postData.up_tally_post);
+      setDownTally(postData.down_tally_post);
+
+      // Fetch user's vote state and wait for it to complete
+      const fetchVotes = async()=>{
+      if (user_id) {
+        const userVotes = await fetchUserVotes(user_id);
+        setVoteState(userVotes);
+      }
+    }
+
+    fetchVotes();
+
     }
   },[postData]);
+
+
+  const fetchUserVotes = async (userId) => {
+  if (!userId) return {};
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
+    );
+    const data = await res.json();
+    
+    if (data.success) {
+      const voteObj = {};
+      data.votes.forEach(vote => {
+        // vote_type: 1 = up, 0 = down
+        voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
+      });
+      return voteObj;
+    }
+    return {};
+  } catch (err) {
+    console.log("Error fetching user votes:", err);
+    return {};
+  }
+};
+
+
+
+const handleToggleVote = async (userId, postId, type) => {
+  if (!userId) {
+    alert("You must be logged in to vote.");
+    return;
+  }
+
+  const currentVote = voteState[postId];
+  
+  // Determine new vote type
+  // If clicking same button, remove vote. If clicking different button, switch vote.
+  const newVoteType = currentVote === type ? null : type;
+
+  // Store original values for rollback
+  const originalUpTally = upTally[postId];
+  const originalDownTally = downTally[postId];
+  const originalVoteState = currentVote;
+
+  // Calculate what the new tallies should be
+  let newUpTally = originalUpTally;
+  let newDownTally = originalDownTally;
+
+  // Remove old vote effect
+  if (currentVote === "up") {
+    newUpTally = newUpTally - 1;
+  } else if (currentVote === "down") {
+    newDownTally = newDownTally - 1;
+  }
+
+  // Add new vote effect
+  if (newVoteType === "up") {
+    newUpTally = newUpTally + 1;
+  } else if (newVoteType === "down") {
+    newDownTally = newDownTally + 1;
+  }
+
+  // Optimistic UI update
+  setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
+  setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
+  setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
+
+  // Prepare vote type for backend (1=up, 0=down, null=remove)
+  let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleVote.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_id: postId,
+          user_id: userId,
+          vote_type: voteTypeToBackend,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Fetch updated tallies from the backend to ensure accuracy
+      const postRes = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
+      );
+      const postData = await postRes.json();
+      
+      if (postData.success && postData.post) {
+        setUpTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.up_tally_post,
+        }));
+        setDownTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.down_tally_post,
+        }));
+        
+        // Update the post in the posts array too
+        setSelectedPost((prev) => ({
+            ...prev,
+            up_tally_post: postData.post.up_tally_post,
+            down_tally_post: postData.post.down_tally_post
+          }));
+      }
+
+      // Create notification for upvote
+     if (newVoteType === "up") {
+        if (selectedPost && selectedPost.user_id !== userId) {
+          await notifyPostUpvote(
+            selectedPost.user_id,
+            userId,
+            username,
+            postId
+          );
+        }
+    }
+    } else {
+      // Revert UI changes if backend fails
+      console.log("Vote failed:", data.message);
+      setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+      setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+      setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+      alert("Failed to vote. Please try again.");
+    }
+  } catch (err) {
+    console.log("Error sending vote:", err);
+    // Revert UI changes on error
+    setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+    setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+    setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+    alert("Error voting. Please check your connection.");
+  }
+};
+
  
+
+  
   
 
  useEffect(() => {
@@ -89,6 +255,11 @@ const [commentVoteState, setCommentVoteState] = useState({});
   };
 }, [openModal, selectedPost?.post_id, commentSortOption]);
 
+ const onCloseModal =()=>{
+    setEditModalOpen(false);
+   setOpenMoreComment(false);
+      setOpenMoreModalPost(false);
+  }
 
    const handleCommentImageSelect = (e) => {
     const file = e.target.files[0];
@@ -251,7 +422,6 @@ const toggleMoreModalPost = (postId) => {
           return newSet;
         });
 
-        setOpenMorePost(null); // Close dropdown
         setOpenMoreComment(null); // Close comment modal dropdown if open
       } else {
         alert(data.message || 'Failed to save/unsave post');
@@ -276,9 +446,9 @@ const toggleMoreModalPost = (postId) => {
   setEditModalOpen(true);
 };
 
-   const handlePostDeleted = (deletedPostId) => {
-    setPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
-  };
+  //  const handlePostDeleted = (deletedPostId) => {
+  //   setPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
+  // };
 
   const handleDeleteClick = (post) => {
     deleteModalRef.current.open(post); // Open modal for this post
@@ -611,40 +781,22 @@ const toggleMoreModalPost = (postId) => {
                         <button className="commentModal_commentBtn">
                           Comment
                         </button>
-                        <button
-                          className={`up_vote_btn ${
-                            voteState[selectedPost.post_id] === "up"
-                              ? "voted"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleToggleVote(
-                              user_id,
-                              selectedPost.post_id,
-                              "up"
-                            )
-                          }
-                        >
-                          <ArrowBigUp />
-                          {upTally[selectedPost.post_id]}
-                        </button>
-                        <button
-                          className={`down_vote_btn ${
-                            voteState[selectedPost.post_id] === "down"
-                              ? "voted"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleToggleVote(
-                              user_id,
-                              selectedPost.post_id,
-                              "down"
-                            )
-                          }
-                        >
-                          <ArrowBigDown />
-                          {downTally[selectedPost.post_id]}
-                        </button>
+                         <button
+  className={voteState[selectedPost.post_id] === 'up' ? 'comment_up_vote_btn active' : 'comment_up_vote_btn'}
+  onClick={() => handleToggleVote(user_id, selectedPost.post_id, "up")}
+>
+  <ArrowBigUp fill={voteState[selectedPost.post_id] === 'up' ? 'currentColor' : 'none'} />
+  {upTally[selectedPost.post_id] ?? selectedPost.up_tally_post}
+</button>
+
+<button
+  className={voteState[selectedPost.post_id] === 'down' ? 'comment_down_vote_btn active' : 'comment_down_vote_btn'}
+  onClick={() => handleToggleVote(user_id, selectedPost.post_id, "down")}
+>
+  <ArrowBigDown fill={voteState[selectedPost.post_id] === 'down' ? 'currentColor' : 'none'} />
+  {downTally[selectedPost.post_id] ?? selectedPost.down_tally_post}
+</button>
+
                       </div>
                       {/* Sorting newest, oldest tyaka most upvote plan ko lagyan time pero tyaka na */}
 
@@ -922,7 +1074,10 @@ const toggleMoreModalPost = (postId) => {
                             onChange={handleCommentImageSelect}
                           />
                           <button
-                            onClick={closeModal}
+                            onClick={()=>{
+                              closeModal();
+                              onCloseModal();
+                            }}
                             className="commentModal_actionBtn"
                           >
                             Cancel
@@ -952,7 +1107,7 @@ const toggleMoreModalPost = (postId) => {
               <DeletePostModal
         ref={deleteModalRef}
         user_id={user_id}
-        onDelete={handlePostDeleted}
+        onDelete={onDelete}
       />
       <EditPostModal 
   open={editModalOpen} 

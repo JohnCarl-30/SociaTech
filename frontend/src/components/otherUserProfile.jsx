@@ -1,10 +1,168 @@
-import { useState } from "react";
-import "../pages/Home.css";
+import { useEffect, useState } from "react";
+import { useCycle } from "framer-motion";
+import CommentModal from "./commentModal";
+import EditPostModal from "./EditPostModal";
+import DeletePostModal from "./DeletePostModal";
+import Report from "./Report";
+import { getUser } from "../utils/storage";
+import { ArrowBigUp,
+  ArrowBigDown,
+  Bookmark,
+  AlertCircle,
+  Image,
+  X,
+  Ban,
+  Edit,
+  Trash2,} from "lucide-react";
+import TrippleDots from "../assets/moreBtn.png"; // sample path
+import pfpImage from "../assets/deault_pfp.png";     // sample fallback image
+import moreBtn from "../assets/moreBtn.png";
+import { useRef } from "react";
 
-export default function otherUserProfile({openModal, closeModal, userId}){
-    const [comments, setComments] = useState([]);
+import '../pages/Home.css';
+
+export default function OtherUserProfile({openModal, uid, closeModal}){
+  
      const [otherUserProfile, setOtherUserProfile] = useState([]);
      const [otherUserPosts, setOtherUserPosts] = useState([]);
+     const [openOtherUserMoreContainer, cycleOpenOtherUserMoreContainer] =
+    useCycle(false, true);
+    const [openMorePost, setOpenMorePost]=useState(null);
+     const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+    const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
+    // const [selectedOtherUser, setSelectedOtherUser] = useState(null);
+      const [isReportOpen, setIsReportOpen] = useState(false);
+      const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+       const [selectedPost, setSelectedPost] = useState(null);
+        const [reportType, setReportType] = useState(null);
+  const [reportedBy, setReportedBy] = useState(null);
+  const [reportedUID, setReportedUID] = useState(null);
+  const [contentId, setContentId] = useState(null);
+  const [savedPostIds, setSavedPostIds] = useState(new Set());
+   
+   
+
+  //for EditPOST MODAL:
+  
+
+
+
+     
+
+     const toggleMorePost = (post_id) => {
+    setOpenMorePost((prev) => (prev === post_id ? null : post_id));
+  };
+     
+  
+
+
+  useEffect(()=>{
+
+
+    const handleUserClick = async (userId) => {
+    
+    setIsLoadingOtherUserData(true);
+    setOtherUserProfile(null);
+    setOtherUserPosts([]);
+
+
+    await Promise.all([
+      fetchOtherUserProfile(userId),
+      fetchOtherUserPosts(userId),
+      fetchFollowStats(userId),
+    ]);
+
+    setIsLoadingOtherUserData(false);
+  };
+
+  handleUserClick(uid);
+
+
+  },[uid]);
+
+  
+  const openComments = async (post) => {
+    setSelectedPost(post);
+    setIsCommentModalOpen(true);
+  };
+  
+
+       const closeComments = () => {
+    setSelectedPost(null);
+    setIsCommentModalOpen(false);
+  };
+   const handlePostDeleted = (deletedPostId) => {
+    setPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
+    setIsCommentModalOpen(false);
+  };
+
+   const closeReport = () => {
+    setIsReportOpen(false);
+  };
+
+   const setReportData = (type, reportedBy, reportedUID, contentId) => {
+    setReportType(type);
+    setReportedBy(reportedBy);
+    setReportedUID(reportedUID);
+    setContentId(contentId);
+    setIsReportOpen(true);
+    
+  };
+
+  
+  
+
+    const user = getUser();
+     const user_id = user?.id || null;
+
+
+
+     const handleSavePost = async (postId) => {
+    if (!user_id) {
+      alert('You must be logged in to save posts');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('user_id', user_id);
+      formData.append('post_id', postId);
+
+      const res = await fetch(
+        'http://localhost/SociaTech/backend/auth/handleSavedPost.php',
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Update local state
+        setSavedPostIds(prev => {
+          const newSet = new Set(prev);
+          if (data.action === 'saved') {
+            newSet.add(postId);
+            alert('Post saved successfully!');
+          } else {
+            newSet.delete(postId);
+            alert('Post unsaved successfully!');
+          }
+          return newSet;
+        });
+
+         
+      } else {
+        alert(data.message || 'Failed to save/unsave post');
+      }
+    } catch (err) {
+      console.error('Error saving post:', err);
+      alert('An error occurred while saving the post');
+    }
+  };
 
     //pang fetch ng 
      const fetchOtherUserPosts = async (userId) => {
@@ -26,6 +184,7 @@ export default function otherUserProfile({openModal, closeModal, userId}){
 
     //pang kuha ng mga userProfile:
      const fetchOtherUserProfile = async (userId) => {
+     
     try {
       const response = await fetch(
         `http://localhost/SociaTech/backend/auth/handleFetchOtherUserProfile.php?user_id=${userId}`
@@ -34,6 +193,7 @@ export default function otherUserProfile({openModal, closeModal, userId}){
 
       if (data.success) {
         setOtherUserProfile(data.otherUserInfo);
+      
       } else {
         console.log("Failed to fetch user profile:", data.message);
       }
@@ -42,47 +202,199 @@ export default function otherUserProfile({openModal, closeModal, userId}){
     }
   };
 
-    //pang kuha ng mga comments:
-      const fetchComments = async (post_id, sortBy = "newest") => {
+  const fetchFollowStats = async (targetUserId) => {
     try {
-      const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchComments.php?post_id=${post_id}&sort=${sortBy}`
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${targetUserId}&current_user_id=${user_id}`
       );
-      const data = await res.json();
-      if (data.success && data.comments) {
-        setComments(data.comments);
-        const upObj = {};
-        const downObj = {};
-        const voteObj = {};
-        data.comments.forEach((c) => {
-          upObj[c.comment_id] = c.up_tally_comment || 0;
-          downObj[c.comment_id] = c.down_tally_comment || 0;
-          voteObj[c.comment_id] = null;
-        });
-        setCommentUpTally(upObj);
-        setCommentDownTally(downObj);
-        setCommentVoteState(voteObj);
-      } else {
-        setComments([]);
+      const data = await response.json();
+
+      if (data.success) {
+        setFollowerCount(data.follower_count);
+        setFollowingCount(data.following_count);
+        setIsFollowing(data.is_following);
+        return data;
       }
-    } catch (err) {
-      console.log("Error fetching comments:", err);
+    } catch (error) {
+      console.error("Error fetching follow stats:", error);
     }
   };
 
 
-      const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
+  const handleFollow = async () => {
+    if (!user_id) {
+      alert("You must be logged in to follow users");
+      return;
+    }
+
+    const followedId =  otherUserProfile?.user_id;
+
+    if (!followedId) {
+      alert("Unable to follow this user");
+      return;
+    }
+
+    if (followedId == user_id) {
+      alert("You cannot follow yourself");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user_id);
+      formData.append("followed_id", followedId);
+
+      const response = await fetch(
+        "http://localhost/SociaTech/backend/auth/handleFollowUser.php",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFollowing(true);
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
+        alert("Followed successfully!");
+      } else {
+        alert(data.message || "Failed to follow user");
+      }
+    } catch (error) {
+      console.error("Error following user:", error);
+      alert("An error occurred while following");
+    }
+  };
+  const handleUnfollow = async () => {
+    if (!user_id) {
+      alert("You must be logged in to unfollow users");
+      return;
+    }
+
+    const followedId = otherUserProfile?.user_id;
+
+    if (!followedId) {
+      alert("Unable to unfollow this user");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user_id);
+      formData.append("followed_id", followedId);
+
+      const response = await fetch(
+        "http://localhost/SociaTech/backend/auth/handleUnfollowUser.php",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFollowing(false);
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
+        alert("Unfollowed successfully!");
+      } else {
+        alert(data.message || "Failed to unfollow user");
+      }
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+      alert("An error occurred while unfollowing");
+    }
+  };
+
+  useEffect(() => {
+    let intervalId;
+
+    if (
+      openModal && otherUserProfile?.user_id
+    ) {
+      const targetUserId = otherUserProfile?.user_id;
+
+      // Refresh counts every 10 seconds
+      intervalId = setInterval(() => {
+        fetchFollowStats(targetUserId);
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [
+    openModal,
+    otherUserProfile?.user_id,
+  ]);
+
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (
+        openModal &&
+         otherUserProfile?.user_id
+      ) {
+        const targetUserId =
+          otherUserProfile?.user_id;
+        fetchFollowStats(targetUserId);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [
+    openModal,
+   
+    otherUserProfile?.user_id,
+  ]);
+
+ 
+
+  const timeAgo = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diff = Math.floor((now - past) / 1000); // seconds
+
+    const units = [
+      { name: "second", seconds: 1 },
+      { name: "minute", seconds: 60 },
+      { name: "hour", seconds: 3600 },
+      { name: "day", seconds: 86400 },
+    ];
+
+    for (let i = units.length - 1; i >= 0; i--) {
+      const { name, seconds } = units[i];
+      if (diff >= seconds) {
+        const value = Math.floor(diff / seconds);
+        return `${value} ${value === 1 ? name : name + "s"} ago`;
+      }
+    }
+
+    return "just now";
+  };
+    
+
+      
     return(<>
 
      <div
         className="otherUserProfile_parent_container"
         style={
-          openModal ? { display: "flex" } : { display: "none" }
+          openModal? { display: "flex" } : { display: "none" }
         }
       >
         <button
           className="otherUserProfile_close_btn"
-          onClick={() => closeModal()}
+          onClick={closeModal}
         >
           <X className="crossSvg" />
         </button>
@@ -105,7 +417,6 @@ export default function otherUserProfile({openModal, closeModal, userId}){
                 <img
                   src={
                     otherUserProfile?.profile_image ||
-                    selectedOtherUser?.profile_image ||
                     pfpImage
                   }
                   alt=""
@@ -115,19 +426,15 @@ export default function otherUserProfile({openModal, closeModal, userId}){
                   <div className="otherUserProfile_username">
                     @
                     {otherUserProfile?.username ||
-                      selectedOtherUser?.username ||
                       "Username"}
                   </div>
-                  {(otherUserProfile?.full_name ||
-                    selectedOtherUser?.full_name) && (
+                  {(otherUserProfile?.fullname) && (
                     <div className="otherUserProfile_fullname">
-                      {otherUserProfile?.full_name ||
-                        selectedOtherUser?.full_name}
+                      {otherUserProfile?.fullname }
                     </div>
                   )}
                   <div className="otherUserProfile_bio">
                     {otherUserProfile?.bio ||
-                      selectedOtherUser?.bio ||
                       "No bio available"}
                   </div>
                 </div>
@@ -164,7 +471,7 @@ export default function otherUserProfile({openModal, closeModal, userId}){
                   <Ban />
                   Block
                 </div>
-                <div className="otherUserProfile_more_option">
+                <div className="otherUserProfile_more_option" onClick={()=>setReportData('N/A',user_id,otherUserProfile.user_id,'N/A')}>
                   <AlertCircle />
                   Report
                 </div>
@@ -172,16 +479,12 @@ export default function otherUserProfile({openModal, closeModal, userId}){
             </div>
 
             <div className="followBtn_container">
-              <div
+              <button
                 className="followBtn"
-                style={{
-                  cursor: "pointer",
-                  backgroundColor: isFollowing ? "#6c757d" : "#000",
-                  transition: "all 0.2s ease",
-                }}
+                 onClick={isFollowing ? handleUnfollow : handleFollow}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
-              </div>
+              </button>
             </div>
 
             <div className="otherUserProfile_parent_postContainer">
@@ -220,6 +523,77 @@ export default function otherUserProfile({openModal, closeModal, userId}){
                             {post.post_category}
                           </div>
                         </div>
+                         <div className="more_menu_container">
+                            <div
+                          className="more_btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMorePost(post.post_id);
+                          }}
+                        >
+                          <img src={moreBtn} alt="" className="more" />
+                        </div>
+                         {openMorePost === post.post_id && (
+                          <div className="dropdown_menu">
+                            {post.user_id == user_id && (
+                              <>
+                                <div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditButtonClick(post);
+                                  }}
+                                >
+                                  <Edit size={18} />
+                                  <span>Edit</span>
+                                </div>
+                                <div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(post);
+                                  }}
+                                >
+                                  <Trash2 size={18} />
+                                  <span>Delete</span>
+                                </div>
+                              </>
+                            )}
+                            <div className="dropdown_item" onClick={(e) => {
+                              e.stopPropagation();
+                              handleSavePost(post.post_id);
+                            }}>
+                            <Bookmark 
+                              size={18} 
+                              fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
+                            />
+                            <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
+                          </div>
+                            {post.user_id !== user_id && (
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  setReportData(
+                                    "post",
+                                    user_id,
+                                    post.user_id,
+                                    post.post_id
+                                  );
+                                }}
+                              >
+                                <AlertCircle size={18} />
+                                <span>Report</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                       
+                             </div>
+                        
+                         
+                       
                       </div>
 
                       <div className="post_card_title">{post.post_title}</div>
@@ -258,6 +632,23 @@ export default function otherUserProfile({openModal, closeModal, userId}){
           </>
         )}
       </div>
-    
+
+  
+
+        <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={()=>fetchPost()} onDelete={handlePostDeleted}/>
+
+            <Report
+                            isOpen={isReportOpen}
+                            onClose={closeReport}
+                            type={reportType}
+                            reportedBy={reportedBy}
+                            reportedUID={reportedUID}
+                            contentId={contentId}
+                          />
+
+                         
+
+
+                          
     </>)
 }

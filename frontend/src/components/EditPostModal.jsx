@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { X, Image } from "lucide-react";
 import "../pages/Home.css";
 
-export default function EditPostModal({ open, postData, fetchPost, user_id }) {
+
+export default function EditPostModal({ open, postData, fetchPost, user_id, }) {
   const postCategories = [
     "All",
     "Artificial Intelligence",

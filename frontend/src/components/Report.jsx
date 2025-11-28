@@ -54,7 +54,7 @@ const handleCheckboxChange = (e) => {
 
   const handleReport = async()=>{
 
-    if(!type || !reportedBy || !reportedUID){
+    if( !reportedBy || !reportedUID){
       alert('Missing report data');
       return
     }

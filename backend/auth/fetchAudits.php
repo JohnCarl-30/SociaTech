@@ -1,5 +1,4 @@
 <?php 
-
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
@@ -13,29 +12,20 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-$contentId = $_POST['contentId'] ?? null;
-
 try{
     $db = (new Database()) -> getConnection();
-    $stmt = $db->prepare('
-    SELECT * FROM comments WHERE comment_id = ?
-    ');
-    $stmt->execute([$contentId]);
-     $previewComment = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    
-    
-    if(!$previewComment){
-        echo json_encode([
-        'success' => false,
-        'message' => 'No content found! Comment already deleted!']);
-    }else{
+    $stmt = $db->prepare('SELECT * FROM audit ORDER BY timestamp DESC');
+    $stmt->execute();
+    $audits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($audits as &$audit) {
+        $audit['action_reason'] = $audit['action_reason'] ? json_decode($audit['action_reason'], true) : [];
+    }
+
     echo json_encode([
         'success' => true,
-        'comment' => $previewComment]);}
+        'audits' => $audits
+    ]);
 }catch(Exception $e){
     echo json_encode(['success'=>false,'message'=> $e->getMessage()]);
 }
-
-
-?>
