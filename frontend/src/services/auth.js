@@ -218,3 +218,27 @@ export const sendVerificationEmail = async (email) => {
     throw error;
   }
 };
+
+// Update your saveDraft function to use the API_URL constant:
+
+export async function saveDraft(formData) {
+  try {
+    const response = await fetch(`http://localhost/Sociatech/backend/auth/saveDraft.php`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server response:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error in saveDraft:", error);
+    throw error;
+  }
+};
