@@ -1,6 +1,4 @@
 import "./SignUp.css";
-import TermsofService from "../components/TermsofService.jsx";
-import PrivacyPolicies from "../components/PrivacyPolicies.jsx";
 import { Eye, EyeOff } from "lucide-react";
 import { useCycle } from "framer-motion";
 import { toast } from "react-toastify";
@@ -13,8 +11,11 @@ import systemLogo from "../assets/SociaTech_logo_whitebg.png";
 import googleLogo from "../assets/google.svg";
 import { useAuth } from "../hooks/useAuth";
 import { sendVerificationEmail } from "../services/auth";
+import TermsofService from "../components/TermsofService.jsx";
+import PrivacyPolicies from "../components/PrivacyPolicies.jsx";
 
 export default function SignUp() {
+  
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -30,10 +31,27 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
-  const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
+const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); // New state for Privacy modal
-
   const navigate = useNavigate();
+
+  const handleTermsClick = (e) => {
+    e.preventDefault();
+    setIsTermsOpen(true);
+  };
+
+  const handleTermsClose = () => {
+    setIsTermsOpen(false);
+  };
+
+  const handlePrivacyClick = (e) => {
+    e.preventDefault();
+    setIsPrivacyOpen(true);
+  };
+
+  const handlePrivacyClose = () => {
+    setIsPrivacyOpen(false);
+  };
 
   // Password validation
   const validatePasswordRules = (password) => {
@@ -211,7 +229,7 @@ export default function SignUp() {
       const backendResponse = await googleAuth(result.user);
 
       const userData = {
-        id: backendResponse.user.user_id,
+        id: backendResponse.user.user_id, // ✅ Use user_id from backend
         email: backendResponse.user.email,
         displayName: backendResponse.user.fullname,
         photoURL: backendResponse.user.profile_image,
@@ -243,24 +261,6 @@ export default function SignUp() {
     if (e.key === "Enter" && !loading && !googleLoading && checkbox) {
       handleSubmit();
     }
-  };
-
-  const handleTermsClick = (e) => {
-    e.preventDefault();
-    setIsTermsOpen(true);
-  };
-
-  const handleTermsClose = () => {
-    setIsTermsOpen(false);
-  };
-
-  const handlePrivacyClick = (e) => {
-    e.preventDefault();
-    setIsPrivacyOpen(true);
-  };
-
-  const handlePrivacyClose = () => {
-    setIsPrivacyOpen(false);
   };
 
   return (
@@ -408,7 +408,7 @@ export default function SignUp() {
               />
               <label htmlFor="term_checkbox" className="term_checkbox_text">
                 I agree to the{" "}
-                <span className="term_link" onClick={handleTermsClick}>
+                 <span className="term_link" onClick={handleTermsClick}>
                   Terms of Service
                 </span>{" "}
                 and{" "}

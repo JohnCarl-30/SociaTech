@@ -3,6 +3,8 @@ import Report from "../components/Report.jsx";
 import CategorySlider from "../components/CategorySlider.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import ProfilePage from "../components/ProfilePage.jsx";
+
+import CommentModal from "../components/commentModal.jsx";
 import {
   ArrowBigUp,
   ArrowBigDown,
@@ -119,6 +121,7 @@ export default function Homepage() {
     await Promise.all([
       fetchOtherUserProfile(userId),
       fetchOtherUserPosts(userId),
+      fetchFollowStats(userId),
     ]);
 
     setIsLoadingOtherUserData(false);
@@ -196,6 +199,24 @@ export default function Homepage() {
   //     console.error("Error fetching follow data:", error);
   //   }
   // };
+  const fetchFollowStats = async (targetUserId) => {
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${targetUserId}&current_user_id=${user_id}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setFollowerCount(data.follower_count);
+        setFollowingCount(data.following_count);
+        setIsFollowing(data.is_following);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching follow stats:", error);
+    }
+  };
+
 
   const handleFollow = async () => {
     if (!user_id) {
@@ -203,19 +224,22 @@ export default function Homepage() {
       return;
     }
 
-    // 🔹 Add this console log for debugging
-    console.log("Follow request data:", {
-      user_id: user_id,
-      followed_id: selectedOtherUser?.user_id || otherUserProfile?.user_id,
-    });
+    const followedId = selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
+    if (!followedId) {
+      alert("Unable to follow this user");
+      return;
+    }
+
+    if (followedId == user_id) {
+      alert("You cannot follow yourself");
+      return;
+    }
 
     try {
       const formData = new FormData();
       formData.append("user_id", user_id);
-      formData.append(
-        "followed_id",
-        selectedOtherUser?.user_id || otherUserProfile?.user_id
-      );
+      formData.append("followed_id", followedId);
 
       const response = await fetch(
         "http://localhost/SociaTech/backend/auth/handleFollowUser.php",
@@ -229,7 +253,8 @@ export default function Homepage() {
 
       if (data.success) {
         setIsFollowing(true);
-        setFollowerCount((prev) => prev + 1);
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
         alert("Followed successfully!");
       } else {
         alert(data.message || "Failed to follow user");
@@ -246,18 +271,19 @@ export default function Homepage() {
     }
 
     const followedId = selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
     if (!followedId) {
-      alert("No user selected to unfollow!");
+      alert("Unable to unfollow this user");
       return;
     }
 
     try {
       const formData = new FormData();
       formData.append("user_id", user_id);
-      formData.append("followed_id", followedId); // only once!
+      formData.append("followed_id", followedId);
 
       const response = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleunFollowUser.php",
+        "http://localhost/SociaTech/backend/auth/handleUnfollowUser.php",
         {
           method: "POST",
           body: formData,
@@ -268,7 +294,8 @@ export default function Homepage() {
 
       if (data.success) {
         setIsFollowing(false);
-        setFollowerCount((prev) => Math.max(0, prev - 1));
+        setFollowerCount(data.follower_count); // Use count from backend
+        await fetchFollowStats(followedId);
         alert("Unfollowed successfully!");
       } else {
         alert(data.message || "Failed to unfollow user");
@@ -279,6 +306,57 @@ export default function Homepage() {
     }
   };
 
+  useEffect(() => {
+    let intervalId;
+
+    if (
+      isOtherUserProfileOpen &&
+      (selectedOtherUser?.user_id || otherUserProfile?.user_id)
+    ) {
+      const targetUserId =
+        selectedOtherUser?.user_id || otherUserProfile?.user_id;
+
+      // Refresh counts every 10 seconds
+      intervalId = setInterval(() => {
+        fetchFollowStats(targetUserId);
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [
+    isOtherUserProfileOpen,
+    selectedOtherUser?.user_id,
+    otherUserProfile?.user_id,
+  ]);
+
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (
+        isOtherUserProfileOpen &&
+        (selectedOtherUser?.user_id || otherUserProfile?.user_id)
+      ) {
+        const targetUserId =
+          selectedOtherUser?.user_id || otherUserProfile?.user_id;
+        fetchFollowStats(targetUserId);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [
+    isOtherUserProfileOpen,
+    selectedOtherUser?.user_id,
+    otherUserProfile?.user_id,
+  ]);
+
   const handleUsernameClick = async (userId, userData) => {
     setIsLoadingOtherUserData(true);
     setSelectedOtherUser(userData);
@@ -288,10 +366,12 @@ export default function Homepage() {
     setIsFollowing(false);
     setFollowerCount(0);
     setFollowingCount(0);
+    setIsCommentModalOpen(false);
 
     await Promise.all([
       fetchOtherUserProfile(userId),
       fetchOtherUserPosts(userId),
+       fetchFollowStats(userId),
     ]);
 
     setIsLoadingOtherUserData(false);
@@ -1275,471 +1355,8 @@ export default function Homepage() {
               )}
 
               {/* Comment Modal */}
-              {isCommentModalOpen && selectedPost && (
-                <div className="commentModal_backDrop">
-                  <div className="commentModal_container">
-                    <span style={{ textAlign: "center", width: "100%" }}>
-                      {selectedPost.username}'s post
-                    </span>
 
-                    <div className="commentModal_post">
-                      <div className="commentModal_postHeader">
-                        <div className="commentModal_userInfo">
-                          <div className="commentModal_pfp">
-                            <img
-                              src={selectedPost.profile_image || pfpImage}
-                              alt="user_pfp"
-                            />
-                          </div>
-                          <div
-                            className="commentModal_username"
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              handleUsernameClick(
-                                selectedPost.user_id,
-                                selectedPost
-                              )
-                            }
-                          >
-                            {selectedPost.username}
-                          </div>
-                          <div className="commentModal_date">
-                            {selectedPost.post_date}
-                          </div>
-                          <div className="commentModal_category">
-                            {selectedPost.post_category}
-                          </div>
-                        </div>
-                        <div className="commentModal_moreMenu">
-                          <div
-                            className="commentModal_moreBtn"
-                            onClick={() =>
-                              toggleMoreModalPost(selectedPost.post_id)
-                            }
-                          >
-                            <img
-                              src={moreBtn}
-                              alt=""
-                              className="commentModal_moreIcon"
-                            />
-                          </div>
-                          {openMoreModalPost === selectedPost.post_id && (
-                            <div className="commentModal_dropdownMenu">
-                              {selectedPost.user_id == user_id && (
-                                <>
-                                  <div
-                                    className="commentModal_dropdownItem"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditPost(selectedPost);
-                                    }}
-                                  >
-                                    <Edit size={18} />
-                                    <span>Edit</span>
-                                  </div>
-                                  <div
-                                    className="commentModal_dropdownItem"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeletePost(selectedPost);
-                                    }}
-                                  >
-                                    <Trash2 size={18} />
-                                    <span>Delete</span>
-                                  </div>
-                                </>
-                              )}
-                              <div className="dropdown_item" onClick={(e) => {
-                                e.stopPropagation();
-                                handleSavePost(selectedPost.post_id);
-                              }}>
-                              <Bookmark 
-                                size={18} 
-                                fill={savedPostIds.has(selectedPost.post_id) ? "currentColor" : "none"}
-                              />
-                              <span>{savedPostIds.has(selectedPost.post_id) ? "Unsave" : "Save"}</span>
-                            </div>
-                              {selectedPost.user_id !== user_id && (
-                                <div
-                                  className="commentModal_dropdownItem"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-
-                                    setReportData(
-                                      "post",
-                                      user_id,
-                                      selectedCategory.user_id,
-                                      selectedPost.post_id
-                                    );
-                                  }}
-                                >
-                                  <AlertCircle size={18} />
-                                  <span>Report</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="commentModal_title">
-                        {selectedPost.post_title}
-                      </div>
-
-                      {selectedPost.post_content && (
-                        <div className="commentModal_content">
-                          {selectedPost.post_content}
-                        </div>
-                      )}
-                      {selectedPost.post_image && (
-                        <div className="commentModal_imageContainer">
-                          <img src={selectedPost.post_image} alt="post_image" />
-                        </div>
-                      )}
-
-                      <div className="commentModal_btnRow">
-                        <button className="commentModal_commentBtn">
-                          Comment
-                        </button>
-                        <button
-                          className={`up_vote_btn ${
-                            voteState[selectedPost.post_id] === "up"
-                              ? "voted"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleToggleVote(
-                              user_id,
-                              selectedPost.post_id,
-                              "up"
-                            )
-                          }
-                        >
-                          <ArrowBigUp />
-                          {upTally[selectedPost.post_id]}
-                        </button>
-                        <button
-                          className={`down_vote_btn ${
-                            voteState[selectedPost.post_id] === "down"
-                              ? "voted"
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleToggleVote(
-                              user_id,
-                              selectedPost.post_id,
-                              "down"
-                            )
-                          }
-                        >
-                          <ArrowBigDown />
-                          {downTally[selectedPost.post_id]}
-                        </button>
-                      </div>
-                      {/* Sorting newest, oldest tyaka most upvote plan ko lagyan time pero tyaka na */}
-
-                      {deletedComment && (
-                        <div className="undo_delete_banner">
-                          <span>Comment deleted</span>
-                          <button
-                            className="undo_delete_btn"
-                            onClick={handleUndoDelete}
-                          >
-                            Undo
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="commentModal_commentSection">
-                        <div className="comment_sort_container">
-                          <label
-                            htmlFor="comment-sort"
-                            className="comment_sort_label"
-                          >
-                            Sort by:
-                          </label>
-                          <select
-                            id="comment-sort"
-                            className="comment_sort_select"
-                            value={commentSortOption}
-                            onChange={handleSortChange}
-                          >
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="most_upvoted">Most Upvoted</option>
-                          </select>
-                        </div>
-                        {!comments || comments.length === 0 ? (
-                          <p
-                            style={{
-                              textAlign: "center",
-                              color: "#888",
-                              padding: "20px",
-                            }}
-                          >
-                            No comments yet. Be the first to comment!
-                          </p>
-                        ) : (
-                          comments.map((comment, index) => (
-                            <div
-                              key={comment.comment_id || index}
-                              className="commentModal_commentItem"
-                            >
-                              <div className="commentModal_commentHeader">
-                                <div className="commentModal_pfp">
-                                  <img
-                                    src={comment.profile_image || pfpImage}
-                                    alt="commenter_pfp"
-                                  />
-                                </div>
-                                <div
-                                  className="commentModal_commentUsername"
-                                  style={{ cursor: "pointer" }}
-                                  onClick={() =>
-                                    handleUsernameClick(
-                                      comment.user_id,
-                                      comment
-                                    )
-                                  }
-                                ></div>
-
-                                <div className="commentModal_commentDate">
-                                  {comment.comment_date
-                                    ? new Date(
-                                        comment.comment_date
-                                      ).toLocaleDateString()
-                                    : "Just now"}
-                                </div>
-                                <div
-                                  className="commentModal_moreBtn"
-                                  onClick={() =>
-                                    toggleMoreComment(comment.comment_id)
-                                  }
-                                >
-                                  <img
-                                    src={moreBtn}
-                                    alt=""
-                                    className="commentModal_moreIcon"
-                                  />
-                                </div>
-                              </div>
-
-                              {editingCommentId === comment.comment_id ? (
-                                <div className="comment_edit_container">
-                                  <textarea
-                                    className="comment_edit_textarea"
-                                    value={editingCommentText}
-                                    onChange={(e) =>
-                                      setEditingCommentText(e.target.value)
-                                    }
-                                    onInput={(e) => {
-                                      e.target.style.height = "auto";
-                                      e.target.style.height =
-                                        e.target.scrollHeight + "px";
-                                    }}
-                                  />
-                                  <div className="comment_edit_actions">
-                                    <button
-                                      className="comment_edit_cancel_btn"
-                                      onClick={handleCancelEdit}
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      className="comment_edit_save_btn"
-                                      onClick={() =>
-                                        handleSaveEdit(comment.comment_id)
-                                      }
-                                    >
-                                      Save
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <div className="commentModal_commentText">
-                                    {comment.comment_content || ""}
-                                    {openMoreComment === comment.comment_id && (
-                                      <div className="comment_dropDown_menu">
-                                        {comment.user_id == user_id && (
-                                          <>
-                                            <div
-                                              className="dropdown_item"
-                                              onClick={() =>
-                                                handleEditComment(comment)
-                                              }
-                                            >
-                                              <Edit size={18} />
-                                              <span>Edit</span>
-                                            </div>
-                                            <div
-                                              className="dropdown_item"
-                                              onClick={() =>
-                                                handleDeleteComment(
-                                                  comment.comment_id
-                                                )
-                                              }
-                                            >
-                                              <Trash2 size={18} />
-                                              <span>Delete</span>
-                                            </div>
-                                          </>
-                                        )}
-                                        {comment.user_id !== user_id && (
-                                          <div
-                                            className="dropdown_item"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-
-                                              setReportData(
-                                                "comment",
-                                                user_id,
-                                                comment.user_id,
-                                                comment.comment_id
-                                              );
-                                            }}
-                                          >
-                                            <AlertCircle size={18} />
-                                            <span>Report</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {comment.comment_image && (
-                                    <div className="commentModal_commentImage">
-                                      <img
-                                        src={comment.comment_image}
-                                        alt="comment_attachment"
-                                      />
-                                    </div>
-                                  )}
-                                </>
-                              )}
-
-                              <div className="commentModal_commentActions">
-                                <button
-                                  className={`comment_up_vote_btn ${
-                                    commentVoteState[comment.comment_id] ===
-                                    "up"
-                                      ? "voted"
-                                      : ""
-                                  }`}
-                                  onClick={() =>
-                                    handleCommentVote(
-                                      user_id,
-                                      comment.comment_id,
-                                      "up"
-                                    )
-                                  }
-                                >
-                                  <ArrowBigUp size={18} />
-                                  {commentUpTally[comment.comment_id] || 0}
-                                </button>
-
-                                <button
-                                  className={`comment_down_vote_btn ${
-                                    commentVoteState[comment.comment_id] ===
-                                    "down"
-                                      ? "voted"
-                                      : ""
-                                  }`}
-                                  onClick={() =>
-                                    handleCommentVote(
-                                      user_id,
-                                      comment.comment_id,
-                                      "down"
-                                    )
-                                  }
-                                >
-                                  <ArrowBigDown size={18} />
-                                  {commentDownTally[comment.comment_id] || 0}
-                                </button>
-
-                                <button
-                                  className="comment_reply_btn"
-                                  onClick={() => handleReplyToComment(comment)}
-                                >
-                                  Reply
-                                </button>
-
-                                {(() => {
-                                  console.log(
-                                    "Comment user_id:",
-                                    comment.user_id,
-                                    "Current user_id:",
-                                    user_id,
-                                    "Match:",
-                                    comment.user_id == user_id
-                                  );
-                                  return null;
-                                })()}
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      <div className="commentModal_inputContainer">
-                        <textarea
-                          placeholder="Write a comment..."
-                          value={commentText}
-                          onChange={handleCommentTextChange}
-                          onInput={(e) => {
-                            e.target.style.height = "auto";
-                            e.target.style.height =
-                              e.target.scrollHeight + "px";
-                          }}
-                        />
-                        {commentImage && (
-                          <div className="comment_image_preview_container">
-                            <img
-                              className="comment_image_preview"
-                              src={URL.createObjectURL(commentImage)}
-                              alt="preview"
-                            />
-                            <button
-                              className="remove_comment_image_btn"
-                              onClick={() => resetCommentFields()}
-                            >
-                              ✖
-                            </button>
-                          </div>
-                        )}
-                        <div className="commentModal_actions">
-                          <label
-                            className="commentModal_uploadBtn"
-                            htmlFor="commentImageInput"
-                          >
-                            <Image className="img_svg" />
-                          </label>
-                          <input
-                            id="commentImageInput"
-                            type="file"
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            onChange={handleCommentImageSelect}
-                          />
-                          <button
-                            onClick={closeComments}
-                            className="commentModal_actionBtn"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleCommentSubmit}
-                            className="commentModal_actionBtn"
-                            disabled={isSubmittingComment}
-                          >
-                            {isSubmittingComment ? "Posting..." : "Comment"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={fetchPost}/>
 
               <Report
                 isOpen={isReportOpen}
@@ -1887,7 +1504,7 @@ export default function Homepage() {
             </div>
           </div>
         </div>
-      )}
+      )} 
 
       <div
         className="otherUserProfile_parent_container"
@@ -1987,16 +1604,22 @@ export default function Homepage() {
             </div>
 
             <div className="followBtn_container">
-              <div
+              <button
                 className="followBtn"
-                style={{
-                  cursor: "pointer",
-                  backgroundColor: isFollowing ? "#6c757d" : "#000",
-                  transition: "all 0.2s ease",
-                }}
+                 onClick={isFollowing ? handleUnfollow : handleFollow}
+                // style={{
+                //   cursor: "pointer",
+                //   backgroundColor: isFollowing ? "#6c757d" : "#000",
+                //   transition: "all 0.2s ease",
+                //    border: "none",
+                //   color: "white",
+                //   padding: "10px 20px",
+                //   borderRadius: "5px",
+                //   fontSize: "16px",
+                // }}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
-              </div>
+              </button>
             </div>
 
             <div className="otherUserProfile_parent_postContainer">

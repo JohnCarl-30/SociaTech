@@ -36,6 +36,8 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const [profileImage, setProfileImage] = useState(pfpImage);
   const [uploading, setUploading] = useState(false);
   const [savedPostIds, setSavedPostIds] = useState(new Set());
+    const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   // Edit Profile states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -48,8 +50,74 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const user_id = user?.id || null;
 
   const [savedPosts, setSavedPosts] = useState([]);
+  
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [openMorePost, setOpenMorePost] = useState(null);
+
+  const refreshUserStats = async () => {
+    if (!user_id) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${user_id}`
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setPostCount(data.post_count || 0);
+        setFollowerCount(data.follower_count || 0);
+        setFollowingCount(data.following_count || 0);
+      }
+    } catch (err) {
+      console.log("Error fetching user stats:", err);
+    }
+  };
+
+  useEffect(() => {
+    refreshUserStats();
+  }, [user_id]);
+
+  useEffect(() => {
+    if (style === "flex") {
+      refreshUserStats();
+    }
+  }, [style]);
+
+  useEffect(() => {
+    let intervalId;
+
+    if (style === "flex") {
+      intervalId = setInterval(() => {
+        refreshUserStats();
+      }, 15000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [style, user_id]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (style === "flex") {
+        refreshUserStats();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [style, user_id]);
+
+  useEffect(() => {
+    if (window.refreshProfileStats) {
+      window.refreshProfileStats = refreshUserStats;
+    }
+  }, [user_id]);
 
   // Function to fetch saved posts
   const fetchSavedPosts = async () => {
@@ -227,7 +295,9 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
         const data = await res.json();
 
         if (data.success) {
-          setPostCount(data.post_count || 0);
+          setPostCount(data.post_count || 0)
+           setFollowerCount(data.follower_count || 0);
+          setFollowingCount(data.following_count || 0);
         }
       } catch (err) {
         console.log("Error fetching post count:", err);
@@ -418,11 +488,11 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                 <div>Post</div>
               </div>
               <div className="dashBoard_container">
-                <div>0</div>
+                <div>{followerCount}</div>
                 <div>Followers</div>
               </div>
               <div className="dashBoard_container">
-                <div>0</div>
+                <div>{followingCount}</div>
                 <div>Following</div>
               </div>
             </div>
@@ -694,12 +764,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
               </div>
             )}
 
-            {/* Achievements Tab */}
-            {isOpenPage === 'achievements' && (
-              <div className="profilePage_achievements_Container">
-                <div>Achievements</div>
-              </div>
-            )}
+           
 
             {/* Edit Profile Tab */}
             {isOpenPage === 'EditProfile' && (
