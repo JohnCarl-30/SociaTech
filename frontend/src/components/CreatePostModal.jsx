@@ -54,7 +54,10 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     formData.append("post_category", category);
     formData.append("post_title", title);
     formData.append("post_content", body || "");
+
+    if (user?.username) formData.append("username", user.username);
     if (image) formData.append("post_image", image);
+
 
     try {
       const data = await createPost(formData);
