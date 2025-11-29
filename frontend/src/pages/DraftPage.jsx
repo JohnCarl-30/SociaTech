@@ -19,41 +19,14 @@ export default function DraftPage() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
+  console.log('Current drafts:', drafts);
+
   useEffect(() => {
     console.log('=== STEP 1: Component mounted ===');
     const currentUser = getCurrentUser();
     console.log('Current user from auth:', JSON.stringify(currentUser, null, 2));
-    
-    // If user doesn't have username, fetch it from the server
-    if (currentUser?.id && !currentUser.username) {
-      fetchUserDetails(currentUser);
-    } else {
-      setUser(currentUser);
-    }
+    setUser(currentUser);
   }, []);
-
-  const fetchUserDetails = async (currentUser) => {
-    try {
-      const response = await fetch('http://localhost/Sociatech/backend/auth/getUserDetails.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ user_id: currentUser.id })
-      });
-      
-      const data = await response.json();
-      if (data.success && data.username) {
-        setUser({ ...currentUser, username: data.username });
-      } else {
-        setUser(currentUser);
-      }
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      setUser(currentUser);
-    }
-  };
 
   useEffect(() => {
     console.log('=== STEP 2: User state changed ===');
@@ -73,7 +46,6 @@ export default function DraftPage() {
   }, [user]);
 
   const fetchDrafts = async () => {
-    console.log('=== STEP 3: fetchDrafts called ===');
     setLoading(true);
     setError(null);
     
@@ -224,12 +196,6 @@ export default function DraftPage() {
     }
   };
 
-  console.log('=== RENDER ===');
-  console.log('Loading:', loading);
-  console.log('Error:', error);
-  console.log('Drafts count:', drafts.length);
-  console.log('User:', user);
-
   return (
     <div className="draftPage_parent_container">
       <PageHeader
@@ -257,24 +223,38 @@ export default function DraftPage() {
           ) : drafts.length === 0 ? (
             <div className="drafts_empty">
               <p>No draft posts yet.</p>
-              <p style={{fontSize: '12px', color: '#666', marginTop: '10px'}}>
-                Debug: User ID = {user?.id || 'none'}
-              </p>
             </div>
           ) : (
             <div className="drafts_container">
-              {drafts.map((draft) => (
+              {drafts.map((draft) => {
+                console.log('Rendering draft:', draft);
+                console.log('Draft username:', draft.username);
+                console.log('User username:', user?.username);
+                
+                return (
                 <div key={draft.id} className="draft_card">
                   <div className="draft_card_header">
                     <div className="draft_user_info">
                       <div className="draft_avatar">
-                        {(draft.username || user?.username)?.[0]?.toUpperCase() || 'U'}
+                        {draft.profile_image ? (
+                          <img
+                            src={`http://localhost/Sociatech/backend/${draft.profile_image}`}
+                            alt="Profile"
+                            className="draft_avatar_img"
+                            onError={(e) => {
+                              console.log('Image failed to load:', draft.profile_image);
+                              e.target.style.display = 'none';
+                              e.target.parentElement.textContent = (draft.username || user?.username)?.[0]?.toUpperCase() || 'U';
+                            }}
+                          />
+                        ) : (
+                          (draft.username || user?.username)?.[0]?.toUpperCase() || 'U'
+                        )}
                       </div>
                       <div className="draft_meta">
                         <span className="draft_username">
                           {draft.username ? `@${draft.username}` : 
-                           user?.username ? `@${user.username}` : 
-                           user?.email ? user.email.split('@')[0] : 'user'}
+                           user?.username ? `@${user.username}` : 'user'}
                         </span>
                         <span className="draft_date">{new Date(draft.created_at).toLocaleDateString()}</span>
                       </div>
@@ -312,7 +292,7 @@ export default function DraftPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
