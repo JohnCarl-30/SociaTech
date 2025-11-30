@@ -91,6 +91,13 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     formData.append("post_category", category);
     formData.append("post_title", title);
     formData.append("post_content", body || "");
+
+    if (user?.username) {
+      formData.append("username", user.username);
+    } else if (user?.email) {
+      formData.append("username", user.email.split('@')[0]);
+    }
+
     if (image) formData.append("post_image", image);
 
     try {
@@ -115,7 +122,12 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
       style={isOpen ? { display: "flex" } : { display: "none" }}
     >
       <div className="createPost_container_modal">
-        <div className="createPost_modal_title">Create Post</div>
+        <div className="createPost_modal_header">
+          <div className="createPost_modal_title">Create Post</div>
+          <button className="createPost_close_btn" onClick={onClose}>
+            <X className="close_svg" />
+          </button>
+        </div>
 
         <select
           className="category_dropDown"
@@ -188,7 +200,6 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
           />
 
           <div className="cancelPost_btn_container">
-            {/* Save Draft button replaces Cancel */}
             <button
               className="cancelPost_btn save_draft_btn"
               onClick={handleSaveDraft}

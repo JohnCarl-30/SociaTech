@@ -101,11 +101,41 @@ if (!isset($input["user_id"]) || !isset($input["post_category"]) || !isset($inpu
 }
 
 $user_id = intval($input["user_id"]);
-$username = isset($input["username"]) ? trim($input["username"]) : null;
 $category = trim($input["post_category"]);
 $title = trim($input["post_title"]);
 $content = isset($input["post_content"]) ? trim($input["post_content"]) : "";
 $image_path = null;
+
+// Get username - either from input or fetch from database
+$username = isset($input["username"]) ? trim($input["username"]) : null;
+
+if (!$username) {
+    try {
+        $userStmt = $conn->prepare("SELECT username FROM users WHERE id = :user_id");
+        $userStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $userStmt->execute();
+        $userRow = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($userRow && !empty($userRow['username'])) {
+            $username = $userRow['username'];
+        } else {
+            // If still no username, use email or set a default
+            $emailStmt = $conn->prepare("SELECT email FROM users WHERE id = :user_id");
+            $emailStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $emailStmt->execute();
+            $emailRow = $emailStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($emailRow && !empty($emailRow['email'])) {
+                $username = explode('@', $emailRow['email'])[0];
+            } else {
+                $username = 'user_' . $user_id;
+            }
+        }
+    } catch (Exception $e) {
+        error_log("Error fetching username: " . $e->getMessage());
+        $username = 'user_' . $user_id;
+    }
+}
 
 // ===== Handle image upload =====
 if (!empty($receivedFiles["post_image"]["name"])) {
@@ -153,9 +183,9 @@ if (!empty($receivedFiles["post_image"]["name"])) {
 // ===== Save to database using PDO =====
 try {
     $stmt = $conn->prepare("
-    INSERT INTO draft (user_id, post_category, post_title, post_content, post_image, username, created_at)
-    VALUES (:user_id, :category, :title, :content, :image_path, :username, NOW())
-");
+        INSERT INTO draft (user_id, post_category, post_title, post_content, post_image, username, post_date)
+        VALUES (:user_id, :category, :title, :content, :image_path, :username, NOW())
+    ");
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->bindParam(':category', $category, PDO::PARAM_STR);
     $stmt->bindParam(':title', $title, PDO::PARAM_STR);

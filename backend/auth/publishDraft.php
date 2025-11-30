@@ -53,22 +53,23 @@ try {
         exit;
     }
 
-    // Insert into posts table (adjust columns as needed)
-    $insertQuery = $db->prepare("INSERT INTO post (user_id, post_title, post_content, post_image, post_category, created_at) VALUES (:user_id, :title, :content, :image, :category, NOW())");
+    $insertQuery = $db->prepare("
+    INSERT INTO post (user_id, post_title, post_content, post_image, post_category, post_date) 
+    VALUES (:user_id, :title, :content, :image, :category, NOW())
+");
 
     $insertQuery->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    $insertQuery->bindParam(':title', $draft['post_title']);
-    $insertQuery->bindParam(':content', $draft['post_content']);
-    $insertQuery->bindParam(':image', $draft['post_image']);
-    $insertQuery->bindParam(':category', $draft['post_category']);
+    $insertQuery->bindParam(':title', $draft['post_title'], PDO::PARAM_STR);
+    $insertQuery->bindParam(':content', $draft['post_content'], PDO::PARAM_STR);
+    $insertQuery->bindParam(':image', $draft['post_image'], PDO::PARAM_STR);
+    $insertQuery->bindParam(':category', $draft['post_category'], PDO::PARAM_STR);
 
     $insertQuery->execute();
 
-    // Delete draft
+    // ✅ FIXED: Removed :username parameter from DELETE query
     $deleteQuery = $db->prepare("DELETE FROM draft WHERE id = :draft_id AND user_id = :user_id");
     $deleteQuery->bindParam(':draft_id', $draft_id, PDO::PARAM_INT);
     $deleteQuery->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    $deleteQuery->bindParam(':username', $username, PDO::PARAM_STR);
     $deleteQuery->execute();
 
     echo json_encode([
@@ -77,11 +78,13 @@ try {
     ]);
 
 } catch (PDOException $e) {
+    error_log("Database error in publishDraft: " . $e->getMessage());
     echo json_encode([
         "success" => false,
         "error" => "Database error: " . $e->getMessage()
     ]);
 } catch (Exception $e) {
+    error_log("Exception in publishDraft: " . $e->getMessage());
     echo json_encode([
         "success" => false,
         "error" => "Exception: " . $e->getMessage()

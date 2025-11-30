@@ -60,7 +60,7 @@ try {
         exit;
     }
 
-    // ===== Get the username and profile_image for this user =====
+    // ✅ Get the username and profile_image for this user
     $userQuery = $db->prepare("SELECT username, profile_image FROM users WHERE user_id = :user_id");
     $userQuery->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $userQuery->execute();
@@ -68,7 +68,6 @@ try {
     $username = $userData['username'] ?? null;
     $profile_image = $userData['profile_image'] ?? null;
 
-    // ===== Prepare query to get drafts =====
     $query = $db->prepare("
         SELECT 
             id,
@@ -77,10 +76,10 @@ try {
             post_title,
             post_content,
             post_image,
-            created_at
+            post_date
         FROM draft 
         WHERE user_id = :user_id 
-        ORDER BY created_at DESC
+        ORDER BY post_date DESC
     ");
 
     if (!$query) {
@@ -104,7 +103,7 @@ try {
     error_log("Found " . count($drafts) . " drafts for user_id " . $user_id);
     error_log("Drafts: " . json_encode($drafts));
 
-    // ===== Add username and profile_image to each draft =====
+    // ✅ Add username and profile_image to each draft
     foreach ($drafts as &$draft) {
         $draft['id'] = (int) $draft['id'];
         $draft['user_id'] = (int) $draft['user_id'];

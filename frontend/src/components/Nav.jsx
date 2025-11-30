@@ -1,15 +1,15 @@
-import { House, Crown, Brain,ShieldUser,  FolderOpen,BookOpenText   } from "lucide-react";
+import { House, Crown, Brain, ShieldUser, FolderOpen, BookOpenText } from "lucide-react";
 import "./Nav.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export default function Nav({closeModals}) {
+export default function Nav({ closeModals }) {
     const storedUser = localStorage.getItem("userData") || sessionStorage.getItem("userData");
-const user = storedUser ? JSON.parse(storedUser) : null;
-const isAdmin = user?.role === "admin";
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const isAdmin = user?.role === "admin";
 
     const navigate = useNavigate();
     const location = useLocation();
-   
+
     const isActive = (path) => {
         return location.pathname === path ? " active" : "";
     };
@@ -17,61 +17,59 @@ const isAdmin = user?.role === "admin";
     return (
         <>
             <div className="nav_panel">
-                <div 
+                <div
                     className={`nav_child nav_child${isActive('/home')}`}
                     onClick={() => {
-                        navigate('/home');
                         closeModals();
-                        
-                        
+                        navigate('/home');
                     }}
                 >
                     <House /> Home
                 </div>
 
-              
-
-                <div 
+                <div
                     className={`nav_child nav_child${isActive('/quiz')}`}
-                    onClick={() =>{
-                        closeModals;
+                    onClick={() => {
+                        closeModals();
                         navigate('/quiz');
-                        
                     }}
                 >
                     <Brain /> Quizes
                 </div>
-                
-                <div 
+
+                <div
                     className={`nav_child nav_child${isActive('/draft')}`}
-                    onClick={() =>{
-                        closeModals;
+                    onClick={() => {
+                        closeModals();
                         navigate('/draft');
-                        
                     }}
                 >
                     <FolderOpen /> Draft Page
                 </div>
-                {isAdmin&&(<div 
-                    className={`nav_child nav_child${isActive('/admin')}`}
-                    onClick={() => {
-                        closeModals;
-                        navigate('/admin');
-                        
-                    }}
-                >
-                   <ShieldUser /> Admin Panel
-                </div>)}
-                {isAdmin&&(<div 
-                    className={`nav_child nav_child${isActive('/audit')}`}
-                    onClick={() => {
-                        closeModals;
-                        navigate('/audit');
-                        
-                    }}
-                >
-                   <BookOpenText /> Audit Log
-                </div>)}
+
+                {isAdmin && (
+                    <div
+                        className={`nav_child nav_child${isActive('/admin')}`}
+                        onClick={() => {
+                            closeModals();
+                            navigate('/admin');
+                        }}
+                    >
+                        <ShieldUser /> Admin Panel
+                    </div>
+                )}
+
+                {isAdmin && (
+                    <div
+                        className={`nav_child nav_child${isActive('/audit')}`}
+                        onClick={() => {
+                            closeModals();
+                            navigate('/audit');
+                        }}
+                    >
+                        <BookOpenText /> Audit Log
+                    </div>
+                )}
             </div>
         </>
     );

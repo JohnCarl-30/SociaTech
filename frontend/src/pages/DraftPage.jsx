@@ -4,6 +4,8 @@ import ProfilePage from '../components/ProfilePage';
 import HelpPage from '../components/HelpPage';
 import Settings from '../components/Settings';
 import Nav from '../components/Nav';
+import EditDraftModal from '../components/EditDraftModal';
+import defaultPfp from '../assets/deault_pfp.png';
 import { useState, useEffect } from "react";
 import { useCycle } from "framer-motion";
 import { getCurrentUser } from '../services/auth';
@@ -19,15 +21,12 @@ export default function DraftPage() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
-  
-  console.log(drafts);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingDraft, setEditingDraft] = useState(null);
 
   useEffect(() => {
-    console.log('=== STEP 1: Component mounted ===');
     const currentUser = getCurrentUser();
-    console.log('Current user from auth:', JSON.stringify(currentUser, null, 2));
-    
-    // If user doesn't have username, fetch it from the server
+
     if (currentUser?.id && !currentUser.username) {
       fetchUserDetails(currentUser);
     } else {
@@ -36,6 +35,11 @@ export default function DraftPage() {
   }, []);
 
   const fetchUserDetails = async (currentUser) => {
+    if (!currentUser?.id) {
+      setUser(currentUser);
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost/Sociatech/backend/auth/getUserDetails.php', {
         method: 'POST',
@@ -45,10 +49,15 @@ export default function DraftPage() {
         credentials: 'include',
         body: JSON.stringify({ user_id: currentUser.id })
       });
-      
+
       const data = await response.json();
-      if (data.success && data.username) {
-        setUser({ ...currentUser, username: data.username });
+
+      if (data.success) {
+        setUser({
+          ...currentUser,
+          username: data.username,
+          profile_image: data.profile_image
+        });
       } else {
         setUser(currentUser);
       }
@@ -59,15 +68,9 @@ export default function DraftPage() {
   };
 
   useEffect(() => {
-    console.log('=== STEP 2: User state changed ===');
-    console.log('User object:', JSON.stringify(user, null, 2));
-    console.log('User ID:', user?.id);
-    
     if (user?.id) {
-      console.log('User has ID, fetching drafts...');
       fetchDrafts();
     } else {
-      console.log('No user ID found');
       setLoading(false);
       if (user !== null) {
         setError('Please log in to view your drafts');
@@ -76,80 +79,51 @@ export default function DraftPage() {
   }, [user]);
 
   const fetchDrafts = async () => {
-   
     setLoading(true);
     setError(null);
-    
+
     if (!user?.id) {
-      console.error('ERROR: No user.id available!');
       setError('User not authenticated');
       setDrafts([]);
       setLoading(false);
       return;
     }
-    
+
     try {
-      const requestBody = {
-        user_id: user.id
-      };
-      
-      console.log('=== STEP 4: Sending request ===');
-      console.log('Request body:', JSON.stringify(requestBody, null, 2));
-      console.log('URL: http://localhost/Sociatech/backend/auth/getDraft.php');
-      
       const response = await fetch('http://localhost/Sociatech/backend/auth/getDraft.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({ user_id: user.id })
       });
 
-      console.log('=== STEP 5: Response received ===');
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
       const contentType = response.headers.get('content-type');
-      console.log('Content-Type:', contentType);
-      
+
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('Non-JSON response:', text);
         throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
       }
 
       const data = await response.json();
-      console.log('=== STEP 6: JSON parsed ===');
-      console.log('Full response data:', JSON.stringify(data, null, 2));
-      
+
       if (data.success) {
-        console.log('=== SUCCESS ===');
-        console.log('Number of drafts:', data.drafts?.length || 0);
-        console.log('Drafts data:', JSON.stringify(data.drafts, null, 2));
         setDrafts(data.drafts || []);
       } else {
-        console.error('=== FETCH FAILED ===');
-        console.error('Error from server:', data.error);
         setError(data.error || 'Failed to fetch drafts');
         setDrafts([]);
       }
     } catch (error) {
-      console.error('=== EXCEPTION OCCURRED ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
-      console.error('Full error:', error);
+      console.error('Error fetching drafts:', error);
       setError('Failed to load drafts: ' + error.message);
       setDrafts([]);
     } finally {
-      console.log('=== STEP 7: Setting loading to false ===');
       setLoading(false);
     }
   };
 
   const handlePublishDraft = async (draftId) => {
-    console.log('Publishing draft:', draftId);
-    
     if (!user?.id) {
       alert('Please log in to publish drafts');
       return;
@@ -173,8 +147,7 @@ export default function DraftPage() {
       });
 
       const data = await response.json();
-      console.log('Publish response:', data);
-      
+
       if (data.success) {
         alert('Draft published successfully!');
         fetchDrafts();
@@ -187,9 +160,18 @@ export default function DraftPage() {
     }
   };
 
+  const handleEditDraft = (draft) => {
+    setEditingDraft(draft);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditComplete = () => {
+    setIsEditModalOpen(false);
+    setEditingDraft(null);
+    fetchDrafts();
+  };
+
   const handleDeleteDraft = async (draftId) => {
-    console.log('Deleting draft:', draftId);
-    
     if (!user?.id) {
       alert('Please log in to delete drafts');
       return;
@@ -213,8 +195,7 @@ export default function DraftPage() {
       });
 
       const data = await response.json();
-      console.log('Delete response:', data);
-      
+
       if (data.success) {
         alert('Draft deleted successfully!');
         fetchDrafts();
@@ -227,11 +208,27 @@ export default function DraftPage() {
     }
   };
 
-  // console.log('=== RENDER ===');
-  // console.log('Loading:', loading);
-  // console.log('Error:', error);
-  // console.log('Drafts count:', drafts.length);
-  // console.log('User:', user);
+  const closeModals = () => {
+    setIsDropDownOpen(false);
+    setIsProfilePageOpen(false);
+    setIsSettingOpen(false);
+  };
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    return `http://localhost/Sociatech/backend/${imagePath}`;
+  };
+
+  const getProfileImage = (draft) => {
+    const profileImg = draft.profile_image || user?.profile_image;
+    if (profileImg) {
+      return getImageUrl(profileImg);
+    }
+    return defaultPfp;
+  };
 
   return (
     <div className="draftPage_parent_container">
@@ -244,7 +241,7 @@ export default function DraftPage() {
         setIsSettingOpen={setIsSettingOpen}
       />
       <div className="draftPage_child_container">
-        <Nav cycleOpenHelpPage={cycleOpenHelpPage} />
+        <Nav closeModals={closeModals} />
         <div className="draftPage_body">
           <div className="draftPage_header">
             <h1 className="draftPage_title">Drafts</h1>
@@ -260,9 +257,6 @@ export default function DraftPage() {
           ) : drafts.length === 0 ? (
             <div className="drafts_empty">
               <p>No draft posts yet.</p>
-              <p style={{fontSize: '12px', color: '#666', marginTop: '10px'}}>
-                
-              </p>
             </div>
           ) : (
             <div className="drafts_container">
@@ -271,44 +265,59 @@ export default function DraftPage() {
                   <div className="draft_card_header">
                     <div className="draft_user_info">
                       <div className="draft_avatar">
-                        {(draft.username || user?.username)?.[0]?.toUpperCase() || 'U'}
+                        {(draft.profile_image || user?.profile_image) ? (
+                          <img
+                            src={getProfileImage(draft)}
+                            alt="Profile"
+                          />
+                        ) : (
+                          (draft.username || user?.username)?.[0]?.toUpperCase() || 'U'
+                        )}
                       </div>
                       <div className="draft_meta">
                         <span className="draft_username">
-                          {draft.username ? `@${draft.username}` : 
-                           user?.username ? `@${user.username}` : 
-                           user?.email ? user.email.split('@')[0] : 'user'}
+                          {draft.username ? `@${draft.username}` :
+                            user?.username ? `@${user.username}` :
+                              user?.email ? user.email.split('@')[0] : 'user'}
                         </span>
-                        <span className="draft_date">{new Date(draft.created_at).toLocaleDateString()}</span>
                       </div>
                       <span className="draft_category">{draft.post_category}</span>
                     </div>
                   </div>
-                  
+
                   <h2 className="draft_title">{draft.post_title}</h2>
-                  
+
                   {draft.post_content && (
                     <p className="draft_content_preview">
                       {draft.post_content.substring(0, 150)}
                       {draft.post_content.length > 150 ? '...' : ''}
                     </p>
                   )}
-                  
+
                   {draft.post_image && (
                     <div className="draft_image_preview">
-                      <img src={draft.post_image} alt="Draft preview" />
+                      <img
+                        src={getImageUrl(draft.post_image)}
+                        alt="Draft preview"
+                      />
                     </div>
                   )}
 
                   <div className="draft_card_actions">
-                    <button 
-                      className="draft_action_btn draft_publish_btn" 
+                    <button
+                      className="draft_action_btn draft_publish_btn"
                       onClick={() => handlePublishDraft(draft.id)}
                     >
                       Post
                     </button>
-                    <button 
-                      className="draft_action_btn draft_delete_btn" 
+                    <button
+                      className="draft_action_btn draft_edit_btn"
+                      onClick={() => handleEditDraft(draft)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="draft_action_btn draft_delete_btn"
                       onClick={() => handleDeleteDraft(draft.id)}
                     >
                       Delete
@@ -326,6 +335,18 @@ export default function DraftPage() {
       )}
       {isSettingOpen && <Settings setIsSettingOpen={setIsSettingOpen} />}
       {openHelpPage && <HelpPage cycleOpenHelpPage={cycleOpenHelpPage} />}
+
+      {isEditModalOpen && editingDraft && (
+        <EditDraftModal
+          draft={editingDraft}
+          user={user}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingDraft(null);
+          }}
+          onSave={handleEditComplete}
+        />
+      )}
     </div>
   );
 }

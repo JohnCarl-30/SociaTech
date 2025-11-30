@@ -15,6 +15,10 @@
   flex: 1;
   padding: 2rem;
   margin-left: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ✅ CENTER THE CONTENT */
 }
 
 .draftPage_header {
@@ -24,12 +28,15 @@
   align-items: center;
   margin-bottom: 2rem;
   gap: 2rem;
+  width: 100%;
+  max-width: 800px;
+  /* ✅ MATCH CONTAINER WIDTH */
 }
 
 .draftPage_title {
   font-weight: 700;
   font-size: 1.5rem;
-  color: #1a1a1b; 
+  color: #1a1a1b;
   padding: 5rem 0;
 }
 
@@ -42,8 +49,11 @@
   max-width: 800px;
 }
 
-.drafts_loading {
-  grid-column: 1 / -1;
+.drafts_loading,
+.drafts_error {
+  width: 100%;
+  max-width: 800px;
+  /* ✅ CENTER LOADING/ERROR */
   text-align: center;
   padding: 3rem;
   font-size: 1.1rem;
@@ -51,6 +61,9 @@
 }
 
 .drafts_empty {
+  width: 100%;
+  max-width: 800px;
+  /* ✅ CENTER EMPTY STATE */
   text-align: left;
   padding: 1rem 0;
   color: #7c7c7c;
@@ -79,7 +92,6 @@
   align-items: flex-start;
 }
 
-/* ---- Row layout ---- */
 .draft_user_info {
   display: flex;
   align-items: center;
@@ -87,7 +99,6 @@
   width: 100%;
 }
 
-/* Avatar */
 .draft_avatar {
   width: 36px;
   height: 36px;
@@ -100,6 +111,14 @@
   font-weight: 600;
   font-size: 0.9rem;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.draft_avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .draft_meta {
@@ -194,8 +213,17 @@
 }
 
 .draft_publish_btn:hover {
-  background-color: black;
-  border-color: black;
+  background-color: #333;
+  border-color: #333;
+}
+
+.draft_edit_btn {
+  color: #1a1a1b;
+  border-color: #1a1a1b;
+}
+
+.draft_edit_btn:hover {
+  background-color: #f6f7f8;
 }
 
 .draft_delete_btn {
@@ -205,17 +233,6 @@
 
 .draft_delete_btn:hover {
   background-color: #f6f7f8;
-}
-
-/* ---- Edit Draft Button (like screenshot) ---- */
-.edit_draft_button {
-  background-color: #000;
-  color: #fff;
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  border: none;
-  cursor: pointer;
 }
 
 @media (max-width: 1024px) {
@@ -231,6 +248,16 @@
   }
 
   .drafts_container {
+    max-width: 100%;
+  }
+
+  .draftPage_header {
+    max-width: 100%;
+  }
+
+  .drafts_loading,
+  .drafts_error,
+  .drafts_empty {
     max-width: 100%;
   }
 }
