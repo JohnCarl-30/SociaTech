@@ -52,21 +52,21 @@ export const signInWithEmail = async (email, password) => {
 
     const data = await response.json();
 
-    if (data.success === false && data.data?.needsVerification) {
-      throw new Error("Please verify your email address before logging in.");
-    }
-
-    if (!response.ok) {
+    // Throw error if login was not successful
+    if (!data.success) {
       throw new Error(data.message || "Login failed");
     }
 
+    // Only store user info if login succeeded
     localStorage.setItem("userData", JSON.stringify(data.data.user));
+
     return data;
   } catch (error) {
     console.error("Login service error:", error);
     throw error;
   }
 };
+
 
 export const googleAuth = async (user) => {
   try {
@@ -131,7 +131,9 @@ export const verifySession = async () => {
 
 export const getCurrentUser = () => {
   const userData = localStorage.getItem("userData");
+
   return userData ? JSON.parse(userData) : null;
+  
 };
 
 export const forgotPassword = async (email) => {
@@ -215,6 +217,30 @@ export const sendVerificationEmail = async (email) => {
     return await handleResponse(response);
   } catch (error) {
     console.error("Send verification email error:", error);
+    throw error;
+  }
+};
+
+// Update your saveDraft function to use the API_URL constant:
+
+export async function saveDraft(formData) {
+  try {
+    const response = await fetch(`http://localhost/Sociatech/backend/auth/saveDraft.php`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server response:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error in saveDraft:", error);
     throw error;
   }
 };

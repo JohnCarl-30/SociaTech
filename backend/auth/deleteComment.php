@@ -46,8 +46,8 @@ try {
     }
 
     // Delete connections bago madelete permanent
-    $stmt = $db->prepare("DELETE FROM postvote WHERE comment_id = ?");
-    $stmt->execute([$comment_id]);
+    // $stmt = $db->prepare("DELETE FROM postvote WHERE comment_id = ?");
+    // $stmt->execute([$comment_id]);
 
     // Delete comment
     $stmt = $db->prepare("DELETE FROM comments WHERE comment_id = ?");

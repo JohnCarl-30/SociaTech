@@ -10,6 +10,7 @@ $user_id = $_POST['user_id'] ?? null;
 $post_category = $_POST['post_category'] ?? null;
 $post_title = $_POST['post_title'] ?? null;
 $post_content = $_POST['post_content'] ?? null;
+$post_visibility = $_POST['post_visibility'] ?? 'public';
 
 if (!$user_id) {
     echo json_encode(['success' => false, 'error' => 'User ID is required']);
@@ -20,7 +21,6 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-   
     $checkUser = $db->prepare("SELECT user_id FROM users WHERE user_id = ?");
     $checkUser->execute([$user_id]);
     
@@ -33,15 +33,34 @@ try {
     if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] === 0) {
         $file = $_FILES['post_image'];
         $uploadDir = $_SERVER['DOCUMENT_ROOT'] . "/SociaTech/post_images/";
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
         $newFileName = "post_" . time() . "_" . $file['name'];
         $uploadPath = $uploadDir . $newFileName;
+        
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             $post_image_url = "http://localhost/SociaTech/post_images/" . $newFileName;
         }
     }
 
-    $stmt = $db->prepare("INSERT INTO post (user_id,post_category,post_title,post_content,post_image,post_date) VALUES (?,?,?,?,?,NOW())");
-    $stmt->execute([$user_id, $post_category, $post_title, $post_content, $post_image_url]);
+    // FIXED: Added post_image placeholder (now 7 columns = 7 placeholders)
+    $stmt = $db->prepare("
+        INSERT INTO post (user_id, post_category, post_title, post_content, post_image, post_visibility, post_date) 
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
+    ");
+   
+    $stmt->execute([
+        $user_id, 
+        $post_category, 
+        $post_title, 
+        $post_content, 
+        $post_image_url,      
+        $post_visibility
+    ]);
 
     echo json_encode(['success' => true, 'message' => 'Post created successfully']);
 } catch(Exception $e) {
