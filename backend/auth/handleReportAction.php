@@ -12,11 +12,17 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-$userAction = $_POST['userAction'] ?? 'no_action';
-$contentAction = $_POST['contentAction'] ?? 'no_action';
+$userAction = $_POST['userAction'] ?? 'no_action';// need for audit
+$contentAction = $_POST['contentAction'] ?? 'no_action';// need for audit
+
+
 $reportId = $_POST['reportId'];
-$reportedUID = $_POST['reportedUID'];
+$reportedUID = $_POST['reportedUID'];// need for audit
 $contentId = $_POST['contentId'];
+$admin = $_POST['admin'];// need for audit
+$contentType = $_POST['type'];// need for audit
+$reason = $_POST['reason']; // need for audit
+
 
 $days = 7;
 
@@ -38,6 +44,9 @@ try{
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
 
+             $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'User has been banned and the post has been deleted.';
         } elseif ($contentAction === "delete_comment") {
             $stmt =$db->prepare("UPDATE users SET status = 'ban' WHERE user_id = ? ");
@@ -48,6 +57,9 @@ try{
 
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
+
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
 
             $response['message'] = 'User has been banned and the comment has been deleted.';
 
@@ -63,6 +75,9 @@ try{
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
 
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+             
             $response['message'] = 'User has been banned.';
             // banUser();
         }
@@ -76,6 +91,9 @@ try{
 
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
+
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
 
             $response['message'] = 'User has been suspended for 7 days and the post has been deleted.';
         // suspendUser();
@@ -92,6 +110,9 @@ try{
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
 
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'User has been suspended for 7 days and the comment has been deleted.';
 
 
@@ -104,6 +125,9 @@ try{
                  $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
 
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'User has been suspended for 7 days.';
 
     }
@@ -115,6 +139,9 @@ try{
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
 
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'Post has been deleted. No action taken on user.';
     } elseif ($contentAction === "delete_comment") {
        $stmt =$db->prepare("DELETE FROM comments WHERE user_id = ? AND comment_id = ? ");
@@ -123,15 +150,27 @@ try{
 
             $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
+
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+ 
             $response['message'] = 'Comment has been deleted. No action taken on user.';
     }else{
          $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
+
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'Report has been resolved, No action taken on user and  its post.';
     }
 }else{
     $stmt =$db->prepare("UPDATE reports SET status = 'resolved' WHERE report_id = ? ");
             $stmt->execute([$reportId]);
+
+            $stmt =$db->prepare("INSERT INTO audit (admin_username,action,type,affected_user,action_reason) VALUES (?,?,?,?,?)");
+            $stmt->execute([$admin,$userAction . ' ' . $contentAction,$contentType,$reportedUID,$reason]);
+
             $response['message'] = 'Report has been resolved, No action taken on user and  its post.';
 }
 

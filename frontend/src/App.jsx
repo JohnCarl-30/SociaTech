@@ -5,12 +5,14 @@ import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
 import DraftPage from "./pages/DraftPage";
 import AdminPanel from "./pages/AdminPanel";
+import Audit from "./pages/Audit";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
+
 
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
 
   return (
     <>
+    
       <ToastContainer position="top-center" autoClose={2000} theme="light" />
       <Routes>
         <Route path="/" element={!user ? <Login /> : <Navigate to="/home" />} />
@@ -61,6 +64,7 @@ function App() {
         <Route path="/quiz" element={user ? <Quiz /> : <Navigate to="/" />} />
         <Route path="/draft" element={user ?  <DraftPage/>: <Navigate to="/" />} />
         <Route path="/admin" element={user ?  <AdminPanel/>: <Navigate to="/" />} />
+        <Route path="/audit" element={user ?  <Audit/>: <Navigate to="/" />} />
         
 
         

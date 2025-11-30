@@ -11,7 +11,7 @@ import {
   Edit,
   Trash2,
   Search,
-  Eye,
+  Eye
 } from "lucide-react";
 import pfpImage from "../assets/deault_pfp.png";
 import SamplePost from "../assets/samplePost.png";
@@ -22,7 +22,7 @@ import { getUser } from "../utils/storage";
 export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
-  const [isOpenPage, setOpenPage] = useState("post");
+  const [isOpenPage, setOpenPage] = useState('post');
 
   // User stats state
   const [username, setUsername] = useState("");
@@ -36,7 +36,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const [profileImage, setProfileImage] = useState(pfpImage);
   const [uploading, setUploading] = useState(false);
   const [savedPostIds, setSavedPostIds] = useState(new Set());
-  const [followerCount, setFollowerCount] = useState(0);
+    const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
   // Edit Profile states
@@ -50,6 +50,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const user_id = user?.id || null;
 
   const [savedPosts, setSavedPosts] = useState([]);
+  
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [openMorePost, setOpenMorePost] = useState(null);
 
@@ -118,6 +119,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     }
   }, [user_id]);
 
+  // Function to fetch saved posts
   const fetchSavedPosts = async () => {
     if (!user_id) return;
 
@@ -144,21 +146,20 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     }
   };
 
+  // Fetch saved posts count on mount and when "Saved" tab is opened
   useEffect(() => {
     if (isOpenPage === "saved") {
       fetchSavedPosts();
       fetchSavedPostIds();
     } else if (user_id && savedCount === 0) {
-      fetch(
-        `http://localhost/SociaTech/backend/auth/getsavedPosts.php?user_id=${user_id}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
+      fetch(`http://localhost/SociaTech/backend/auth/getsavedPosts.php?user_id=${user_id}`)
+        .then(res => res.json())
+        .then(data => {
           if (data.success) {
             setSavedCount(data.posts?.length || 0);
           }
         })
-        .catch((err) => console.log("Error fetching saved count:", err));
+        .catch(err => console.log("Error fetching saved count:", err));
     }
   }, [isOpenPage, user_id]);
 
@@ -173,7 +174,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
       const data = await res.json();
 
       if (data.success && data.posts) {
-        const postIds = new Set(data.posts.map((post) => post.post_id));
+        const postIds = new Set(data.posts.map(post => post.post_id));
         setSavedPostIds(postIds);
       }
     } catch (err) {
@@ -218,9 +219,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
         setImageURL(null);
         alert("Profile photo updated successfully!");
       } else {
-        alert(
-          "Failed to update profile photo: " + (data.message || "Unknown error")
-        );
+        alert("Failed to update profile photo: " + (data.message || "Unknown error"));
       }
     } catch (err) {
       console.log("Error uploading profile photo:", err);
@@ -253,6 +252,8 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     return "just now";
   };
 
+ 
+
   // Fetch user profile data (includes fullname and bio)
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -263,13 +264,14 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
           `http://localhost/SociaTech/backend/auth/getUserProfile.php?user_id=${user_id}`
         );
         const data = await res.json();
-        console.log("Fetched Data:", data);
+        console.log("Fetched Data:", data)
 
         if (data.success) {
           setUsername(data.user.username || "Unknown User");
           setFullname(data.user.fullname || "");
           setBio(data.user.bio || "");
           setProfileImage(data.user.profile_image || pfpImage);
+          
         }
       } catch (err) {
         console.log("Error fetching user profile:", err);
@@ -281,8 +283,9 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     fetchUserProfile();
   }, [user_id]);
 
+  // Fetch post count
   useEffect(() => {
-    const fetchUserStats = async () => {
+    const fetchPostCount = async () => {
       if (!user_id) return;
 
       try {
@@ -292,16 +295,16 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
         const data = await res.json();
 
         if (data.success) {
-          setPostCount(data.post_count || 0);
-          setFollowerCount(data.follower_count || 0);
+          setPostCount(data.post_count || 0)
+           setFollowerCount(data.follower_count || 0);
           setFollowingCount(data.following_count || 0);
         }
       } catch (err) {
-        console.log("Error fetching user stats:", err);
+        console.log("Error fetching post count:", err);
       }
     };
 
-    fetchUserStats();
+    fetchPostCount();
   }, [user_id]);
 
   // Fetch user's posts
@@ -474,9 +477,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
             <div className="pfp_username_container">
               <img src={profileImage} alt="" className="profilePic" />
               <div className="user_info_container">
-                <div className="userName_container">
-                  {loading ? "Loading..." : username}
-                </div>
+                <div className="userName_container">{loading ? "Loading..." : username}</div>
                 {fullname && <div className="user_fullname">{fullname}</div>}
                 {bio && <div className="user_bio">{bio}</div>}
               </div>
@@ -497,38 +498,14 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
             </div>
           </div>
           <div className="profilePage_nav_container">
-            <button
-              className={`profilePage_nav_child ${
-                isOpenPage == "post" ? "nav_btn_active" : ""
-              }`}
-              onClick={() => setOpenPage("post")}
-            >
-              Post
-            </button>
-            <button
-              className={`profilePage_nav_child ${
-                isOpenPage == "saved" ? "nav_btn_active" : ""
-              }`}
-              onClick={() => setOpenPage("saved")}
-            >
-              Saved
-            </button>
+            <button className={`profilePage_nav_child ${isOpenPage == 'post' ? 'nav_btn_active' : ''}`} onClick={() => setOpenPage('post')}>Post</button>
+            <button className={`profilePage_nav_child ${isOpenPage == 'saved' ? 'nav_btn_active' : ''}`} onClick={() => setOpenPage('saved')}>Saved</button>
 
-            <button
-              className={`profilePage_nav_child ${
-                isOpenPage == "EditProfile" ? "nav_btn_active" : ""
-              }`}
-              onClick={() => {
-                setOpenPage("EditProfile");
-                setIsEditMode(false);
-              }}
-            >
-              Edit Profile
-            </button>
+            <button className={`profilePage_nav_child ${isOpenPage == 'EditProfile' ? 'nav_btn_active' : ''}`} onClick={() => { setOpenPage('EditProfile'); setIsEditMode(false); }}>Edit Profile</button>
           </div>
           <div className="profilePage_child_container">
             {/* Posts Tab */}
-            {isOpenPage === "post" && (
+            {isOpenPage === 'post' && (
               <div className="profilePage_post_container">
                 {userPosts.length > 0 ? (
                   userPosts.map((post) => (
@@ -536,23 +513,16 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                       className="post_card post_card_spacing"
                       key={post.post_id}
                       onClick={() => onPostClick && onPostClick(post)}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div className="post_card_header">
                         <div className="header_user_container">
                           <div className="pfp_container">
-                            <img
-                              src={post.profile_image || pfpImage}
-                              alt="user_pfp"
-                            />
+                            <img src={post.profile_image || pfpImage} alt="user_pfp" />
                           </div>
                           <div className="post_username">{post.username}</div>
-                          <div className="post_date">
-                            {timeAgo(post.post_date)}
-                          </div>
-                          <div className="post_category">
-                            {post.post_category}
-                          </div>
+                          <div className="post_date">{timeAgo(post.post_date)}</div>
+                          <div className="post_category">{post.post_category}</div>
                         </div>
                         <div className="more_menu_container">
                           <div
@@ -590,7 +560,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                                   </div>
                                 </>
                               )}
-                              <div
+                              {post.user_id !== user_id &&( <div
                                 className="dropdown_item"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -599,19 +569,11 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               >
                                 <Bookmark
                                   size={18}
-                                  fill={
-                                    savedPostIds.has(post.post_id)
-                                      ? "currentColor"
-                                      : "none"
-                                  }
+                                  fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
                                 />
-                                <span>
-                                  {savedPostIds.has(post.post_id)
-                                    ? "Unsave"
-                                    : "Save"}
-                                </span>
-                              </div>
-                              <div
+                                <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
+                              </div>)}
+                              {post.user_id !== user_id &&(<div
                                 className="dropdown_item"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -620,7 +582,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               >
                                 <AlertCircle size={18} />
                                 <span>Report</span>
-                              </div>
+                              </div>)}
                             </div>
                           )}
                         </div>
@@ -628,9 +590,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
 
                       <div className="post_card_title">{post.post_title}</div>
                       {post.post_content && (
-                        <div className="post_card_content">
-                          {post.post_content}
-                        </div>
+                        <div className="post_card_content">{post.post_content}</div>
                       )}
                       {post.post_image && (
                         <div className="post_card_img">
@@ -672,7 +632,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
             )}
 
             {/* Saved Posts Tab */}
-            {isOpenPage === "saved" && (
+            {isOpenPage === 'saved' && (
               <div className="profilePage_post_container">
                 <div className="savePost_header">
                   <div className="profilePage_savePost_title">Saved Posts</div>
@@ -688,23 +648,16 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                       className="post_card post_card_spacing"
                       key={post.post_id}
                       onClick={() => onPostClick && onPostClick(post)}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div className="post_card_header">
                         <div className="header_user_container">
                           <div className="pfp_container">
-                            <img
-                              src={post.profile_image || pfpImage}
-                              alt="user_pfp"
-                            />
+                            <img src={post.profile_image || pfpImage} alt="user_pfp" />
                           </div>
                           <div className="post_username">{post.username}</div>
-                          <div className="post_date">
-                            {timeAgo(post.post_date)}
-                          </div>
-                          <div className="post_category">
-                            {post.post_category}
-                          </div>
+                          <div className="post_date">{timeAgo(post.post_date)}</div>
+                          <div className="post_category">{post.post_category}</div>
                         </div>
                         <div className="more_menu_container">
                           <div
@@ -751,17 +704,9 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               >
                                 <Bookmark
                                   size={18}
-                                  fill={
-                                    savedPostIds.has(post.post_id)
-                                      ? "currentColor"
-                                      : "none"
-                                  }
+                                  fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
                                 />
-                                <span>
-                                  {savedPostIds.has(post.post_id)
-                                    ? "Unsave"
-                                    : "Save"}
-                                </span>
+                                <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
                               </div>
                               <div
                                 className="dropdown_item"
@@ -780,9 +725,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
 
                       <div className="post_card_title">{post.post_title}</div>
                       {post.post_content && (
-                        <div className="post_card_content">
-                          {post.post_content}
-                        </div>
+                        <div className="post_card_content">{post.post_content}</div>
                       )}
                       {post.post_image && (
                         <div className="post_card_img">
@@ -821,20 +764,18 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
               </div>
             )}
 
-            {/* Achievements Tab */}
-            {isOpenPage === "achievements" && (
-              <div className="profilePage_achievements_Container">
-                <div>Achievements</div>
-              </div>
-            )}
+           
 
             {/* Edit Profile Tab */}
-            {isOpenPage === "EditProfile" && (
+            {isOpenPage === 'EditProfile' && (
               <div className="profilePage_editProfile_Container">
                 <div className="profilePage_childContainer_title edit_profile_title_row">
                   <span>Edit Profile</span>
                   {!isEditMode && (
-                    <button className="edit_mode_btn" onClick={handleEditClick}>
+                    <button
+                      className="edit_mode_btn"
+                      onClick={handleEditClick}
+                    >
                       <Edit size={16} />
                       Edit
                     </button>
@@ -878,19 +819,17 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
 
                       <div className="profile_preview_fields">
                         <div>
-                          <label className="profile_field_label">
-                            Full Name
-                          </label>
+                          <label className="profile_field_label">Full Name</label>
                           <div className="profile_field_value">
                             {fullname || "Not set"}
                           </div>
                         </div>
 
                         <div>
-                          <label className="profile_field_label">
-                            Username
-                          </label>
-                          <div className="profile_field_value">@{username}</div>
+                          <label className="profile_field_label">Username</label>
+                          <div className="profile_field_value">
+                            @{username}
+                          </div>
                         </div>
 
                         <div>
@@ -908,9 +847,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                 {isEditMode && (
                   <div className="edit_form_wrapper">
                     <div className="changeProfile_field_container">
-                      <label htmlFor="fullname" className="edit_form_label">
-                        Full Name
-                      </label>
+                      <label htmlFor="fullname" className="edit_form_label">Full Name</label>
                       <input
                         id="fullname"
                         type="text"
@@ -922,9 +859,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                     </div>
 
                     <div className="changeProfile_field_container">
-                      <label htmlFor="username" className="edit_form_label">
-                        Username
-                      </label>
+                      <label htmlFor="username" className="edit_form_label">Username</label>
                       <input
                         id="username"
                         type="text"
@@ -936,9 +871,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                     </div>
 
                     <div className="changeProfile_field_container">
-                      <label htmlFor="bio" className="edit_form_label">
-                        Bio
-                      </label>
+                      <label htmlFor="bio" className="edit_form_label">Bio</label>
                       <textarea
                         id="bio"
                         value={editBio}

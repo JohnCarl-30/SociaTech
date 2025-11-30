@@ -25,10 +25,14 @@ try{
     
     
     
-
+    if(!$previewComment){
+        echo json_encode([
+        'success' => false,
+        'message' => 'No content found! Comment already deleted!']);
+    }else{
     echo json_encode([
         'success' => true,
-        'comment' => $previewComment]);
+        'comment' => $previewComment]);}
 }catch(Exception $e){
     echo json_encode(['success'=>false,'message'=> $e->getMessage()]);
 }
