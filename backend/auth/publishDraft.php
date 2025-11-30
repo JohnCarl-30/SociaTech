@@ -45,6 +45,30 @@ try {
 
     $draft = $query->fetch(PDO::FETCH_ASSOC);
 
+
+// Convert draft's relative path to full URL
+$draft_image_url = null;
+if (!empty($draft['post_image'])) {
+    // If already a full URL, use as-is
+    if (strpos($draft['post_image'], 'http://') === 0 || strpos($draft['post_image'], 'https://') === 0) {
+        $draft_image_url = $draft['post_image'];
+    } else {
+        // Convert relative path to full URL
+        $draft_image_url = "http://localhost/SociaTech/" . $draft['post_image'];
+    }
+}
+
+// Handle new file upload
+if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] === 0) {
+    $file = $_FILES['post_image'];
+    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . "/SociaTech/uploads/drafts/";
+    $newFileName = time() . "_" . $file['name']; // ⬅ Removed "post_" prefix
+    $uploadPath = $uploadDir . $newFileName;
+    
+    if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+        $draft_image_url = "http://localhost/SociaTech/uploads/drafts/" . $newFileName;
+    }
+}
     if (!$draft) {
         echo json_encode([
             "success" => false,
@@ -61,7 +85,7 @@ try {
     $insertQuery->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $insertQuery->bindParam(':title', $draft['post_title'], PDO::PARAM_STR);
     $insertQuery->bindParam(':content', $draft['post_content'], PDO::PARAM_STR);
-    $insertQuery->bindParam(':image', $draft['post_image'], PDO::PARAM_STR);
+    $insertQuery->bindParam(':image', $draft_image_url, PDO::PARAM_STR);
     $insertQuery->bindParam(':category', $draft['post_category'], PDO::PARAM_STR);
 
     $insertQuery->execute();

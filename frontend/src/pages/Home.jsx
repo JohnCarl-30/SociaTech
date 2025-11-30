@@ -6,7 +6,7 @@ import ProfilePage from "../components/ProfilePage.jsx";
 import DeletePostModal from "../components/DeletePostModal.jsx";
 import EditPostModal from "../components/EditPostModal.jsx";
 
-import CommentModal from "../components/commentModal.jsx";
+import CommentModal from "../components/CommentModal.jsx";
 import {
   ArrowBigUp,
   ArrowBigDown,
@@ -18,8 +18,9 @@ import {
   Edit,
   Trash2,
   UserX,
+  Globe,
+  Users,
 } from "lucide-react";
-import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
 import "./Home.css";
 import { useCycle, motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
@@ -38,7 +39,8 @@ import {
   notifyPostUpvote,
   notifyCommentUpvote,
 } from "../services/notificationHelper.js";
-import OtherUserProfile from "../components/otherUserProfile.jsx";
+import OtherUserProfile from "../components/OtherUserProfile.jsx";
+import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
 
 export default function Homepage() {
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
@@ -50,7 +52,7 @@ export default function Homepage() {
   const [upTally, setUpTally] = useState({});
   const [downTally, setDownTally] = useState({});
   const [voteState, setVoteState] = useState({});
-
+  
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -62,16 +64,14 @@ export default function Homepage() {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentImage, setCommentImage] = useState(null);
-
-
+ 
+ 
   const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
-
-  const [commentUpTally, setCommentUpTally] = useState({});
-  const [commentDownTally, setCommentDownTally] = useState({});
-  const [commentVoteState, setCommentVoteState] = useState({});
-
+ 
+  
+ 
   const [commentSortOption, setCommentSortOption] = useState("newest");
-
+  
   const [openHelpPage, setOpenHelpPage] = useState(false);
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
@@ -79,8 +79,8 @@ export default function Homepage() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedOtherUser, setSelectedOtherUser] = useState(null);
   const [otherUserProfile, setOtherUserProfile] = useState(null);
-  const [selectedUserId, setSelectedUserId] = useState('');
-
+   const [selectedUserId,setSelectedUserId] = useState('');
+  
   const [otherUserPosts, setOtherUserPosts] = useState([]);
   const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -92,15 +92,14 @@ export default function Homepage() {
   const [reportedBy, setReportedBy] = useState(null);
   const [reportedUID, setReportedUID] = useState(null);
   const [contentId, setContentId] = useState(null);
-  const [savedPostIds, setSavedPostIds] = useState(new Set());
-  const [openOtherUserMenu, setOpenOtherUserMenu] = useState(false);
+   const [savedPostIds, setSavedPostIds] = useState(new Set());
 
-  //for EditPOST MODAL:
-  const [editModalOpen, setEditModalOpen] = useState(false);
+//for EditPOST MODAL:
+const [editModalOpen, setEditModalOpen] = useState(false);
   //for delete post modal
-  const deleteModalRef = useRef();
+   const deleteModalRef = useRef();
 
-  // STATES FOR BLOCKING
+   // STATES FOR BLOCKING
   const [blockedUserIds, setBlockedUserIds] = useState([]);
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
   const [userToBlock, setUserToBlock] = useState(null);
@@ -108,12 +107,90 @@ export default function Homepage() {
   const user = getUser();
   const user_id = user?.id || null;
 
+   function VisibilityBadge({ visibility }) {
+    const isPublic = visibility === "public" || !visibility;
 
-  const handleEditButtonClick = (post) => {
-    setSelectedPost(post);
-    setEditModalOpen(true);
+    return (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          padding: "3px 8px",
+          borderRadius: "12px",
+          fontSize: "11px",
+          fontWeight: "500",
+          backgroundColor: isPublic ? "#e3f2fd" : "#fff3e0",
+          color: isPublic ? "black" : "black",
+          border: `1px solid ${isPublic ? "#90caf9" : "#ffb74d"}`,
+        }}
+      >
+        {isPublic ? <Globe size={12} /> : <Users size={12} />}
+        <span>{isPublic ? "Public" : "Followers"}</span>
+      </div>
+    );
+  }
+
+  const fetchBlockedUsers = async () => {
+    if (!user_id) {
+      return;
+    }
+
+    const numericUserId = parseInt(user_id);
+    if (isNaN(numericUserId)) {
+      console.error("Invalid user_id format:", user_id);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchBlockedUsers.php?user_id=${numericUserId}`
+      );
+
+      if (!response.ok) {
+        console.error('HTTP error fetching blocked users:', response.status);
+        setBlockedUserIds([]);
+        return;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
+        setBlockedUserIds([]);
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.blocked_users)) {
+        const blockedIds = data.blocked_users.map(u => parseInt(u.user_id));
+        console.log("Successfully fetched blocked user IDs:", blockedIds);
+        setBlockedUserIds(blockedIds);
+      } else {
+        console.error("Failed to fetch blocked users:", data.message);
+        setBlockedUserIds([]);
+      }
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      setBlockedUserIds([]);
+    }
   };
-  const handleDeleteClick = (post) => {
+
+  useEffect(() => {
+    if (user_id) {
+      fetchBlockedUsers();
+    }
+  }, [user_id]);
+
+
+  
+   
+const handleEditButtonClick = (post) => {
+  setSelectedPost(post);
+  setEditModalOpen(true);
+};
+   const handleDeleteClick = (post) => {
     deleteModalRef.current.open(post); // Open modal for this post
   };
 
@@ -127,17 +204,17 @@ export default function Homepage() {
 
   const handleUserClick = async (userId, userData) => {
     //if userId is same as the user logedin, open profilepage instead
-    if (userId === user_id) {
+    if(userId === user_id){
       openProfilePage();
       clearSearch();
       return;
     }
-
+    
     setIsLoadingOtherUserData(true);
     setSelectedOtherUser(userData);
     setIsOtherUserProfileOpen(true);
     setSelectedUserId(userId);
-
+   
     setOtherUserProfile(null);
     setOtherUserPosts([]);
     clearSearch();
@@ -153,11 +230,11 @@ export default function Homepage() {
 
   const handlePostClick = async (post) => {
     setSelectedPost(post);
-    setIsCommentModalOpen(true);
+    openComments(post);
     setOpenMorePost(null);
     setComments([]);
     setCommentSortOption("newest");
-    await fetchComments(post.post_id, "newest");
+   
   };
 
   const fetchOtherUserProfile = async (userId) => {
@@ -214,6 +291,8 @@ export default function Homepage() {
 
 
 
+
+
   useEffect(() => {
     let intervalId;
 
@@ -227,7 +306,7 @@ export default function Homepage() {
       // Refresh counts every 10 seconds
       intervalId = setInterval(() => {
         fetchFollowStats(targetUserId);
-      }, 10000);
+      }, 10000); // 10 seconds
     }
 
     return () => {
@@ -267,13 +346,13 @@ export default function Homepage() {
 
   const openProfilePage = () => {
     setIsProfilePageOpen(true);
-    setIsDropDownOpen(false);
+    setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
 
   const handleUsernameClick = async (userId, userData) => {
 
     //if userId is same as the user logedin, open profilepage instead
-    if (userId === user_id) {
+    if(userId === user_id){
       openProfilePage();
       return;
     }
@@ -282,7 +361,7 @@ export default function Homepage() {
     setIsLoadingOtherUserData(true);
     setSelectedOtherUser(userData);
     setIsOtherUserProfileOpen(true);
-    setSelectedUserId(userId);
+     setSelectedUserId(userId);
     setOtherUserProfile(null);
     setOtherUserPosts([]);
     setIsFollowing(false);
@@ -293,7 +372,7 @@ export default function Homepage() {
     await Promise.all([
       fetchOtherUserProfile(userId),
       fetchOtherUserPosts(userId),
-      fetchFollowStats(userId),
+       fetchFollowStats(userId),
     ]);
 
     setIsLoadingOtherUserData(false);
@@ -302,70 +381,18 @@ export default function Homepage() {
     setIsOtherUserProfileOpen(false);
     clearSearch();
   };
-
-  const fetchBlockedUsers = async () => {
-    if (!user_id) {
-      return;
-    }
-
-    const numericUserId = parseInt(user_id);
-    if (isNaN(numericUserId)) {
-      console.error("Invalid user_id format:", user_id);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchBlockedUsers.php?user_id=${numericUserId}`
-      );
-
-      if (!response.ok) {
-        console.error('HTTP error fetching blocked users:', response.status);
-        setBlockedUserIds([]);
-        return;
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        console.error("Server returned non-JSON response:", text);
-        setBlockedUserIds([]);
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success && Array.isArray(data.blocked_users)) {
-        const blockedIds = data.blocked_users.map(u => parseInt(u.user_id));
-        console.log("Successfully fetched blocked user IDs:", blockedIds);
-        setBlockedUserIds(blockedIds);
-      } else {
-        console.error("Failed to fetch blocked users:", data.message);
-        setBlockedUserIds([]);
-      }
-    } catch (error) {
-      console.error("Error fetching blocked users:", error);
-      setBlockedUserIds([]);
-    }
-  };
-
-  useEffect(() => {
-    if (user_id) {
-      fetchBlockedUsers();
-    }
-  }, [user_id]);
-
   const filteredPosts = (() => {
     let filtered = posts;
+     filtered = filtered.filter(post => !blockedUserIds.includes(post.user_id));
 
-    filtered = filtered.filter(post => !blockedUserIds.includes(post.user_id));
-
+    
     if (selectedCategory !== "All") {
       filtered = filtered.filter(
         (post) => post.post_category === selectedCategory
       );
     }
 
+    // Then filter by search results if there are any
     if (Array.isArray(searchResults) && searchResults.length > 0) {
       const searchPostIds = searchResults.map((r) => r.post_id);
       filtered = filtered.filter((post) =>
@@ -376,23 +403,24 @@ export default function Homepage() {
     return filtered;
   })();
 
+ 
 
   const closeAllModals = () => {
     setIsProfilePageOpen(false);
     setIsDropDownOpen(false);
     setIsSettingOpen(false);
     setOpenHelpPage(false);
-
+    
   };
+   
 
-
-  useEffect(() => {
+   useEffect(() => {
     const fetchSavedPostIds = async () => {
       if (!user_id || posts.length === 0) return;
 
       try {
         const postIds = posts.map(p => p.post_id);
-
+         
 
         const res = await fetch(
           'http://localhost/SociaTech/backend/auth/checkSavedPosts.php',
@@ -440,6 +468,7 @@ export default function Homepage() {
       const data = await res.json();
 
       if (data.success) {
+        // Update local state
         setSavedPostIds(prev => {
           const newSet = new Set(prev);
           if (data.action === 'saved') {
@@ -452,8 +481,8 @@ export default function Homepage() {
           return newSet;
         });
 
-        setOpenMorePost(null);
-        setOpenMoreComment(null);
+        setOpenMorePost(null); // Close dropdown
+        setOpenMoreComment(null); // Close comment modal dropdown if open
       } else {
         alert(data.message || 'Failed to save/unsave post');
       }
@@ -465,47 +494,11 @@ export default function Homepage() {
 
   useEffect(() => {
     fetchPost();
-  }, []);
+  }, [closeOtherUserProfile]);
 
-  useEffect(() => {
-    let pollInterval;
+ 
 
-    if (isCommentModalOpen && selectedPost?.post_id) {
-      pollInterval = setInterval(() => {
-        fetchComments(selectedPost.post_id, commentSortOption);
-      }, 5000);
-    }
 
-    return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
-    };
-  }, [isCommentModalOpen, selectedPost?.post_id, commentSortOption]);
-
-  const handleCommentTextChange = (e) => {
-    setCommentText(e.target.value);
-  };
-
-  const handleCommentImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCommentImage(file);
-    }
-  };
-
-  const postCategories = [
-    "All",
-    "Artificial Intelligence",
-    "Cyber Security",
-    "Networking",
-    "Cloud Engineering",
-    "Software Development",
-    "Dev Ops",
-    "Machine Learning",
-    "Virtual Reality",
-    "Augmented Reality",
-  ];
 
   const handleNotificationPostClick = async (postId) => {
     setIsNotificationPanelOpen(false);
@@ -532,9 +525,9 @@ export default function Homepage() {
 
   const openSetting = () => {
     setIsSettingOpen(true);
-    setIsDropDownOpen(false);
+    setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
-
+  
   const handleOpenHelpPage = () => {
     setOpenHelpPage(true);
     setIsDropDownOpen(false);
@@ -549,206 +542,181 @@ export default function Homepage() {
     if (fileInput) fileInput.value = "";
   };
 
-
-  const fetchComments = async (post_id, sortBy = "newest") => {
-    try {
-      const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchComments.php?post_id=${post_id}&sort=${sortBy}`
-      );
-      const data = await res.json();
-      if (data.success && data.comments) {
-        const filteredComments = data.comments.filter(
-          comment => !blockedUserIds.includes(comment.user_id)
-        );
-        setComments(filteredComments);
-        const upObj = {};
-        const downObj = {};
-        const voteObj = {};
-        filteredComments.forEach((c) => {
-          upObj[c.comment_id] = c.up_tally_comment || 0;
-          downObj[c.comment_id] = c.down_tally_comment || 0;
-          voteObj[c.comment_id] = null;
-        });
-        setCommentUpTally(upObj);
-        setCommentDownTally(downObj);
-        setCommentVoteState(voteObj);
-      } else {
-        setComments([]);
-      }
-    } catch (err) {
-      console.log("Error fetching comments:", err);
-    }
-  };
+  
 
   const toggleMorePost = (post_id) => {
     setOpenMorePost((prev) => (prev === post_id ? null : post_id));
   };
 
-  const fetchUserVotes = async (userId) => {
-    if (!userId) return {};
+  
+const fetchUserVotes = async (userId) => {
+  if (!userId) return {};
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
+    );
+    const data = await res.json();
+    
+    if (data.success) {
+      const voteObj = {};
+      data.votes.forEach(vote => {
+        // vote_type: 1 = up, 0 = down
+        voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
+      });
+      return voteObj;
+    }
+    return {};
+  } catch (err) {
+    console.log("Error fetching user votes:", err);
+    return {};
+  }
+};
 
-    try {
-      const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
-      );
-      const data = await res.json();
+// Update the fetchPost function to initialize vote tallies
+const fetchPost = async () => {
+  try {
+    const res = await fetch(
+     `http://localhost/SociaTech/backend/auth/fetchPost.php?current_user_id=${user_id}`
+    );
+    const data = await res.json();
+    if (data.success) {
+      setPosts(data.posts);
 
-      if (data.success) {
-        const voteObj = {};
-        data.votes.forEach(vote => {
-          voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
-        });
-        return voteObj;
+      // Initialize vote tallies from fetched posts
+      const upObj = {};
+      const downObj = {};
+      data.posts.forEach(post => {
+        upObj[post.post_id] = post.up_tally_post || 0;
+        downObj[post.post_id] = post.down_tally_post || 0;
+      });
+      setUpTally(upObj);
+      setDownTally(downObj);
+
+      // Fetch user's vote state and wait for it to complete
+      if (user_id) {
+        const userVotes = await fetchUserVotes(user_id);
+        setVoteState(userVotes);
       }
-      return {};
-    } catch (err) {
-      console.log("Error fetching user votes:", err);
-      return {};
+    } else {
+      console.log("fetch failed", data.message);
     }
-  };
+  } catch (err) {
+    console.log("Error fetching posts:", err);
+  }
+};
 
+// Fixed handleToggleVote function
+const handleToggleVote = async (userId, postId, type) => {
+  if (!userId) {
+    alert("You must be logged in to vote.");
+    return;
+  }
 
-  const fetchPost = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/fetchPost.php"
-      );
-      const data = await res.json();
-      if (data.success) {
-        setPosts(data.posts);
+  const currentVote = voteState[postId];
+  
+  // Determine new vote type
+  // If clicking same button, remove vote. If clicking different button, switch vote.
+  const newVoteType = currentVote === type ? null : type;
 
-        const upObj = {};
-        const downObj = {};
-        data.posts.forEach(post => {
-          upObj[post.post_id] = post.up_tally_post || 0;
-          downObj[post.post_id] = post.down_tally_post || 0;
-        });
-        setUpTally(upObj);
-        setDownTally(downObj);
+  // Store original values for rollback
+  const originalUpTally = upTally[postId];
+  const originalDownTally = downTally[postId];
+  const originalVoteState = currentVote;
 
-        if (user_id) {
-          const userVotes = await fetchUserVotes(user_id);
-          setVoteState(userVotes);
-        }
-      } else {
-        console.log("fetch failed", data.message);
+  // Calculate what the new tallies should be
+  let newUpTally = originalUpTally;
+  let newDownTally = originalDownTally;
+
+  // Remove old vote effect
+  if (currentVote === "up") {
+    newUpTally = newUpTally - 1;
+  } else if (currentVote === "down") {
+    newDownTally = newDownTally - 1;
+  }
+
+  // Add new vote effect
+  if (newVoteType === "up") {
+    newUpTally = newUpTally + 1;
+  } else if (newVoteType === "down") {
+    newDownTally = newDownTally + 1;
+  }
+
+  // Optimistic UI update
+  setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
+  setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
+  setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
+
+  // Prepare vote type for backend (1=up, 0=down, null=remove)
+  let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleVote.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_id: postId,
+          user_id: userId,
+          vote_type: voteTypeToBackend,
+        }),
       }
-    } catch (err) {
-      console.log("Error fetching posts:", err);
-    }
-  };
+    );
 
-  // Fixed handleToggleVote function
-  const handleToggleVote = async (userId, postId, type) => {
-    if (!userId) {
-      alert("You must be logged in to vote.");
-      return;
-    }
+    const data = await res.json();
 
-    const currentVote = voteState[postId];
-
-    // Determine new vote type
-    // If clicking same button, remove vote. If clicking different button, switch vote.
-    const newVoteType = currentVote === type ? null : type;
-
-    // Store original values for rollback
-    const originalUpTally = upTally[postId];
-    const originalDownTally = downTally[postId];
-    const originalVoteState = currentVote;
-
-    // Calculate what the new tallies should be
-    let newUpTally = originalUpTally;
-    let newDownTally = originalDownTally;
-
-    // Remove old vote effect
-    if (currentVote === "up") {
-      newUpTally = newUpTally - 1;
-    } else if (currentVote === "down") {
-      newDownTally = newDownTally - 1;
-    }
-
-    // Add new vote effect
-    if (newVoteType === "up") {
-      newUpTally = newUpTally + 1;
-    } else if (newVoteType === "down") {
-      newDownTally = newDownTally + 1;
-    }
-
-    // Optimistic UI update
-    setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
-    setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
-    setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
-
-    // Prepare vote type for backend (1=up, 0=down, null=remove)
-    let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
-
-    try {
-      const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleVote.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            post_id: postId,
-            user_id: userId,
-            vote_type: voteTypeToBackend,
-          }),
-        }
+    if (data.success) {
+      // Fetch updated tallies from the backend to ensure accuracy
+      const postRes = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
       );
-
-      const data = await res.json();
-
-      if (data.success) {
-        // Fetch updated tallies from the backend to ensure accuracy
-        const postRes = await fetch(
-          `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
+      const postData = await postRes.json();
+      
+      if (postData.success && postData.post) {
+        setUpTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.up_tally_post,
+        }));
+        setDownTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.down_tally_post,
+        }));
+        
+        // Update the post in the posts array too
+        setPosts((prev) => 
+          prev.map(p => 
+            p.post_id === postId 
+              ? { ...p, up_tally_post: postData.post.up_tally_post, down_tally_post: postData.post.down_tally_post }
+              : p
+          )
         );
-        const postData = await postRes.json();
-
-        if (postData.success && postData.post) {
-          setUpTally((prev) => ({
-            ...prev,
-            [postId]: postData.post.up_tally_post,
-          }));
-          setDownTally((prev) => ({
-            ...prev,
-            [postId]: postData.post.down_tally_post,
-          }));
-
-          // Update the post in the posts array too
-          setPosts((prev) =>
-            prev.map(p =>
-              p.post_id === postId
-                ? { ...p, up_tally_post: postData.post.up_tally_post, down_tally_post: postData.post.down_tally_post }
-                : p
-            )
-          );
-        }
-
-        // Create notification for upvote
-        if (newVoteType === "up") {
-          const post = posts.find((p) => p.post_id === postId);
-          if (post && post.user_id !== userId) {
-            await notifyPostUpvote(post.user_id, userId, user.username, postId);
-          }
-        }
-      } else {
-        // Revert UI changes if backend fails
-        console.log("Vote failed:", data.message);
-        setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
-        setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
-        setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-        alert("Failed to vote. Please try again.");
       }
-    } catch (err) {
-      console.log("Error sending vote:", err);
-      // Revert UI changes on error
+
+      // Create notification for upvote
+      if (newVoteType === "up") {
+        const post = posts.find((p) => p.post_id === postId);
+        if (post && post.user_id !== userId) {
+          await notifyPostUpvote(post.user_id, userId, user.username, postId);
+        }
+      }
+    } else {
+      // Revert UI changes if backend fails
+      console.log("Vote failed:", data.message);
       setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
       setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
       setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-      alert("Error voting. Please check your connection.");
+      alert("Failed to vote. Please try again.");
     }
-  };
+  } catch (err) {
+    console.log("Error sending vote:", err);
+    // Revert UI changes on error
+    setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+    setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+    setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+    alert("Error voting. Please check your connection.");
+  }
+};
 
   // REPORT HANDLER
   const setReportData = (type, reportedBy, reportedUID, contentId) => {
@@ -768,9 +736,9 @@ export default function Homepage() {
     setIsCommentModalOpen(true);
     setComments([]);
     setCommentSortOption("newest");
-    await fetchComments(post.post_id, "newest");
+   
   };
-
+  
 
   const closeComments = () => {
     setSelectedPost(null);
@@ -784,7 +752,7 @@ export default function Homepage() {
   const timeAgo = (dateString) => {
     const now = new Date();
     const past = new Date(dateString);
-    const diff = Math.floor((now - past) / 1000);
+    const diff = Math.floor((now - past) / 1000); // seconds
 
     const units = [
       { name: "second", seconds: 1 },
@@ -809,8 +777,7 @@ export default function Homepage() {
     setIsCommentModalOpen(false);
   };
 
-  // Handle block user
-  const handleBlockUser = (userId, username) => {
+ const handleBlockUser = (userId, username) => {
     setUserToBlock({ userId, username });
     setIsBlockConfirmOpen(true);
     setOpenMorePost(null);
@@ -883,7 +850,7 @@ export default function Homepage() {
           onUserClick={handleUserClick}
           onPostClick={handlePostClick}
           onClearSearch={clearSearch}
-
+          
         />
         <NotificationPanel
           isOpen={isNotificationPanelOpen}
@@ -901,19 +868,20 @@ export default function Homepage() {
             <ProfilePage
               style={isProfilePageOpen ? "flex" : "none"}
               closeProfilePage={closeProfilePage}
-              onPostClick={openComments}
+               
             />
-
+           
 
             <HelpPage
               openPage={openHelpPage}
               closePage={() => setOpenHelpPage(false)}
             />
             <Settings
-              style={{ display: isSettingOpen ? "flex" : "none" }}
+              style={isSettingOpen ? "flex" : "none"}
               closeSetting={closeSetting}
               notifEnabled={notifEnabled}
               setNotifEnabled={setNotifEnabled}
+              userId={user_id}
             />
             <div className="post_container">
               {filteredPosts.length === 0 ? (
@@ -923,7 +891,7 @@ export default function Homepage() {
                     : "No posts found in this category."}
                 </p>
               ) : (
-                filteredPosts.map((post, index) => (
+               filteredPosts.map((post, index) => (
                   <motion.div
                     className="post_card"
                     key={post.post_id}
@@ -955,6 +923,7 @@ export default function Homepage() {
                         <div className="post_category">
                           {post.post_category}
                         </div>
+                          <VisibilityBadge visibility={post.post_visibility} />
                       </div>
                       <div className="more_menu_container">
                         <div
@@ -992,35 +961,35 @@ export default function Homepage() {
                                 </div>
                               </>
                             )}
-                            {post.user_id !== user_id && (<div className="dropdown_item" onClick={(e) => {
+                          {post.user_id !== user_id &&( <div className="dropdown_item" onClick={(e) => {
                               e.stopPropagation();
                               handleSavePost(post.post_id);
                             }}>
-                              <Bookmark
-                                size={18}
-                                fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
-                              />
-                              <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
-                            </div>)}
+                            <Bookmark 
+                              size={18} 
+                              fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
+                            />
+                            <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
+                          </div>)}
                             {post.user_id !== user_id && (
-                              <>
-                                <div
-                                  className="dropdown_item"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
 
-                                    setReportData(
-                                      "post",
-                                      user_id,
-                                      post.user_id,
-                                      post.post_id
-                                    );
-                                  }}
-                                >
-                                  <AlertCircle size={18} />
-                                  <span>Report</span>
-                                </div>
-                                <div
+                                  setReportData(
+                                    "post",
+                                    user_id,
+                                    post.user_id,
+                                    post.post_id
+                                  );
+                                }}
+                              >
+                                <AlertCircle size={18} />
+                                <span>Report</span>
+                              </div>
+                            )}
+                            {post.user_id !== user_id &&(<div
                                   className="dropdown_item"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1029,9 +998,7 @@ export default function Homepage() {
                                 >
                                   <UserX size={18} />
                                   <span>Block User</span>
-                                </div>
-                              </>
-                            )}
+                                </div>)}
                           </div>
                         )}
                       </div>
@@ -1059,31 +1026,37 @@ export default function Homepage() {
                       >
                         Comment
                       </button>
-                      <button
-                        className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
-                        onClick={() => handleToggleVote(user_id, post.post_id, "up")}
-                      >
-                        <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
-                        {upTally[post.post_id] ?? post.up_tally_post}
-                      </button>
+                    <button
+                      className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
+                      onClick={() => handleToggleVote(user_id, post.post_id, "up")}
+                    >
+                      <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
+                      {upTally[post.post_id] ?? post.up_tally_post}
+                    </button>
 
-                      <button
-                        className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
-                        onClick={() => handleToggleVote(user_id, post.post_id, "down")}
-                      >
-                        <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
-                        {downTally[post.post_id] ?? post.down_tally_post}
-                      </button>
+                    <button
+                      className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
+                      onClick={() => handleToggleVote(user_id, post.post_id, "down")}
+                    >
+                      <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
+                      {downTally[post.post_id] ?? post.down_tally_post}
+                    </button>
 
 
                     </div>
-                  </motion.div>
+                   </motion.div>
                 ))
               )}
 
-              {/* Comment Modal */}
+             
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={() => fetchPost()} onDelete={handlePostDeleted} />
+       {/* Comment Modal */}
+
+              <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={()=>fetchPost()} onDelete={handlePostDeleted} blockedUserIds={blockedUserIds} />
 
               <Report
                 isOpen={isReportOpen}
@@ -1093,32 +1066,23 @@ export default function Homepage() {
                 reportedUID={reportedUID}
                 contentId={contentId}
               />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Edit Modal */}
-      <EditPostModal open={editModalOpen} postData={selectedPost} user_id={user_id} fetchPost={() => fetchPost()} />
+     {/* Edit Modal */}
+     <EditPostModal open={editModalOpen} postData={selectedPost} user_id={user_id} fetchPost={()=>fetchPost()} onClose={()=>setEditModalOpen(false)}/>
 
 
       {/* Delete Confirmation Modal */}
-      <DeletePostModal
+       <DeletePostModal
         ref={deleteModalRef}
         user_id={user_id}
         onDelete={handlePostDeleted}
       />
+     
 
+     {/* otherUserModal */}
+     <OtherUserProfile openModal={isOtherUserProfileOpen} uid={selectedUserId} closeModal={closeOtherUserProfile}/>
 
-      {/* otherUserModal */}
-      <OtherUserProfile
-        openModal={isOtherUserProfileOpen}
-        uid={selectedUserId}
-        closeModal={closeOtherUserProfile}
-      />
-
-      {/* Block Confirmation Modal */}
-      <BlockConfirmModal
+       <BlockConfirmModal
         isOpen={isBlockConfirmOpen}
         onConfirm={confirmBlock}
         onCancel={() => {

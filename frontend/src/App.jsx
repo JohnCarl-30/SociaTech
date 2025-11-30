@@ -3,7 +3,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
-import DraftPage from "./pages/DraftPage";
+import DraftPage from "./pages/DraftPage.jsx";
 import AdminPanel from "./pages/AdminPanel";
 import Audit from "./pages/Audit";
 import ForgotPassword from "./pages/ForgotPassword";

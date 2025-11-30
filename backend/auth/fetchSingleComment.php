@@ -21,29 +21,28 @@ try {
         throw new Exception('Failed to connect to database');
     }
 
-    $post_id = $_GET['post_id'] ?? null;
+    $comment_id = $_GET['comment_id'] ?? null;
 
-    if (!$post_id) {
-        throw new Exception('Post ID is required');
+    if (!$comment_id) {
+        throw new Exception('comment ID is required');
     }
 
     // Fetch the post with current tallies
     $stmt = $db->prepare("
-          SELECT p.*, u.username, u.profile_image
-            FROM post p
-            JOIN users u ON p.user_id = u.user_id
-        WHERE post_id = :post_id
+        SELECT comment_id, up_tally_comment, down_tally_comment
+        FROM comments 
+        WHERE comment_id = :comment_id
     ");
-    $stmt->execute([':post_id' => $post_id]);
-    $post = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([':comment_id' => $comment_id]);
+    $comment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$post) {
-        throw new Exception('Post not found');
+    if (!$comment) {
+        throw new Exception('Comment not found');
     }
 
     echo json_encode([
         'success' => true,
-        'post' => $post
+        'comment' => $comment
     ]);
 
 } catch (Exception $e) {

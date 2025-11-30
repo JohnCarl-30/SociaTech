@@ -1,5 +1,9 @@
 import "./ProfilePage.css";
-
+import DeletePostModal from './DeletePostModal';
+import EditPostModal from './EditPostModal';
+import CommentModal from './CommentModal';
+import OtherUserProfile from './OtherUserProfile';
+import Report from "./Report";
 import {
   ArrowBigUp,
   ArrowBigDown,
@@ -14,12 +18,13 @@ import {
   Eye
 } from "lucide-react";
 import pfpImage from "../assets/deault_pfp.png";
-import SamplePost from "../assets/samplePost.png";
+
+
 import moreBtn from "../assets/moreBtn.png";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { getUser } from "../utils/storage";
 
-export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
+export default function ProfilePage({ style, closeProfilePage, onPostClick, }) {
   const [image, setImage] = useState(null);
   const [imageURL, setImageURL] = useState(null);
   const [isOpenPage, setOpenPage] = useState('post');
@@ -32,12 +37,22 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const [savedCount, setSavedCount] = useState(0);
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [Achievements, setAchievements] = useState("");
   const [profileImage, setProfileImage] = useState(pfpImage);
   const [uploading, setUploading] = useState(false);
   const [savedPostIds, setSavedPostIds] = useState(new Set());
     const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedPost, setSelectedPost] = useState(null);
+   const [openMoreModalPost, setOpenMoreModalPost] = useState(null); // para sa post sa comment modal
+  const [openMoreComment, setOpenMoreComment] = useState(null);
+
+  //modal opener:
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
+     const deleteModalRef = useRef();
+      const [isReportOpen, setIsReportOpen] = useState(false);
 
   // Edit Profile states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -46,6 +61,11 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   const [editBio, setEditBio] = useState("");
   const [updating, setUpdating] = useState(false);
 
+   const [reportType, setReportType] = useState(null);
+  const [reportedBy, setReportedBy] = useState(null);
+  const [reportedUID, setReportedUID] = useState(null);
+  const [contentId, setContentId] = useState(null);
+
   const user = getUser();
   const user_id = user?.id || null;
 
@@ -53,6 +73,240 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
   
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [openMorePost, setOpenMorePost] = useState(null);
+
+   const [upTally, setUpTally] = useState({});
+  const [downTally, setDownTally] = useState({});
+  const [voteState, setVoteState] = useState({});
+
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+   const [blockedUserIds, setBlockedUserIds] = useState([]);
+   const [userToBlock, setUserToBlock] = useState(null);
+
+
+    useEffect(()=>{
+    const fetchBlockedUsers = async () => {
+    if (!user_id) {
+      return;
+    }
+
+    const numericUserId = parseInt(user_id);
+    if (isNaN(numericUserId)) {
+      console.error("Invalid user_id format:", user_id);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchBlockedUsers.php?user_id=${numericUserId}`
+      );
+
+      if (!response.ok) {
+        console.error('HTTP error fetching blocked users:', response.status);
+        setBlockedUserIds([]);
+        return;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
+        setBlockedUserIds([]);
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.blocked_users)) {
+        const blockedIds = data.blocked_users.map(u => parseInt(u.user_id));
+        console.log("Successfully fetched blocked user IDs:", blockedIds);
+        setBlockedUserIds(blockedIds);
+      } else {
+        console.error("Failed to fetch blocked users:", data.message);
+        setBlockedUserIds([]);
+      }
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      setBlockedUserIds([]);
+    }
+  };
+  fetchBlockedUsers();
+  },[]);
+
+   // Fetch user's posts
+  useEffect(() => {
+
+    fetchUserPosts();
+  }, [user_id,style,isCommentModalOpen]);
+
+   const fetchUserPosts = async () => {
+      if (!user_id) return;
+
+      try {
+        const res = await fetch(
+          `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${user_id}`
+        );
+        const data = await res.json();
+
+        if (data.success) {
+          setUserPosts(data.posts || []);
+
+
+                // Initialize vote tallies from fetched posts
+            const upObj = {};
+            const downObj = {};
+            data.posts.forEach(post => {
+              upObj[post.post_id] = post.up_tally_post || 0;
+              downObj[post.post_id] = post.down_tally_post || 0;
+            });
+            setUpTally(upObj);
+            setDownTally(downObj);
+
+            // Fetch user's vote state and wait for it to complete
+            if (user_id) {
+              const userVotes = await fetchUserVotes(user_id);
+              setVoteState(userVotes);
+            }
+        }
+      } catch (err) {
+        console.log("Error fetching user posts:", err);
+      }
+    };
+
+
+  const fetchUserVotes = async (userId) => {
+  if (!userId) return {};
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
+    );
+    const data = await res.json();
+    
+    if (data.success) {
+      const voteObj = {};
+      data.votes.forEach(vote => {
+        // vote_type: 1 = up, 0 = down
+        voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
+      });
+      return voteObj;
+    }
+    return {};
+  } catch (err) {
+    console.log("Error fetching user votes:", err);
+    return {};
+  }
+};
+
+const handleToggleVote = async (userId, postId, type) => {
+  if (!userId) {
+    alert("You must be logged in to vote.");
+    return;
+  }
+
+  const currentVote = voteState[postId];
+  
+  // Determine new vote type
+  // If clicking same button, remove vote. If clicking different button, switch vote.
+  const newVoteType = currentVote === type ? null : type;
+
+  // Store original values for rollback
+  const originalUpTally = upTally[postId];
+  const originalDownTally = downTally[postId];
+  const originalVoteState = currentVote;
+
+  // Calculate what the new tallies should be
+  let newUpTally = originalUpTally;
+  let newDownTally = originalDownTally;
+
+  // Remove old vote effect
+  if (currentVote === "up") {
+    newUpTally = newUpTally - 1;
+  } else if (currentVote === "down") {
+    newDownTally = newDownTally - 1;
+  }
+
+  // Add new vote effect
+  if (newVoteType === "up") {
+    newUpTally = newUpTally + 1;
+  } else if (newVoteType === "down") {
+    newDownTally = newDownTally + 1;
+  }
+
+  // Optimistic UI update
+  setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
+  setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
+  setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
+
+  // Prepare vote type for backend (1=up, 0=down, null=remove)
+  let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleVote.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_id: postId,
+          user_id: userId,
+          vote_type: voteTypeToBackend,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Fetch updated tallies from the backend to ensure accuracy
+      const postRes = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
+      );
+      const postData = await postRes.json();
+      
+      if (postData.success && postData.post) {
+        setUpTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.up_tally_post,
+        }));
+        setDownTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.down_tally_post,
+        }));
+        
+        // Update the post in the posts array too
+        setUserPosts((prev) => 
+          prev.map(p => 
+            p.post_id === postId 
+              ? { ...p, up_tally_post: postData.post.up_tally_post, down_tally_post: postData.post.down_tally_post }
+              : p
+          )
+        );
+      }
+
+      // Create notification for upvote
+      if (newVoteType === "up") {
+        const post = userPosts.find((p) => p.post_id === postId);
+        if (post && post.user_id !== userId) {
+          await notifyPostUpvote(post.user_id, userId, user.username, postId);
+        }
+      }
+    } else {
+      // Revert UI changes if backend fails
+      console.log("Vote failed:", data.message);
+      setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+      setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+      setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+      alert("Failed to vote. Please try again.");
+    }
+  } catch (err) {
+    console.log("Error sending vote:", err);
+    // Revert UI changes on error
+    setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+    setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+    setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+    alert("Error voting. Please check your connection.");
+  }
+};
 
   const refreshUserStats = async () => {
     if (!user_id) return;
@@ -131,8 +385,23 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
       const data = await res.json();
 
       if (data.success) {
-        setSavedPosts(data.posts || []);
-        setSavedCount(data.posts?.length || 0);
+         const filteredSavedPosts = data.posts.filter(
+        post => !blockedUserIds.includes(post.user_id)
+      );
+      
+      
+        setSavedPosts(filteredSavedPosts || []);
+        setSavedCount(filteredSavedPosts?.length || 0);
+
+         if (data.success && data.posts) {
+        setUpTally((prev) => ({
+          ...prev,
+          [data.posts.post_id]: data.posts.up_tally_post,
+        }));
+        setDownTally((prev) => ({
+          ...prev,
+          [data.posts.post_id]: data.posts.down_tally_post,
+        }));}
       } else {
         setSavedPosts([]);
         setSavedCount(0);
@@ -161,7 +430,9 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
         })
         .catch(err => console.log("Error fetching saved count:", err));
     }
-  }, [isOpenPage, user_id]);
+  }, [isOpenPage, user_id, isOtherUserProfileOpen]);
+
+ 
 
   // Fetch saved post IDs to track which posts are saved
   const fetchSavedPostIds = async () => {
@@ -264,7 +535,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
           `http://localhost/SociaTech/backend/auth/getUserProfile.php?user_id=${user_id}`
         );
         const data = await res.json();
-        console.log("Fetched Data:", data)
+        
 
         if (data.success) {
           setUsername(data.user.username || "Unknown User");
@@ -305,29 +576,9 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     };
 
     fetchPostCount();
-  }, [user_id]);
+  }, [user_id,style]);
 
-  // Fetch user's posts
-  useEffect(() => {
-    const fetchUserPosts = async () => {
-      if (!user_id) return;
-
-      try {
-        const res = await fetch(
-          `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${user_id}`
-        );
-        const data = await res.json();
-
-        if (data.success) {
-          setUserPosts(data.posts || []);
-        }
-      } catch (err) {
-        console.log("Error fetching user posts:", err);
-      }
-    };
-
-    fetchUserPosts();
-  }, [user_id]);
+ 
 
   useEffect(() => {
     if (!image) return;
@@ -450,24 +701,59 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
     }
   };
 
-  // Placeholder functions for edit, delete, and report
-  const handleEditPost = (post) => {
-    // Implement edit functionality as needed
-    alert("Edit functionality coming soon");
-    setOpenMorePost(null);
+ 
+
+   const openOtherUserProfile = (userId) =>{
+    setSelectedUserId(userId);
+    setIsOtherUserProfileOpen(true);
+  }
+
+    const closeOtherUserProfile = () => {
+    setIsOtherUserProfileOpen(false);
+     
   };
 
-  const handleDeletePost = (post) => {
-    // Implement delete functionality as needed
-    alert("Delete functionality coming soon");
-    setOpenMorePost(null);
+  const openComments = async (post) => {
+    setSelectedPost(post);
+    setIsCommentModalOpen(true);
+   
   };
 
-  const openReport = (post) => {
-    // Implement report functionality as needed
-    alert("Report functionality coming soon");
-    setOpenMorePost(null);
+  const handlePostDeleted = (deletedPostId) => {
+    setUserPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
+    setIsCommentModalOpen(false);
   };
+
+  const handleDeleteClick = (post) => {
+    deleteModalRef.current.open(post); // Open modal for this post
+  };
+
+
+  const handleEditButtonClick = (post) => {
+  setSelectedPost(post);
+  setEditModalOpen(true);
+};
+
+const closeComments = () => {
+    setSelectedPost(null);
+    setIsCommentModalOpen(false);
+    setOpenMoreModalPost(null);
+    setOpenMoreComment(null);
+  };
+
+  const closeReport = () => {
+    setIsReportOpen(false);
+  };
+
+  // REPORT HANDLER
+  const setReportData = (type, reportedBy, reportedUID, contentId) => {
+    setReportType(type);
+    setReportedBy(reportedBy);
+    setReportedUID(reportedUID);
+    setIsReportOpen(true);
+    setContentId(contentId);
+  };
+
 
   return (
     <>
@@ -512,7 +798,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                     <div
                       className="post_card post_card_spacing"
                       key={post.post_id}
-                      onClick={() => onPostClick && onPostClick(post)}
+                      onClick={() => openComments(post)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className="post_card_header">
@@ -542,7 +828,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                                     className="dropdown_item"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleEditPost(post);
+                                      handleEditButtonClick(post);
                                     }}
                                   >
                                     <Edit size={18} />
@@ -552,7 +838,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                                     className="dropdown_item"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeletePost(post);
+                                      handleDeleteClick(post);
                                     }}
                                   >
                                     <Trash2 size={18} />
@@ -575,9 +861,15 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               </div>)}
                               {post.user_id !== user_id &&(<div
                                 className="dropdown_item"
-                                onClick={(e) => {
+                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openReport(post);
+
+                                  setReportData(
+                                    "post",
+                                    user_id,
+                                    post.user_id,
+                                    post.post_id
+                                  );
                                 }}
                               >
                                 <AlertCircle size={18} />
@@ -601,27 +893,27 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                       <div className="postCard_btn_containers">
                         <button
                           className="post_comment_btn"
-                          onClick={(e) => {
+                           onClick={(e) => {
                             e.stopPropagation();
-                            onPostClick && onPostClick(post);
-                          }}
+                            openComments(post);}}
                         >
                           Comment
                         </button>
                         <button
-                          className="up_vote_btn"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ArrowBigUp />
-                          {post.up_tally_post || 0}
-                        </button>
-                        <button
-                          className="down_vote_btn"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ArrowBigDown />
-                          {post.down_tally_post || 0}
-                        </button>
+                      className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
+                      onClick={(e) => {e.stopPropagation();handleToggleVote(user_id, post.post_id, "up");} }
+                    >
+                      <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
+                      {upTally[post.post_id] ?? post.up_tally_post}
+                    </button>
+
+                    <button
+                      className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
+                      onClick={(e) => {e.stopPropagation();handleToggleVote(user_id, post.post_id, "down");}}
+                    >
+                      <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
+                      {downTally[post.post_id] ?? post.down_tally_post}
+                    </button>
                       </div>
                     </div>
                   ))
@@ -655,7 +947,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                           <div className="pfp_container">
                             <img src={post.profile_image || pfpImage} alt="user_pfp" />
                           </div>
-                          <div className="post_username">{post.username}</div>
+                          <div className="post_username" onClick={(e)=> {e.stopPropagation();openOtherUserProfile(post.user_id);}}>{post.username}</div>
                           <div className="post_date">{timeAgo(post.post_date)}</div>
                           <div className="post_category">{post.post_category}</div>
                         </div>
@@ -710,9 +1002,15 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                               </div>
                               <div
                                 className="dropdown_item"
-                                onClick={(e) => {
+                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openReport(post);
+
+                                  setReportData(
+                                    "post",
+                                    user_id,
+                                    post.user_id,
+                                    post.post_id
+                                  );
                                 }}
                               >
                                 <AlertCircle size={18} />
@@ -738,25 +1036,25 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
                           className="post_comment_btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onPostClick && onPostClick(post);
-                          }}
+                            openComments(post);}}
                         >
                           Comment
                         </button>
                         <button
-                          className="up_vote_btn"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ArrowBigUp />
-                          {post.up_tally_post || 0}
-                        </button>
-                        <button
-                          className="down_vote_btn"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ArrowBigDown />
-                          {post.down_tally_post || 0}
-                        </button>
+                      className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
+                      onClick={(e) => {e.stopPropagation();handleToggleVote(user_id, post.post_id, "up");}}
+                    >
+                      <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
+                      {upTally[post.post_id] ?? post.up_tally_post}
+                    </button>
+
+                    <button
+                      className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
+                      onClick={(e) => {e.stopPropagation();handleToggleVote(user_id, post.post_id, "down");}}
+                    >
+                      <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
+                      {downTally[post.post_id] ?? post.down_tally_post}
+                    </button>
                       </div>
                     </div>
                   ))
@@ -910,6 +1208,37 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick }) {
           <X className="crossSvg" />
         </button>
       </div>
+
+           {/* Comment Modal */}
+
+              <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={()=>fetchUserPosts()}  onDelete={handlePostDeleted} />
+
+              <Report
+                isOpen={isReportOpen}
+                onClose={closeReport}
+                type={reportType}
+                reportedBy={reportedBy}
+                reportedUID={reportedUID}
+                contentId={contentId}
+              />
+            
+
+     {/* Edit Modal */}
+     <EditPostModal open={editModalOpen} postData={selectedPost} user_id={user_id} fetchPost={()=>fetchUserPosts()} onClose={()=> setEditModalOpen(false)} />
+
+
+      {/* Delete Confirmation Modal */}
+       <DeletePostModal
+        ref={deleteModalRef}
+        user_id={user_id}
+        onDelete={handlePostDeleted}
+      />
+     
+
+     {/* otherUserModal */}
+     <OtherUserProfile openModal={isOtherUserProfileOpen} uid={selectedUserId} closeModal={closeOtherUserProfile}/>
+
+
     </>
   );
 }

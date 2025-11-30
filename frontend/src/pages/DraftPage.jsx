@@ -4,12 +4,11 @@ import ProfilePage from '../components/ProfilePage';
 import HelpPage from '../components/HelpPage';
 import Settings from '../components/Settings';
 import Nav from '../components/Nav';
-import EditDraftModal from '../components/EditDraftModal';
-import defaultPfp from '../assets/deault_pfp.png';
 import { useState, useEffect } from "react";
 import { useCycle } from "framer-motion";
-import { getCurrentUser } from '../services/auth';
-
+import { getUser } from "../utils/storage.js";
+import EditDraftModal from '../components/EditDraftModal';
+import defaultPfp from '../assets/deault_pfp.png';
 export default function DraftPage() {
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [isNotificationBarOpen, cycleNotificationBarOpen] = useCycle(false, true);
@@ -19,146 +18,107 @@ export default function DraftPage() {
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingDraft, setEditingDraft] = useState(null);
 
+  // Always check proper key
+  const user = getUser();
+  const user_id = user?.user_id || user?.id || null;
+  const username = user?.username;
+
+  // FETCH DATA ONCE
   useEffect(() => {
-    const currentUser = getCurrentUser();
-
-    if (currentUser?.id && !currentUser.username) {
-      fetchUserDetails(currentUser);
-    } else {
-      setUser(currentUser);
-    }
-  }, []);
-
-  const fetchUserDetails = async (currentUser) => {
-    if (!currentUser?.id) {
-      setUser(currentUser);
+    if (!user_id) {
+      setLoading(false);
+      setError("User not found");
       return;
     }
+    fetchDrafts();
+  }, [user_id]);
 
-    try {
-      const response = await fetch('http://localhost/Sociatech/backend/auth/getUserDetails.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ user_id: currentUser.id })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setUser({
-          ...currentUser,
-          username: data.username,
-          profile_image: data.profile_image
-        });
-      } else {
-        setUser(currentUser);
-      }
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      setUser(currentUser);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchDrafts();
-    } else {
-      setLoading(false);
-      if (user !== null) {
-        setError('Please log in to view your drafts');
-      }
-    }
-  }, [user]);
-
+  // API CALL (cleaned)
   const fetchDrafts = async () => {
-    setLoading(true);
-    setError(null);
-
-    if (!user?.id) {
-      setError('User not authenticated');
-      setDrafts([]);
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch('http://localhost/Sociatech/backend/auth/getDraft.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ user_id: user.id })
-      });
-
-      const contentType = response.headers.get('content-type');
-
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
-      }
+      setLoading(true);
+      const response = await fetch(
+        "http://localhost/Sociatech/backend/auth/getDraft.php",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id }),
+        }
+      );
 
       const data = await response.json();
 
-      if (data.success) {
-        setDrafts(data.drafts || []);
-      } else {
-        setError(data.error || 'Failed to fetch drafts');
-        setDrafts([]);
-      }
-    } catch (error) {
-      console.error('Error fetching drafts:', error);
-      setError('Failed to load drafts: ' + error.message);
+      if (!data.success) throw new Error(data.error || "Failed to fetch");
+      setDrafts(data.drafts);
+      console.log(data.drafts);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
       setDrafts([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // POST/PUBLISH HANDLER
   const handlePublishDraft = async (draftId) => {
-    if (!user?.id) {
-      alert('Please log in to publish drafts');
-      return;
-    }
-
-    if (!window.confirm('Are you sure you want to publish this draft?')) {
-      return;
-    }
+    if (!confirm("Are you sure you want to publish this draft?")) return;
 
     try {
-      const response = await fetch('http://localhost/Sociatech/backend/auth/publishDraft.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          draft_id: draftId,
-          user_id: user.id
-        })
-      });
+      const response = await fetch(
+        "http://localhost/Sociatech/backend/auth/publishDraft.php",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ draft_id: draftId, user_id,username }),
+        }
+      );
 
       const data = await response.json();
-
-      if (data.success) {
-        alert('Draft published successfully!');
-        fetchDrafts();
-      } else {
-        alert('Failed to publish draft: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Error publishing draft:', error);
-      alert('Something went wrong while publishing draft.');
+      if (!data.success) throw new Error(data.error);
+      alert("Draft published successfully!");
+      fetchDrafts();
+    } catch (err) {
+      alert("Failed to publish draft: " + err.message);
     }
   };
+
+  // DELETE HANDLER
+  const handleDeleteDraft = async (draftId) => {
+    if (!confirm("Are you sure you want to delete this draft?")) return;
+
+    try {
+      const response = await fetch(
+        "http://localhost/Sociatech/backend/auth/deleteDraft.php",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ draft_id: draftId, user_id }),
+        }
+      );
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
+      alert("Draft deleted successfully!");
+      fetchDrafts();
+    } catch (err) {
+      alert("Failed to delete draft: " + err.message);
+    }
+  };
+
+  const closeProfilePage = () => setIsProfilePageOpen(false);
+   const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
+    const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); // ⬅ auto-close dropdown
+  };
+
 
   const handleEditDraft = (draft) => {
     setEditingDraft(draft);
@@ -170,50 +130,6 @@ export default function DraftPage() {
     setEditingDraft(null);
     fetchDrafts();
   };
-
-  const handleDeleteDraft = async (draftId) => {
-    if (!user?.id) {
-      alert('Please log in to delete drafts');
-      return;
-    }
-
-    if (!window.confirm('Are you sure you want to delete this draft?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost/Sociatech/backend/auth/deleteDraft.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          draft_id: draftId,
-          user_id: user.id
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert('Draft deleted successfully!');
-        fetchDrafts();
-      } else {
-        alert('Failed to delete draft: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Error deleting draft:', error);
-      alert('Something went wrong while deleting draft.');
-    }
-  };
-
-  const closeModals = () => {
-    setIsDropDownOpen(false);
-    setIsProfilePageOpen(false);
-    setIsSettingOpen(false);
-  };
-
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
@@ -221,7 +137,6 @@ export default function DraftPage() {
     }
     return `http://localhost/Sociatech/backend/${imagePath}`;
   };
-
   const getProfileImage = (draft) => {
     const profileImg = draft.profile_image || user?.profile_image;
     if (profileImg) {
@@ -230,25 +145,57 @@ export default function DraftPage() {
     return defaultPfp;
   };
 
+   const closeModals = () => {
+    setIsDropDownOpen(false);
+    setIsProfilePageOpen(false);
+    setIsSettingOpen(false);
+  };
+
+  const timeAgo = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diff = Math.floor((now - past) / 1000); // seconds
+
+    const units = [
+      { name: "second", seconds: 1 },
+      { name: "minute", seconds: 60 },
+      { name: "hour", seconds: 3600 },
+      { name: "day", seconds: 86400 },
+    ];
+
+    for (let i = units.length - 1; i >= 0; i--) {
+      const { name, seconds } = units[i];
+      if (diff >= seconds) {
+        const value = Math.floor(diff / seconds);
+        return `${value} ${value === 1 ? name : name + "s"} ago`;
+      }
+    }
+
+    return "just now";
+  };
+  // ================== UI START ==================
   return (
     <div className="draftPage_parent_container">
       <PageHeader
         setIsDropDownOpen={setIsDropDownOpen}
         isDropDownOpen={isDropDownOpen}
+        toggleDropDown={toggleDropDown}
+        openProfilePage={openProfilePage}
         cycleNotificationBarOpen={cycleNotificationBarOpen}
         isNotificationBarOpen={isNotificationBarOpen}
-        setIsProfilePageOpen={setIsProfilePageOpen}
+        setIsProfilePageOpen={()=>setIsProfilePageOpen(true)}
         setIsSettingOpen={setIsSettingOpen}
       />
+
+       
+
       <div className="draftPage_child_container">
         <Nav closeModals={closeModals} />
         <div className="draftPage_body">
-          <div className="draftPage_header">
-            <h1 className="draftPage_title">Drafts</h1>
-          </div>
+          <h1 className="draftPage_title">Drafts</h1>
 
           {loading ? (
-            <div className="drafts_loading">Loading drafts...</div>
+            <p className="drafts_loading">Loading drafts...</p>
           ) : error ? (
             <div className="drafts_error">
               <p>{error}</p>
@@ -265,7 +212,7 @@ export default function DraftPage() {
                   <div className="draft_card_header">
                     <div className="draft_user_info">
                       <div className="draft_avatar">
-                        {(draft.profile_image || user?.profile_image) ? (
+                         {(draft.profile_image || user?.profile_image) ? (
                           <img
                             src={getProfileImage(draft)}
                             alt="Profile"
@@ -274,13 +221,16 @@ export default function DraftPage() {
                           (draft.username || user?.username)?.[0]?.toUpperCase() || 'U'
                         )}
                       </div>
+
                       <div className="draft_meta">
                         <span className="draft_username">
-                          {draft.username ? `@${draft.username}` :
-                            user?.username ? `@${user.username}` :
-                              user?.email ? user.email.split('@')[0] : 'user'}
+                          @{draft.username || user.username}
+                        </span>
+                        <span className="draft_date">
+                         {timeAgo(draft.post_date)}
                         </span>
                       </div>
+
                       <span className="draft_category">{draft.post_category}</span>
                     </div>
                   </div>
@@ -289,17 +239,14 @@ export default function DraftPage() {
 
                   {draft.post_content && (
                     <p className="draft_content_preview">
-                      {draft.post_content.substring(0, 150)}
-                      {draft.post_content.length > 150 ? '...' : ''}
+                      {draft.post_content.slice(0, 150)}
+                      {draft.post_content.length > 150 && "..."}
                     </p>
                   )}
 
                   {draft.post_image && (
                     <div className="draft_image_preview">
-                      <img
-                        src={getImageUrl(draft.post_image)}
-                        alt="Draft preview"
-                      />
+                      <img src={`http://localhost/Sociatech/${draft.post_image}`} alt="Draft preview" />
                     </div>
                   )}
 
@@ -330,13 +277,10 @@ export default function DraftPage() {
         </div>
       </div>
 
-      {isProfilePageOpen && (
-        <ProfilePage setIsProfilePageOpen={setIsProfilePageOpen} />
-      )}
+      {isProfilePageOpen && <ProfilePage setIsProfilePageOpen={setIsProfilePageOpen}  closeProfilePage={closeProfilePage}/>}
       {isSettingOpen && <Settings setIsSettingOpen={setIsSettingOpen} />}
       {openHelpPage && <HelpPage cycleOpenHelpPage={cycleOpenHelpPage} />}
-
-      {isEditModalOpen && editingDraft && (
+       {isEditModalOpen && editingDraft && (
         <EditDraftModal
           draft={editingDraft}
           user={user}

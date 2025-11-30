@@ -3,7 +3,7 @@ import { X, Image } from "lucide-react";
 import "../pages/Home.css";
 
 
-export default function EditPostModal({ open, postData, fetchPost, user_id, }) {
+export default function EditPostModal({ open, postData, fetchPost, user_id, onClose }) {
   const postCategories = [
     "All",
     "Artificial Intelligence",
@@ -35,6 +35,8 @@ export default function EditPostModal({ open, postData, fetchPost, user_id, }) {
       setEditPostImagePreview(postData.post_image || "");
       setEditPostImage(null);
       setIsVisible(true);
+    }else{
+      setIsVisible(false);
     }
   }, [open, postData]);
 
@@ -175,7 +177,9 @@ export default function EditPostModal({ open, postData, fetchPost, user_id, }) {
           </div>
 
           <div className="editPost_actions">
-            <button onClick={closeModal} className="editPost_cancelBtn">
+            <button onClick={()=>{closeModal();
+              onClose();
+            }} className="editPost_cancelBtn">
               Cancel
             </button>
             <button onClick={handleUpdatePost} className="editPost_updateBtn">

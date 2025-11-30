@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { House, Brain, ShieldCheck, FolderOpen, BookOpenText, ChevronLeft, ChevronRight } from "lucide-react";
 import "./Nav.css";
@@ -30,7 +31,7 @@ export default function Nav({ closeModals }) {
     ] : [];
 
     const handleNavigate = (path) => {
-        closeModals();
+        // closeModals(); nasisira yung pag renavigate pag naka on toh
         navigate(path);
     };
 

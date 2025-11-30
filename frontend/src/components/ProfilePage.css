@@ -1,6 +1,6 @@
 .profilePage_parent_container {
   position: fixed;
-  width: 82%;
+  width: 85%;
   height: calc(100vh - 3.5em);
   top: 3.5em;
   left: 17%;
@@ -9,7 +9,7 @@
   align-items: start;
   background-color: white;
   overflow-y: scroll;
-  z-index: 8888;
+  z-index: 9999;
 }
 
 .profilePage_parent_container::-webkit-scrollbar {
@@ -17,6 +17,9 @@
 }
 
 .profilePage_close_btn {
+  position: absolute;
+  top: 2rem;
+  right: 4rem;
   margin-top: 2rem;
   border: none;
   border-radius: 50%;

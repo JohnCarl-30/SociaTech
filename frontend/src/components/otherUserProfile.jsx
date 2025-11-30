@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useCycle } from "framer-motion";
-import CommentModal from "./commentModal";
+import CommentModal from "./CommentModal";
 import EditPostModal from "./EditPostModal";
 import DeletePostModal from "./DeletePostModal";
 import Report from "./Report";
-import BlockConfirmModal from "./BlockConfirmModal";
 import { getUser } from "../utils/storage";
-import {
-  ArrowBigUp,
+import { ArrowBigUp,
   ArrowBigDown,
   Bookmark,
   AlertCircle,
@@ -16,98 +14,311 @@ import {
   Ban,
   Edit,
   Trash2,
+  UserX,
 } from "lucide-react";
-import TrippleDots from "../assets/moreBtn.png";
-import pfpImage from "../assets/deault_pfp.png";
+import TrippleDots from "../assets/moreBtn.png"; // sample path
+import pfpImage from "../assets/deault_pfp.png";     // sample fallback image
 import moreBtn from "../assets/moreBtn.png";
 import { useRef } from "react";
 
+import {
+  notifyPostComment,
+  notifyPostUpvote,
+  notifyCommentUpvote,
+} from "../services/notificationHelper.js";
 import '../pages/Home.css';
+import BlockConfirmModal from "./BlockConfirmModal";
 
-export default function OtherUserProfile({ openModal, uid, closeModal }) {
-
-  const [otherUserProfile, setOtherUserProfile] = useState([]);
-  const [otherUserPosts, setOtherUserPosts] = useState([]);
-  const [openOtherUserMoreContainer, cycleOpenOtherUserMoreContainer] = useCycle(false, true);
-  const [openMorePost, setOpenMorePost] = useState(null);
-  const [isFollowing, setIsFollowing] = useState(false);
+export default function OtherUserProfile({openModal, uid, closeModal,}){
+  
+     const [otherUserProfile, setOtherUserProfile] = useState([]);
+     const [otherUserPosts, setOtherUserPosts] = useState([]);
+     const [openOtherUserMoreContainer, cycleOpenOtherUserMoreContainer] =
+    useCycle(false, true);
+    const [openMorePost, setOpenMorePost]=useState(null);
+     const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
-  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [reportType, setReportType] = useState(null);
+    const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
+    // const [selectedOtherUser, setSelectedOtherUser] = useState(null);
+      const [isReportOpen, setIsReportOpen] = useState(false);
+      const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+       const [selectedPost, setSelectedPost] = useState(null);
+        const [reportType, setReportType] = useState(null);
   const [reportedBy, setReportedBy] = useState(null);
   const [reportedUID, setReportedUID] = useState(null);
   const [contentId, setContentId] = useState(null);
   const [savedPostIds, setSavedPostIds] = useState(new Set());
-  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [upTally, setUpTally] = useState({});
+  const [downTally, setDownTally] = useState({});
+  const [voteState, setVoteState] = useState({});
 
-  const user = getUser();
-  const user_id = user?.id || null;
+ 
+  // STATES FOR BLOCKING
+   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+   const [blockedUserIds, setBlockedUserIds] = useState([]);
+   const [userToBlock, setUserToBlock] = useState(null);
 
-  const toggleMorePost = (post_id) => {
-    setOpenMorePost((prev) => (prev === post_id ? null : post_id));
-  };
 
-  useEffect(() => {
-    const handleUserClick = async (userId) => {
-      if (!userId) {
-        console.error("No user ID provided");
+  useEffect(()=>{
+    const fetchBlockedUsers = async () => {
+    if (!user_id) {
+      return;
+    }
+
+    const numericUserId = parseInt(user_id);
+    if (isNaN(numericUserId)) {
+      console.error("Invalid user_id format:", user_id);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchBlockedUsers.php?user_id=${numericUserId}`
+      );
+
+      if (!response.ok) {
+        console.error('HTTP error fetching blocked users:', response.status);
+        setBlockedUserIds([]);
         return;
       }
 
-      setIsLoadingOtherUserData(true);
-      setOtherUserProfile(null);
-      setOtherUserPosts([]);
-
-      try {
-        await Promise.all([
-          fetchOtherUserProfile(userId),
-          fetchOtherUserPosts(userId),
-          fetchFollowStats(userId),
-        ]);
-      } catch (error) {
-        console.error("Error loading user data:", error);
-      } finally {
-        setIsLoadingOtherUserData(false);
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
+        setBlockedUserIds([]);
+        return;
       }
-    };
 
-    if (uid && openModal) {
-      handleUserClick(uid);
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.blocked_users)) {
+        const blockedIds = data.blocked_users.map(u => parseInt(u.user_id));
+        console.log("Successfully fetched blocked user IDs:", blockedIds);
+        setBlockedUserIds(blockedIds);
+      } else {
+        console.error("Failed to fetch blocked users:", data.message);
+        setBlockedUserIds([]);
+      }
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      setBlockedUserIds([]);
     }
-  }, [uid, openModal]);
+  };
+  fetchBlockedUsers();
+  },[])
+   
+   
 
+  const fetchUserVotes = async (userId) => {
+  if (!userId) return {};
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
+    );
+    const data = await res.json();
+    
+    if (data.success) {
+      const voteObj = {};
+      data.votes.forEach(vote => {
+        // vote_type: 1 = up, 0 = down
+        voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
+      });
+      return voteObj;
+    }
+    return {};
+  } catch (err) {
+    console.log("Error fetching user votes:", err);
+    return {};
+  }
+};
+
+const handleToggleVote = async (userId, postId, type) => {
+  if (!userId) {
+    alert("You must be logged in to vote.");
+    return;
+  }
+
+  const currentVote = voteState[postId];
+  
+  // Determine new vote type
+  // If clicking same button, remove vote. If clicking different button, switch vote.
+  const newVoteType = currentVote === type ? null : type;
+
+  // Store original values for rollback
+  const originalUpTally = upTally[postId];
+  const originalDownTally = downTally[postId];
+  const originalVoteState = currentVote;
+
+  // Calculate what the new tallies should be
+  let newUpTally = originalUpTally;
+  let newDownTally = originalDownTally;
+
+  // Remove old vote effect
+  if (currentVote === "up") {
+    newUpTally = newUpTally - 1;
+  } else if (currentVote === "down") {
+    newDownTally = newDownTally - 1;
+  }
+
+  // Add new vote effect
+  if (newVoteType === "up") {
+    newUpTally = newUpTally + 1;
+  } else if (newVoteType === "down") {
+    newDownTally = newDownTally + 1;
+  }
+
+  // Optimistic UI update
+  setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
+  setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
+  setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
+
+  // Prepare vote type for backend (1=up, 0=down, null=remove)
+  let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleVote.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          post_id: postId,
+          user_id: userId,
+          vote_type: voteTypeToBackend,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Fetch updated tallies from the backend to ensure accuracy
+      const postRes = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
+      );
+      const postData = await postRes.json();
+      
+      if (postData.success && postData.post) {
+        setUpTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.up_tally_post,
+        }));
+        setDownTally((prev) => ({
+          ...prev,
+          [postId]: postData.post.down_tally_post,
+        }));
+        
+        // Update the post in the posts array too
+        setOtherUserPosts((prev) => 
+          prev.map(p => 
+            p.post_id === postId 
+              ? { ...p, up_tally_post: postData.post.up_tally_post, down_tally_post: postData.post.down_tally_post }
+              : p
+          )
+        );
+      }
+
+      // Create notification for upvote
+      if (newVoteType === "up") {
+        const post = otherUserPosts.find((p) => p.post_id === postId);
+        if (post && post.user_id !== userId) {
+          await notifyPostUpvote(post.user_id, userId, user.username, postId);
+        }
+      }
+    } else {
+      // Revert UI changes if backend fails
+      console.log("Vote failed:", data.message);
+      setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+      setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+      setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+      alert("Failed to vote. Please try again.");
+    }
+  } catch (err) {
+    console.log("Error sending vote:", err);
+    // Revert UI changes on error
+    setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
+    setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
+    setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
+    alert("Error voting. Please check your connection.");
+  }
+};
+
+
+     const toggleMorePost = (post_id) => {
+    setOpenMorePost((prev) => (prev === post_id ? null : post_id));
+  };
+     
+  
+ 
+
+  useEffect(()=>{
+
+
+    const handleUserClick = async (userId) => {
+    
+    setIsLoadingOtherUserData(true);
+    setOtherUserProfile(null);
+    setOtherUserPosts([]);
+
+
+
+    await Promise.all([
+      fetchOtherUserProfile(userId),
+      fetchOtherUserPosts(userId),
+      fetchFollowStats(userId),
+    ]);
+
+    setIsLoadingOtherUserData(false);
+  };
+
+  handleUserClick(uid);
+
+
+  },[uid,openModal,isCommentModalOpen]);
+
+  
   const openComments = async (post) => {
     setSelectedPost(post);
     setIsCommentModalOpen(true);
   };
-
-  const closeComments = () => {
+  
+  
+    const closeComments = () => {
     setSelectedPost(null);
     setIsCommentModalOpen(false);
   };
 
-  const handlePostDeleted = (deletedPostId) => {
-    setOtherUserPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
+       
+   const handlePostDeleted = (deletedPostId) => {
+    setPosts((prev) => prev.filter((post) => post.post_id !== deletedPostId));
     setIsCommentModalOpen(false);
   };
 
-  const closeReport = () => {
+   const closeReport = () => {
     setIsReportOpen(false);
   };
 
-  const setReportData = (type, reportedBy, reportedUID, contentId) => {
+   const setReportData = (type, reportedBy, reportedUID, contentId) => {
     setReportType(type);
     setReportedBy(reportedBy);
     setReportedUID(reportedUID);
     setContentId(contentId);
     setIsReportOpen(true);
+    
   };
 
-  const handleSavePost = async (postId) => {
+  
+  
+
+    const user = getUser();
+     const user_id = user?.id || null;
+
+
+
+     const handleSavePost = async (postId) => {
     if (!user_id) {
       alert('You must be logged in to save posts');
       return;
@@ -126,13 +337,10 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
         }
       );
 
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
       const data = await res.json();
 
       if (data.success) {
+        // Update local state
         setSavedPostIds(prev => {
           const newSet = new Set(prev);
           if (data.action === 'saved') {
@@ -144,6 +352,8 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
           }
           return newSet;
         });
+
+         
       } else {
         alert(data.message || 'Failed to save/unsave post');
       }
@@ -153,77 +363,62 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
     }
   };
 
-  const fetchOtherUserPosts = async (userId) => {
-    if (!userId) {
-      console.error("Missing user_id parameter");
-      return;
-    }
-
+    //pang fetch ng 
+     const fetchOtherUserPosts = async (userId) => {
     try {
       const response = await fetch(
         `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${userId}`
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
         setOtherUserPosts(data.posts || []);
+        const upObj = {};
+      const downObj = {};
+      data.posts.forEach(post => {
+        upObj[post.post_id] = post.up_tally_post || 0;
+        downObj[post.post_id] = post.down_tally_post || 0;
+      });
+      setUpTally(upObj);
+      setDownTally(downObj);
+
+      // Fetch user's vote state and wait for it to complete
+      if (user_id) {
+        const userVotes = await fetchUserVotes(user_id);
+        setVoteState(userVotes);
+      }
+
       } else {
-        console.error("Failed to fetch user posts:", data.message);
+        console.log("Failed to fetch user posts:", data.message);
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
     }
   };
 
-  const fetchOtherUserProfile = async (userId) => {
-    if (!userId) {
-      console.error("Missing user_id parameter");
-      return;
-    }
-
+    //pang kuha ng mga userProfile:
+     const fetchOtherUserProfile = async (userId) => {
+     
     try {
       const response = await fetch(
         `http://localhost/SociaTech/backend/auth/handleFetchOtherUserProfile.php?user_id=${userId}`
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
         setOtherUserProfile(data.otherUserInfo);
-      } else {
-        console.error("Failed to fetch user profile:", data.message);
-        alert(data.message || "Failed to load user profile");
-      }
+      
+      } 
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      alert("Failed to load user profile. Please try again.");
     }
   };
 
   const fetchFollowStats = async (targetUserId) => {
-    if (!targetUserId || !user_id) {
-      console.error("Missing required user IDs");
-      return;
-    }
-
     try {
       const response = await fetch(
         `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${targetUserId}&current_user_id=${user_id}`
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
@@ -237,13 +432,14 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
     }
   };
 
+
   const handleFollow = async () => {
     if (!user_id) {
       alert("You must be logged in to follow users");
       return;
     }
 
-    const followedId = otherUserProfile?.user_id;
+    const followedId =  otherUserProfile?.user_id;
 
     if (!followedId) {
       alert("Unable to follow this user");
@@ -268,15 +464,11 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
         setIsFollowing(true);
-        setFollowerCount(data.follower_count);
+        setFollowerCount(data.follower_count); // Use count from backend
         await fetchFollowStats(followedId);
         alert("Followed successfully!");
       } else {
@@ -287,7 +479,6 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
       alert("An error occurred while following");
     }
   };
-
   const handleUnfollow = async () => {
     if (!user_id) {
       alert("You must be logged in to unfollow users");
@@ -314,15 +505,11 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
       if (data.success) {
         setIsFollowing(false);
-        setFollowerCount(data.follower_count);
+        setFollowerCount(data.follower_count); // Use count from backend
         await fetchFollowStats(followedId);
         alert("Unfollowed successfully!");
       } else {
@@ -337,12 +524,15 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
   useEffect(() => {
     let intervalId;
 
-    if (openModal && otherUserProfile?.user_id) {
+    if (
+      openModal && otherUserProfile?.user_id
+    ) {
       const targetUserId = otherUserProfile?.user_id;
 
+      // Refresh counts every 10 seconds
       intervalId = setInterval(() => {
         fetchFollowStats(targetUserId);
-      }, 10000);
+      }, 10000); // 10 seconds
     }
 
     return () => {
@@ -350,12 +540,20 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
         clearInterval(intervalId);
       }
     };
-  }, [openModal, otherUserProfile?.user_id]);
+  }, [
+    openModal,
+    otherUserProfile?.user_id,
+  ]);
+
 
   useEffect(() => {
     const handleFocus = () => {
-      if (openModal && otherUserProfile?.user_id) {
-        const targetUserId = otherUserProfile?.user_id;
+      if (
+        openModal &&
+         otherUserProfile?.user_id
+      ) {
+        const targetUserId =
+          otherUserProfile?.user_id;
         fetchFollowStats(targetUserId);
       }
     };
@@ -365,12 +563,18 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
-  }, [openModal, otherUserProfile?.user_id]);
+  }, [
+    openModal,
+   
+    otherUserProfile?.user_id,
+  ]);
+
+ 
 
   const timeAgo = (dateString) => {
     const now = new Date();
     const past = new Date(dateString);
-    const diff = Math.floor((now - past) / 1000);
+    const diff = Math.floor((now - past) / 1000); // seconds
 
     const units = [
       { name: "second", seconds: 1 },
@@ -389,13 +593,15 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
 
     return "just now";
   };
-
-  const handleBlockUser = () => {
+    
+    const handleBlockUser = (userId, username) => {
+    setUserToBlock({ userId, username });
     setIsBlockConfirmOpen(true);
-    cycleOpenOtherUserMoreContainer();
+    setOpenMorePost(null);
   };
 
   const confirmBlock = async () => {
+
     if (!user_id || !otherUserProfile?.user_id) { // For OtherUserProfile
       // if (!user_id || !userToBlock) return; // For Home.jsx
       alert("Unable to block user");
@@ -436,27 +642,26 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
       alert("An error occurred: " + error.message);
     }
   };
-  return (
-    <>
-      <BlockConfirmModal
-        isOpen={isBlockConfirmOpen}
-        onConfirm={confirmBlock}
-        onCancel={() => setIsBlockConfirmOpen(false)}
-        username={otherUserProfile?.username}
-      />
-      <div
+
+  
+
+      
+    return(<>
+
+     <div
         className="otherUserProfile_parent_container"
-        style={openModal ? { display: "flex" } : { display: "none" }}
+        style={
+          openModal? { display: "flex" } : { display: "none" }
+        }
       >
-        <button className="otherUserProfile_close_btn" onClick={closeModal}>
+        <button
+          className="otherUserProfile_close_btn"
+          onClick={closeModal}
+        >
           <X className="crossSvg" />
         </button>
 
-        {!uid ? (
-          <div style={{ padding: "20px", textAlign: "center" }}>
-            No user selected
-          </div>
-        ) : isLoadingOtherUserData ? (
+        {isLoadingOtherUserData ? (
           <div
             style={{
               display: "flex",
@@ -472,21 +677,27 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
             <div className="otherUserProfile_header_container">
               <div className="otherUserProfile_detail_container">
                 <img
-                  src={otherUserProfile?.profile_image || pfpImage}
+                  src={
+                    otherUserProfile?.profile_image ||
+                    pfpImage
+                  }
                   alt=""
                   className="otherUserPfp"
                 />
                 <div className="userNameBio_container">
                   <div className="otherUserProfile_username">
-                    @{otherUserProfile?.username || "Username"}
+                    @
+                    {otherUserProfile?.username ||
+                      "Username"}
                   </div>
-                  {otherUserProfile?.fullname && (
+                  {(otherUserProfile?.fullname) && (
                     <div className="otherUserProfile_fullname">
-                      {otherUserProfile?.fullname}
+                      {otherUserProfile?.fullname }
                     </div>
                   )}
                   <div className="otherUserProfile_bio">
-                    {otherUserProfile?.bio || "No bio available"}
+                    {otherUserProfile?.bio ||
+                      "No bio available"}
                   </div>
                 </div>
               </div>
@@ -518,19 +729,13 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
                     : { display: "none" }
                 }
               >
-                <div
-                  className="otherUserProfile_more_option"
-                  onClick={handleBlockUser}
-                >
+                <div className="otherUserProfile_more_option" onClick={(e)=>{e.stopPropagation();handleBlockUser(otherUserProfile.user_id, otherUserProfile.username);
+                
+                }}>
                   <Ban />
                   Block
                 </div>
-                <div
-                  className="otherUserProfile_more_option"
-                  onClick={() =>
-                    setReportData("N/A", user_id, otherUserProfile.user_id, "N/A")
-                  }
-                >
+                <div className="otherUserProfile_more_option" onClick={()=>setReportData('N/A',user_id,otherUserProfile.user_id,'N/A')}>
                   <AlertCircle />
                   Report
                 </div>
@@ -540,7 +745,7 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
             <div className="followBtn_container">
               <button
                 className="followBtn"
-                onClick={isFollowing ? handleUnfollow : handleFollow}
+                 onClick={isFollowing ? handleUnfollow : handleFollow}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
               </button>
@@ -582,83 +787,89 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
                             {post.post_category}
                           </div>
                         </div>
-                        <div className="more_menu_container">
-                          <div
-                            className="more_btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMorePost(post.post_id);
-                            }}
-                          >
-                            <img src={moreBtn} alt="" className="more" />
-                          </div>
-                          {openMorePost === post.post_id && (
-                            <div className="dropdown_menu">
-                              {post.user_id == user_id && (
-                                <>
-                                  <div
-                                    className="dropdown_item"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditButtonClick(post);
-                                    }}
-                                  >
-                                    <Edit size={18} />
-                                    <span>Edit</span>
-                                  </div>
-                                  <div
-                                    className="dropdown_item"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteClick(post);
-                                    }}
-                                  >
-                                    <Trash2 size={18} />
-                                    <span>Delete</span>
-                                  </div>
-                                </>
-                              )}
-                              <div
-                                className="dropdown_item"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSavePost(post.post_id);
-                                }}
-                              >
-                                <Bookmark
-                                  size={18}
-                                  fill={
-                                    savedPostIds.has(post.post_id)
-                                      ? "currentColor"
-                                      : "none"
-                                  }
-                                />
-                                <span>
-                                  {savedPostIds.has(post.post_id)
-                                    ? "Unsave"
-                                    : "Save"}
-                                </span>
-                              </div>
-                              {post.user_id !== user_id && (
+                         <div className="more_menu_container">
+                            <div
+                          className="more_btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMorePost(post.post_id);
+                          }}
+                        >
+                          <img src={moreBtn} alt="" className="more" />
+                        </div>
+                         {openMorePost === post.post_id && (
+                          <div className="dropdown_menu">
+                            {post.user_id == user_id && (
+                              <>
                                 <div
                                   className="dropdown_item"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setReportData(
-                                      "post",
-                                      user_id,
-                                      post.user_id,
-                                      post.post_id
-                                    );
+                                    handleEditButtonClick(post);
                                   }}
                                 >
-                                  <AlertCircle size={18} />
-                                  <span>Report</span>
+                                  <Edit size={18} />
+                                  <span>Edit</span>
                                 </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                                <div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(post);
+                                  }}
+                                >
+                                  <Trash2 size={18} />
+                                  <span>Delete</span>
+                                </div>
+                              </>
+                            )}
+                            <div className="dropdown_item" onClick={(e) => {
+                              e.stopPropagation();
+                              handleSavePost(post.post_id);
+                            }}>
+                            <Bookmark 
+                              size={18} 
+                              fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
+                            />
+                            <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
+                          </div>
+                            {post.user_id !== user_id && (
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  setReportData(
+                                    "post",
+                                    user_id,
+                                    post.user_id,
+                                    post.post_id
+                                  );
+                                }}
+                              >
+                                <AlertCircle size={18} />
+                                <span>Report</span>
+                              </div>
+                              
+                            )}
+                             {post.user_id !== user_id &&(<div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBlockUser(post.user_id, post.username);
+                                  }}
+                                >
+                                  <UserX size={18} />
+                                  <span>Block User</span>
+                                </div>)}
+                            
+                          </div>
+                        )}
+                              
+                             </div>
+                        
+                         
+                       
                       </div>
 
                       <div className="post_card_title">{post.post_title}</div>
@@ -680,14 +891,21 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
                         >
                           Comment
                         </button>
-                        <button className="up_vote_btn">
-                          <ArrowBigUp />
-                          {post.up_tally_post || 0}
-                        </button>
-                        <button className="down_vote_btn">
-                          <ArrowBigDown />
-                          {post.down_tally_post || 0}
-                        </button>
+                        <button
+  className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
+  onClick={() => handleToggleVote(user_id, post.post_id, "up")}
+>
+  <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
+  {upTally[post.post_id] ?? post.up_tally_post}
+</button>
+
+<button
+  className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
+  onClick={() => handleToggleVote(user_id, post.post_id, "down")}
+>
+  <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
+  {downTally[post.post_id] ?? post.down_tally_post}
+</button>
                       </div>
                     </div>
                   ))
@@ -698,23 +916,33 @@ export default function OtherUserProfile({ openModal, uid, closeModal }) {
         )}
       </div>
 
-      <CommentModal
-        openModal={isCommentModalOpen}
-        closeModal={closeComments}
-        user_id={user_id}
-        postData={selectedPost}
-        fetchPosts={() => fetchOtherUserPosts(uid)}
-        onDelete={handlePostDeleted}
-      />
+  
 
-      <Report
-        openModal={isReportOpen}
-        onClose={closeReport}
-        type={reportType}
-        reportedBy={reportedBy}
-        reportedUID={reportedUID}
-        contentId={contentId}
-      />
-    </>
-  );
+        <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={()=>fetchOtherUserPosts()} onDelete={handlePostDeleted} blockedUserIds={blockedUserIds}/>
+
+            <Report
+                            isOpen={isReportOpen}
+                            onClose={closeReport}
+                            type={reportType}
+                            reportedBy={reportedBy}
+                            reportedUID={reportedUID}
+                            contentId={contentId}
+                          />
+
+                         
+          <BlockConfirmModal
+                 isOpen={isBlockConfirmOpen}
+                 onConfirm={confirmBlock}
+                 onCancel={() => {
+                   setIsBlockConfirmOpen(false);
+                   setUserToBlock(null);
+                 }}
+                 username={userToBlock?.username}
+               />
+
+
+
+
+                          
+    </>)
 }

@@ -10,15 +10,41 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const [body, setBody] = useState("");
   const [image, setImage] = useState(null);
   const [isImage, setIsImage] = useState(false);
+   const [postVisibility, setPostVisibility] = useState("public");
+  const [userDefaultVisibility, setUserDefaultVisibility] = useState("public");
   const user = getUser();
 
   const user_id = user?.id || null;
+
+ useEffect(() => {
+    if (isOpen && user_id) {
+      fetchUserVisibility();
+    }
+  }, [isOpen, user_id]);
+
+  const fetchUserVisibility = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost/SociaTech/backend/auth/getVisibilitySettings.php?user_id=${user_id}`
+      );
+      const data = await response.json();
+
+      if (data.success && data.settings.post_visibility) {
+        const defaultVis = data.settings.post_visibility;
+        setUserDefaultVisibility(defaultVis);
+        setPostVisibility(defaultVis); // Set as default for new post
+      }
+    } catch (err) {
+      console.error("Error fetching user visibility:", err);
+    }
+  };
 
   const resetFields = () => {
     setCategory("");
     setTitle("");
     setBody("");
     setImage(null);
+    setPostVisibility(userDefaultVisibility); // Reset to user's default
   };
 
   const handleBodyChange = (e) => {
@@ -54,10 +80,10 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     formData.append("post_category", category);
     formData.append("post_title", title);
     formData.append("post_content", body || "");
+    formData.append("post_visibility", postVisibility); // Add visibility
 
     if (user?.username) formData.append("username", user.username);
     if (image) formData.append("post_image", image);
-
 
     try {
       const data = await createPost(formData);
@@ -155,7 +181,21 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
               <option value="Virtual Reality"> Virtual Reality</option>
               <option value="Augmented Reality"> Augmented Reality</option>
             </select>
+            
           </div>
+          <div className="canSee_post">
+          <select
+            className="category_dropDown"
+            value={postVisibility}
+            onChange={(e) => setPostVisibility(e.target.value)}
+          >
+            <option value="" disabled>
+              Who can see this post?
+            </option>
+            <option value="public">Public</option>
+            <option value="followers">Followers Only</option>
+          </select>
+        </div>
 
           <div className="create_title_field form_field_animated">
             <label className="create_field_label">Title</label>

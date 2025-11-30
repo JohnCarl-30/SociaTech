@@ -15,6 +15,7 @@ import {
   Ban,
   Edit,
   Trash2,
+  UserX,
 } from "lucide-react";
 
 import { useCycle } from "framer-motion";
@@ -33,16 +34,19 @@ import {
   notifyPostUpvote,
   notifyCommentUpvote,
 } from "../services/notificationHelper.js";
+import OtherUserProfile from "./OtherUserProfile.jsx";
+import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
 
 
 
 
-export default function CommentModal({openModal,user_id,closeModal, postData, fetchPosts, onDelete}){
+
+export default function CommentModal({openModal,user_id,closeModal, postData, fetchPosts, onDelete,blockedUserIds}){
     const [comments, setComments] = useState([]);
     const [commentText, setCommentText] = useState("");
   const [commentImage, setCommentImage] = useState(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  
+   const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
  
   const [selectedPost, setSelectedPost] = useState(null);
    const deleteModalRef = useRef();
@@ -56,6 +60,8 @@ export default function CommentModal({openModal,user_id,closeModal, postData, fe
   const [contentId, setContentId] = useState(null);
    const [isReportOpen, setIsReportOpen] = useState(false);
    const [openMoreModalPost, setOpenMoreModalPost] = useState(null);
+   const [selectedUserId, setSelectedUserId] = useState('');
+    const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
   
    const [openMoreComment, setOpenMoreComment] = useState(null);
    const [commentSortOption, setCommentSortOption] = useState("newest");
@@ -68,29 +74,222 @@ const [commentVoteState, setCommentVoteState] = useState({});
  const [upTally, setUpTally] = useState({});
   const [downTally, setDownTally] = useState({});
   const [voteState, setVoteState] = useState({});;
+   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+    
+  const [userToBlock, setUserToBlock] = useState(null);
    const user = getUser();
   const username = user?.username || null;
 
-  useEffect(()=>{
-    if(postData){
-      console.log(postData);
-      setSelectedPost(postData);
+
+
+
+ const refreshPostData = async () => {
+  if (!selectedPost?.post_id) return;
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${selectedPost.post_id}`
+    );
+    const data = await res.json();
+    
+    if (data.success && data.post) {
+      setSelectedPost(data.post);
+    
+      // ✅ Use object format
+      setUpTally({[data.post.post_id]: data.post.up_tally_post || 0});
+      setDownTally({[data.post.post_id]: data.post.down_tally_post || 0});
+    }
+  } catch (err) {
+    console.log("Error refreshing post data:", err);
+  }
+};
+
+// Update the onCloseModal function to include refresh
+const onCloseModal = async () => {
+  // Refresh post data when edit modal closes
+  await refreshPostData();
+  
+  setEditModalOpen(false);
+  setOpenMoreComment(false);
+  setOpenMoreModalPost(false);
+};
+
+ 
+ 
+ useEffect(() => {
+  const initializePostData = async () => {
+    if (!postData) return;
+
+    setSelectedPost(postData);
+    console.log(postData);
+    
+    // ✅ Initialize tallies
+    setUpTally({[postData.post_id]: postData.up_tally_post || 0});
+    setDownTally({[postData.post_id]: postData.down_tally_post || 0});
+
+    // ✅ Fetch fresh data from backend to ensure accuracy
+    try {
+      const res = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postData.post_id}`
+      );
+      const data = await res.json();
       
-      setUpTally(postData.up_tally_post);
-      setDownTally(postData.down_tally_post);
-
-      // Fetch user's vote state and wait for it to complete
-      const fetchVotes = async()=>{
-      if (user_id) {
-        const userVotes = await fetchUserVotes(user_id);
-        setVoteState(userVotes);
+      if (data.success && data.post) {
+        setSelectedPost(data.post);
+        setUpTally({[data.post.post_id]: data.post.up_tally_post || 0});
+        setDownTally({[data.post.post_id]: data.post.down_tally_post || 0});
       }
+    } catch (err) {
+      console.log("Error fetching post data:", err);
     }
 
-    fetchVotes();
-
+    // Fetch user's vote state
+    if (user_id) {
+      const userVotes = await fetchUserVotes(user_id);
+      setVoteState(userVotes);
+      
+      const userCommentVotes = await fetchCommentsUserVotes(user_id);
+      setCommentVoteState(userCommentVotes);
     }
-  },[postData]);
+  };
+
+  initializePostData();
+}, [postData?.post_id, user_id, isBlockConfirmOpen]); // ✅ Use postData.post_id to avoid unnecessary re-runs
+
+
+  
+
+
+
+ 
+
+  const fetchCommentsUserVotes = async (userId) => {
+  if (!userId) return {};
+  
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/getCommentUserVotes.php?user_id=${userId}`
+    );
+    const data = await res.json();
+    
+    if (data.success) {
+      const voteObj = {};
+      data.votes.forEach(vote => {
+        // vote_type: 1 = up, 0 = down
+        voteObj[vote.comment_id] = vote.vote_type === 1 ? 'up' : 'down';
+      });
+      return voteObj;
+    }
+    return {};
+  } catch (err) {
+    console.log("Error fetching user votes:", err);
+    return {};
+  }
+};
+
+const handleToggleCommentVote = async (userId, commentId, type) => {
+  if (!userId) {
+    alert("You must be logged in to vote.");
+    return;
+  }
+
+  const currentVote = commentVoteState[commentId];
+  const newVoteType = currentVote === type ? null : type;
+
+  // ✅ USE || 0 to handle undefined!
+  const originalUpTally = commentUpTally[commentId] || 0;
+  const originalDownTally = commentDownTally[commentId] || 0;
+  const originalVoteState = currentVote;
+
+  // Calculate what the new tallies should be
+  let newUpTally = originalUpTally;
+  let newDownTally = originalDownTally;
+
+  // Remove old vote effect
+  if (currentVote === "up") {
+    newUpTally = newUpTally - 1;
+  } else if (currentVote === "down") {
+    newDownTally = newDownTally - 1;
+  }
+
+  // Add new vote effect
+  if (newVoteType === "up") {
+    newUpTally = newUpTally + 1;
+  } else if (newVoteType === "down") {
+    newDownTally = newDownTally + 1;
+  }
+
+  // Optimistic UI update
+  setCommentVoteState((prev) => ({ ...prev, [commentId]: newVoteType }));
+  setCommentUpTally((prev) => ({ ...prev, [commentId]: newUpTally }));
+  setCommentDownTally((prev) => ({ ...prev, [commentId]: newDownTally }));
+
+  // Prepare vote type for backend (1=up, 0=down, null=remove)
+  let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+
+  try {
+    const res = await fetch(
+      "http://localhost/SociaTech/backend/auth/handleCommentVote.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          comment_id: commentId,
+          user_id: userId,
+          vote_type: voteTypeToBackend,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Fetch updated tallies from the backend to ensure accuracy
+      const commentRes = await fetch(
+        `http://localhost/SociaTech/backend/auth/fetchSingleComment.php?comment_id=${commentId}`
+      );
+      const commentData = await commentRes.json();
+      
+      if (commentData.success && commentData.comment) {
+        setCommentUpTally((prev) => ({
+          ...prev,
+          [commentId]: commentData.comment.up_tally_comment,
+        }));
+        setCommentDownTally((prev) => ({
+          ...prev,
+          [commentId]: commentData.comment.down_tally_comment,
+        }));
+        
+        // Update the comment in the comments array too
+        setComments((prev) => 
+          prev.map(c => 
+            c.comment_id === commentId 
+              ? { 
+                  ...c, 
+                  up_tally_comment: commentData.comment.up_tally_comment, 
+                  down_tally_comment: commentData.comment.down_tally_comment 
+                }
+              : c
+          )
+        );
+      }
+    } else {
+      // Revert UI changes if backend fails
+      console.log("Vote failed:", data.message);
+      setCommentVoteState((prev) => ({ ...prev, [commentId]: originalVoteState }));
+      setCommentUpTally((prev) => ({ ...prev, [commentId]: originalUpTally }));
+      setCommentDownTally((prev) => ({ ...prev, [commentId]: originalDownTally }));
+      alert("Failed to vote. Please try again.");
+    }
+  } catch (err) {
+    console.log("Error sending vote:", err);
+    // Revert UI changes on error
+    setCommentVoteState((prev) => ({ ...prev, [commentId]: originalVoteState }));
+    setCommentUpTally((prev) => ({ ...prev, [commentId]: originalUpTally }));
+    setCommentDownTally((prev) => ({ ...prev, [commentId]: originalDownTally }));
+    alert("Error voting. Please check your connection.");
+  }
+};
 
 
   const fetchUserVotes = async (userId) => {
@@ -255,11 +454,6 @@ const handleToggleVote = async (userId, postId, type) => {
   };
 }, [openModal, selectedPost?.post_id, commentSortOption]);
 
- const onCloseModal =()=>{
-    setEditModalOpen(false);
-   setOpenMoreComment(false);
-      setOpenMoreModalPost(false);
-  }
 
    const handleCommentImageSelect = (e) => {
     const file = e.target.files[0];
@@ -268,64 +462,7 @@ const handleToggleVote = async (userId, postId, type) => {
     }
   };
 
-const handleCommentVote = async (userId, commentId, type) => {
-    if (!user_id) {
-      alert("You must be logged in to vote.");
-      return;
-    }
 
-    const currentVote = commentVoteState[commentId];
-    const newVoteType = currentVote === type ? null : type;
-
-    let upDelta = 0;
-    let downDelta = 0;
-    if (currentVote === "up") upDelta--;
-    if (currentVote === "down") downDelta--;
-    if (newVoteType === "up") upDelta++;
-    if (newVoteType === "down") downDelta++;
-
-    setCommentVoteState((prev) => ({ ...prev, [commentId]: newVoteType }));
-    setCommentUpTally((prev) => ({
-      ...prev,
-      [commentId]: (prev[commentId] ?? 0) + upDelta,
-    }));
-    setCommentDownTally((prev) => ({
-      ...prev,
-      [commentId]: (prev[commentId] ?? 0) + downDelta,
-    }));
-
-    let voteTypeToBackend =
-      newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
-
-    try {
-      const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleCommentVote.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            comment_id: commentId,
-            user_id: userId,
-            vote_type: voteTypeToBackend,
-          }),
-        }
-      );
-
-      const text = await res.text();
-      let data;
-      try {
-        data = text
-          ? JSON.parse(text)
-          : { success: false, message: "Empty response" };
-      } catch {
-        data = { success: false, message: "Invalid JSON" };
-      }
-
-      if (!data.success) console.log("Comment vote failed:", data.message);
-    } catch (err) {
-      console.log("Error sending comment vote:", err);
-    }
-  };
 
 const handleSortChange = (e) => {
     setCommentSortOption(e.target.value);
@@ -444,6 +581,7 @@ const toggleMoreModalPost = (postId) => {
    const handleEditButtonClick = (post) => {
   setSelectedPost(post);
   setEditModalOpen(true);
+  
 };
 
   //  const handlePostDeleted = (deletedPostId) => {
@@ -516,36 +654,57 @@ const toggleMoreModalPost = (postId) => {
   };
 
 
+   const openOtherUserProfile = (userId) =>{
+    if(userId===user_id){
+      openProfilePage();
+    }
+
+
+    setSelectedUserId(userId);
+    setIsOtherUserProfileOpen(true);
+  }
+
 
 
 
  //pang kuha ng mga comments:
-      const fetchComments = async (post_id, sortBy = "newest") => {
-    try {
-      const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchComments.php?post_id=${post_id}&sort=${sortBy}`
+      // FIXED VERSION - Don't overwrite user's vote state
+const fetchComments = async (post_id, sortBy = "newest") => {
+  try {
+    const res = await fetch(
+      `http://localhost/SociaTech/backend/auth/fetchComments.php?post_id=${post_id}&sort=${sortBy}`
+    );
+    const data = await res.json();
+    
+    if (data.success && data.comments) {
+       const filteredComments = data.comments.filter(
+        comment => !blockedUserIds.includes(comment.user_id)
       );
-      const data = await res.json();
-      if (data.success && data.comments) {
-        setComments(data.comments);
-        const upObj = {};
-        const downObj = {};
-        const voteObj = {};
-        data.comments.forEach((c) => {
-          upObj[c.comment_id] = c.up_tally_comment || 0;
-          downObj[c.comment_id] = c.down_tally_comment || 0;
-          voteObj[c.comment_id] = null;
-        });
-        setCommentUpTally(upObj);
-        setCommentDownTally(downObj);
-        setCommentVoteState(voteObj);
-      } else {
-        setComments([]);
-      }
-    } catch (err) {
-      console.log("Error fetching comments:", err);
+      
+      setComments(filteredComments);
+      
+      const upObj = {};
+      const downObj = {};
+      
+      filteredComments.forEach((c) => {
+        upObj[c.comment_id] = c.up_tally_comment || 0;
+        downObj[c.comment_id] = c.down_tally_comment || 0;
+      });
+      
+      setCommentUpTally(upObj);
+      setCommentDownTally(downObj);
+      
+      // ✅ DON'T overwrite commentVoteState here!
+      // User's vote state is loaded separately via fetchCommentsUserVotes
+      // and should only be updated when user actually votes
+      
+    } else {
+      setComments([]);
     }
-  };
+  } catch (err) {
+    console.log("Error fetching comments:", err);
+  }
+};
 
   // pang edit ng comment
 
@@ -651,8 +810,97 @@ const toggleMoreModalPost = (postId) => {
     if (fileInput) fileInput.value = "";
   };
 
+  const closeOtherUserProfile = () => {
+    setIsOtherUserProfileOpen(false);
+    
+  };
+
   
   const closeReport = () => setIsReportOpen(false);
+  const timeAgo = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diff = Math.floor((now - past) / 1000); // seconds
+
+    const units = [
+      { name: "second", seconds: 1 },
+      { name: "minute", seconds: 60 },
+      { name: "hour", seconds: 3600 },
+      { name: "day", seconds: 86400 },
+    ];
+
+    for (let i = units.length - 1; i >= 0; i--) {
+      const { name, seconds } = units[i];
+      if (diff >= seconds) {
+        const value = Math.floor(diff / seconds);
+        return `${value} ${value === 1 ? name : name + "s"} ago`;
+      }
+    }
+
+    return "just now";
+  };
+
+  const closeProfilePage = () => setIsProfilePageOpen(false);
+   const openProfilePage = () => {
+    setIsProfilePageOpen(true);
+    setIsDropDownOpen(false); // ⬅ auto-close dropdown
+  };
+
+
+  const handleBlockUser = (userId, username) => {
+    setUserToBlock({ userId, username });
+    setIsBlockConfirmOpen(true);
+    setOpenMoreComment(null);
+    setOpenMoreModalPost(null);
+  };
+
+  const confirmBlock = async () => {
+    if (!user_id || !userToBlock) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user_id);
+      formData.append("blocked_user_id", userToBlock.userId);
+
+      const response = await fetch(
+        "http://localhost/SociaTech/backend/auth/handleBlockUser.php",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        console.error('HTTP error blocking user:', response.status);
+        alert("Failed to block user. Server error.");
+        return;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Server returned non-JSON response");
+        alert("Failed to block user. Invalid server response.");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("User blocked successfully!");
+        
+        setIsBlockConfirmOpen(false);
+        setUserToBlock(null);
+
+        
+        fetchPosts();
+      } else {
+        alert(data.message || "Failed to block user");
+      }
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      alert("An error occurred while blocking the user");
+    }
+  };
 
     return(<>
   {openModal && selectedPost && (
@@ -674,17 +922,17 @@ const toggleMoreModalPost = (postId) => {
                           <div
                             className="commentModal_username"
                             style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              handleUsernameClick(
-                                selectedPost.user_id,
-                                selectedPost
-                              )
+                            onClick={(e) =>{
+                              e.stopPropagation();
+                              openOtherUserProfile(
+                                selectedPost.user_id
+                              );}
                             }
                           >
                             {selectedPost.username}
                           </div>
                           <div className="commentModal_date">
-                            {selectedPost.post_date}
+                            {timeAgo(selectedPost.created_at)}
                           </div>
                           <div className="commentModal_category">
                             {selectedPost.post_category}
@@ -729,7 +977,7 @@ const toggleMoreModalPost = (postId) => {
                                   </div>
                                 </>
                               )}
-                              <div className="dropdown_item" onClick={(e) => {
+                              {user_id !== selectedPost.user_id &&(<div className="dropdown_item" onClick={(e) => {
                                 e.stopPropagation();
                                 handleSavePost(selectedPost.post_id);
                               }}>
@@ -738,7 +986,7 @@ const toggleMoreModalPost = (postId) => {
                                 fill={savedPostIds.has(selectedPost.post_id) ? "currentColor" : "none"}
                               />
                               <span>{savedPostIds.has(selectedPost.post_id) ? "Unsave" : "Save"}</span>
-                            </div>
+                            </div>)}
                               {selectedPost.user_id !== user_id && (
                                 <div
                                   className="commentModal_dropdownItem"
@@ -757,6 +1005,16 @@ const toggleMoreModalPost = (postId) => {
                                   <span>Report</span>
                                 </div>
                               )}
+                               {selectedPost.user_id !== user_id &&(<div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBlockUser(selectedPost.user_id, selectedPost.username);
+                                  }}
+                                >
+                                  <UserX size={18} />
+                                  <span>Block User</span>
+                                </div>)}
                             </div>
                           )}
                         </div>
@@ -858,9 +1116,8 @@ const toggleMoreModalPost = (postId) => {
                                   className="commentModal_commentUsername"
                                   style={{ cursor: "pointer" }}
                                   onClick={() =>
-                                    handleUsernameClick(
-                                      comment.user_id,
-                                      comment
+                                    openOtherUserProfile(
+                                      comment.user_id
                                     )
                                   }
                                 >{comment.username}</div>
@@ -965,6 +1222,16 @@ const toggleMoreModalPost = (postId) => {
                                             <span>Report</span>
                                           </div>
                                         )}
+                                         {comment.user_id !== user_id &&(<div
+                                  className="dropdown_item"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBlockUser(comment.user_id, comment.username);
+                                  }}
+                                >
+                                  <UserX size={18} />
+                                  <span>Block User</span>
+                                </div>)}
                                       </div>
                                     )}
                                   </div>
@@ -982,42 +1249,20 @@ const toggleMoreModalPost = (postId) => {
 
                               <div className="commentModal_commentActions">
                                 <button
-                                  className={`comment_up_vote_btn ${
-                                    commentVoteState[comment.comment_id] ===
-                                    "up"
-                                      ? "voted"
-                                      : ""
-                                  }`}
-                                  onClick={() =>
-                                    handleCommentVote(
-                                      user_id,
-                                      comment.comment_id,
-                                      "up"
-                                    )
-                                  }
-                                >
-                                  <ArrowBigUp size={18} />
-                                  {commentUpTally[comment.comment_id] || 0}
-                                </button>
+  className={commentVoteState[comment.comment_id] === 'up' ? 'comment_up_vote_btn active' : 'comment_up_vote_btn'}
+  onClick={() => handleToggleCommentVote(user_id, comment.comment_id, "up")}
+>
+  <ArrowBigUp fill={commentVoteState[comment.comment_id] === 'up' ? 'currentColor' : 'none'} />
+  {commentUpTally[comment.comment_id] ?? comment.up_tally_comment}
+</button>
 
-                                <button
-                                  className={`comment_down_vote_btn ${
-                                    commentVoteState[comment.comment_id] ===
-                                    "down"
-                                      ? "voted"
-                                      : ""
-                                  }`}
-                                  onClick={() =>
-                                    handleCommentVote(
-                                      user_id,
-                                      comment.comment_id,
-                                      "down"
-                                    )
-                                  }
-                                >
-                                  <ArrowBigDown size={18} />
-                                  {commentDownTally[comment.comment_id] || 0}
-                                </button>
+<button
+  className={commentVoteState[comment.comment_id] === 'down' ? 'comment_down_vote_btn active' : 'comment_down_vote_btn'}
+  onClick={() => handleToggleCommentVote(user_id, comment.comment_id, "down")}
+>
+  <ArrowBigDown fill={commentVoteState[comment.comment_id] === 'down' ? 'currentColor' : 'none'} />
+  {commentDownTally[comment.comment_id] ?? comment.down_tally_comment}
+</button>
 
                                 <button
                                   className="comment_reply_btn"
@@ -1110,10 +1355,38 @@ const toggleMoreModalPost = (postId) => {
         onDelete={onDelete}
       />
       <EditPostModal 
+       key={selectedPost?.post_id || 'edit-modal'}
   open={editModalOpen} 
-  postData={postData}
-  fetchPost={fetchPosts}
+  postData={selectedPost}
+  fetchPost={async () => {
+    // Refresh the post in the comment modal
+    await refreshPostData();
+    // Also refresh the posts list if fetchPosts is available
+    if (fetchPosts) {
+      await fetchPosts();
+    }
+  }}
   user_id={user_id}
+  onClose={onCloseModal}
 />
+
+ {/* otherUserModal */}
+     <OtherUserProfile openModal={isOtherUserProfileOpen} uid={selectedUserId} closeModal={closeOtherUserProfile}/>
+       <ProfilePage
+                   style={isProfilePageOpen ? "flex" : "none"}
+                   closeProfilePage={closeProfilePage}
+                    
+                 />
+
+
+                 <BlockConfirmModal
+                         isOpen={isBlockConfirmOpen}
+                         onConfirm={confirmBlock}
+                         onCancel={() => {
+                           setIsBlockConfirmOpen(false);
+                           setUserToBlock(null);
+                         }}
+                         username={userToBlock?.username}
+                       />
     </>)
 }

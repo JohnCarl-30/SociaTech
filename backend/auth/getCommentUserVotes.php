@@ -21,29 +21,24 @@ try {
         throw new Exception('Failed to connect to database');
     }
 
-    $post_id = $_GET['post_id'] ?? null;
+    $user_id = $_GET['user_id'] ?? null;
 
-    if (!$post_id) {
-        throw new Exception('Post ID is required');
+    if (!$user_id) {
+        throw new Exception('User ID is required');
     }
 
-    // Fetch the post with current tallies
+    // Fetch all votes by this user
     $stmt = $db->prepare("
-          SELECT p.*, u.username, u.profile_image
-            FROM post p
-            JOIN users u ON p.user_id = u.user_id
-        WHERE post_id = :post_id
+        SELECT comment_id, vote_type 
+        FROM commentvote 
+        WHERE user_id = :user_id
     ");
-    $stmt->execute([':post_id' => $post_id]);
-    $post = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$post) {
-        throw new Exception('Post not found');
-    }
+    $stmt->execute([':user_id' => $user_id]);
+    $votes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         'success' => true,
-        'post' => $post
+        'votes' => $votes
     ]);
 
 } catch (Exception $e) {
