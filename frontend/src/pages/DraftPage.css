@@ -1,3 +1,7 @@
+body {
+  font-family: "Montserrat", sans-serif;
+}
+
 .draftPage_parent_container {
   width: 100%;
   min-height: 100vh;

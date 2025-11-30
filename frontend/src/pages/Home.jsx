@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
 import "./Home.css";
-import { useCycle } from "framer-motion";
+import { useCycle, motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import moreBtn from "../assets/moreBtn.png";
 import { getUser } from "../utils/storage.js";
@@ -923,8 +923,15 @@ export default function Homepage() {
                     : "No posts found in this category."}
                 </p>
               ) : (
-                filteredPosts.map((post) => (
-                  <div className="post_card" key={post.post_id}>
+                filteredPosts.map((post, index) => (
+                  <motion.div
+                    className="post_card"
+                    key={post.post_id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                    whileHover={{ y: -4 }}
+                  >
                     <div className="post_card_header">
                       <div className="header_user_container">
                         <div className="pfp_container">
@@ -1070,7 +1077,7 @@ export default function Homepage() {
 
 
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               )}
 

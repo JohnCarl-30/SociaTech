@@ -118,78 +118,90 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
 
   return (
     <div
-      className="createPost_parent_modal"
+      className={`createPost_parent_modal ${isOpen ? "modal_open" : ""}`}
       style={isOpen ? { display: "flex" } : { display: "none" }}
+      onClick={onClose}
     >
-      <div className="createPost_container_modal">
+      <div
+        className={`createPost_container_modal ${isOpen ? "modal_content_open" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="createPost_modal_header">
-          <div className="createPost_modal_title">Create Post</div>
+          <div className="createPost_modal_title">
+            Create Post
+          </div>
           <button className="createPost_close_btn" onClick={onClose}>
             <X className="close_svg" />
           </button>
         </div>
 
-        <select
-          className="category_dropDown"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="" disabled>
-            Category
-          </option>
-          <option value="Artificial Intelligence">Artificial Intelligence</option>
-          <option value="Cyber Security">Cyber Security</option>
-          <option value="Networking">Networking</option>
-          <option value="Cloud Engineering">Cloud Engineering</option>
-          <option value="Software Development">Software Development</option>
-          <option value="Dev Ops">Dev Ops</option>
-          <option value="Machine Learning">Machine Learning</option>
-          <option value="Virtual Reality">Virtual Reality</option>
-          <option value="Augmented Reality">Augmented Reality</option>
-        </select>
-
-        <div className="create_title_field">
-          <label className="create_field_label">Title</label>
-          <input
-            type="text"
-            value={title}
-            className="create_field"
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-
-        <div className="create_body_field">
-          <label className="create_field_label">Body</label>
-          {!isImage && (
-            <textarea
-              type="text"
-              value={body}
-              className="create_textarea"
-              onChange={handleBodyChange}
-            />
-          )}
-          {image && (
-            <div
-              className="content_img"
-              style={isImage ? { display: "block" } : { display: "none" }}
+        <div className="modal_content_wrapper">
+          <div className="form_field_animated">
+            <select
+              className="category_dropDown"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
             >
-              <img src={URL.createObjectURL(image)} alt="contentImg" />
-              <button
-                className="removePic_btn"
-                onClick={() => {
-                  setImage(null);
-                  setIsImage(false);
-                }}
+              <option value="" disabled>
+                Select Category
+              </option>
+              <option value="Artificial Intelligence"> Artificial Intelligence</option>
+              <option value="Cyber Security">Cyber Security</option>
+              <option value="Networking"> Networking</option>
+              <option value="Cloud Engineering">Cloud Engineering</option>
+              <option value="Software Development">Software Development</option>
+              <option value="Dev Ops"> Dev Ops</option>
+              <option value="Machine Learning"> Machine Learning</option>
+              <option value="Virtual Reality"> Virtual Reality</option>
+              <option value="Augmented Reality"> Augmented Reality</option>
+            </select>
+          </div>
+
+          <div className="create_title_field form_field_animated">
+            <label className="create_field_label">Title</label>
+            <input
+              type="text"
+              value={title}
+              className="create_field"
+              placeholder="What's your post about?"
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="create_body_field form_field_animated">
+            <label className="create_field_label">Content</label>
+            {!isImage && (
+              <textarea
+                type="text"
+                value={body}
+                className="create_textarea"
+                placeholder="Share your thoughts..."
+                onChange={handleBodyChange}
+              />
+            )}
+            {image && (
+              <div
+                className={`content_img ${isImage ? "image_visible" : ""}`}
               >
-                <X className="crossSvg" />
-              </button>
-            </div>
-          )}
+                <img src={URL.createObjectURL(image)} alt="contentImg" />
+                <button
+                  className="removePic_btn"
+                  onClick={() => {
+                    setImage(null);
+                    setIsImage(false);
+                  }}
+                >
+                  <X className="crossSvg" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="create_footer_modal">
-          <label className="upload_img_btn" htmlFor="hiddenFileInput">
+          <label className="upload_img_btn" htmlFor="hiddenFileInput" title="Upload image">
             <Image className="img_svg" />
+            <span className="upload_text">Image</span>
           </label>
           <input
             id="hiddenFileInput"
@@ -204,10 +216,12 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
               className="cancelPost_btn save_draft_btn"
               onClick={handleSaveDraft}
             >
+              <span className="btn_icon"></span>
               Save Draft
             </button>
 
             <button className="cancelPost_btn post_btn" onClick={handlePost}>
+              <span className="btn_icon"></span>
               Post
             </button>
           </div>
