@@ -75,7 +75,7 @@ export default function DraftPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ draft_id: draftId, user_id,username }),
+          body: JSON.stringify({ draft_id: draftId, user_id, username }),
         }
       );
 
@@ -113,8 +113,8 @@ export default function DraftPage() {
   };
 
   const closeProfilePage = () => setIsProfilePageOpen(false);
-   const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
-    const openProfilePage = () => {
+  const toggleDropDown = () => setIsDropDownOpen((prev) => !prev);
+  const openProfilePage = () => {
     setIsProfilePageOpen(true);
     setIsDropDownOpen(false); // ⬅ auto-close dropdown
   };
@@ -145,7 +145,7 @@ export default function DraftPage() {
     return defaultPfp;
   };
 
-   const closeModals = () => {
+  const closeModals = () => {
     setIsDropDownOpen(false);
     setIsProfilePageOpen(false);
     setIsSettingOpen(false);
@@ -183,11 +183,11 @@ export default function DraftPage() {
         openProfilePage={openProfilePage}
         cycleNotificationBarOpen={cycleNotificationBarOpen}
         isNotificationBarOpen={isNotificationBarOpen}
-        setIsProfilePageOpen={()=>setIsProfilePageOpen(true)}
+        setIsProfilePageOpen={() => setIsProfilePageOpen(true)}
         setIsSettingOpen={setIsSettingOpen}
       />
 
-       
+
 
       <div className="draftPage_child_container">
         <Nav closeModals={closeModals} />
@@ -212,7 +212,7 @@ export default function DraftPage() {
                   <div className="draft_card_header">
                     <div className="draft_user_info">
                       <div className="draft_avatar">
-                         {(draft.profile_image || user?.profile_image) ? (
+                        {(draft.profile_image || user?.profile_image) ? (
                           <img
                             src={getProfileImage(draft)}
                             alt="Profile"
@@ -227,7 +227,7 @@ export default function DraftPage() {
                           @{draft.username || user.username}
                         </span>
                         <span className="draft_date">
-                         {timeAgo(draft.post_date)}
+                          {timeAgo(draft.post_date)}
                         </span>
                       </div>
 
@@ -277,10 +277,10 @@ export default function DraftPage() {
         </div>
       </div>
 
-      {isProfilePageOpen && <ProfilePage setIsProfilePageOpen={setIsProfilePageOpen}  closeProfilePage={closeProfilePage}/>}
+      {isProfilePageOpen && <ProfilePage setIsProfilePageOpen={setIsProfilePageOpen} closeProfilePage={closeProfilePage} />}
       {isSettingOpen && <Settings setIsSettingOpen={setIsSettingOpen} />}
       {openHelpPage && <HelpPage cycleOpenHelpPage={cycleOpenHelpPage} />}
-       {isEditModalOpen && editingDraft && (
+      {isEditModalOpen && editingDraft && (
         <EditDraftModal
           draft={editingDraft}
           user={user}

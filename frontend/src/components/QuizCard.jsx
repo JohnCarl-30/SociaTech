@@ -8,7 +8,7 @@ export default function QuizCard({
 }) {
   return (
     <div className="question_card">
-    
+
       <h3 className="quiz_title">{title}</h3>
 
       <h2 className="question_number">
@@ -16,7 +16,7 @@ export default function QuizCard({
       </h2>
       <p className="question_text">{question}</p>
 
-      
+
       <div className="choices_grid">
         {choices.map((choice, i) => (
           <button
@@ -28,7 +28,7 @@ export default function QuizCard({
           </button>
         ))}
       </div>
-      
+
     </div>
   );
 }

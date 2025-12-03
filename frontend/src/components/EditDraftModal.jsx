@@ -12,7 +12,7 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
     const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+
 
     useEffect(() => {
         if (draft) {
@@ -26,7 +26,7 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
             if (draft.post_image) {
                 setImagePreview(`http://localhost/Sociatech/backend/${draft.post_image}`);
             }
-           
+
         }
     }, [draft]);
 
