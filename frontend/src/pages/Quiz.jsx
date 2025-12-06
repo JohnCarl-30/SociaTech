@@ -283,6 +283,7 @@ export default function Quiz() {
 
 
 
+
     {openQuiz && current && (<div className="quiz_wrapper" style={{ display: openQuiz ? 'block' : 'none' }}>
       <button className="exitQuiz_btn" onClick={() => setOpenQuiz(false)}><ArrowLeftToLine />Exit Quiz</button>
       <QuizCard
@@ -294,11 +295,13 @@ export default function Quiz() {
         onSelect={handleSelect}
       />
 
-      <QuizNav
-        onPrev={handlePrev}
-        onNext={handleNext}
-        isLast={currentIndex === quizList.length - 1}
-      />
+      <div className="quiz_nav_container">
+        <QuizNav
+          onPrev={handlePrev}
+          onNext={handleNext}
+          isLast={currentIndex === quizList.length - 1}
+        />
+      </div>
 
       {currentIndex === quizList.length - 1 && (
         <button className="submit_btn" onClick={handleSubmit}>

@@ -649,7 +649,7 @@
 .profile_field_label {
   font-weight: 600;
   font-size: 0.875rem;
-  color: #65676b;
+  color: black;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -658,7 +658,7 @@
   margin-top: 0.25rem;
   font-size: 1rem;
   font-weight: 500;
-  color: #1c1e21;
+  color: gray;
 }
 
 .edit_form_wrapper {
@@ -671,7 +671,7 @@
 .edit_form_label {
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: #1c1e21;
+  color: gray;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.875rem;
