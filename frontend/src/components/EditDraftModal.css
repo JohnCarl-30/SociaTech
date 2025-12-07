@@ -202,10 +202,14 @@
     gap: 12px;
 }
 
+
+
 .edit_draft_image_label {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+
     justify-content: center;
+    flex-direction: row;
     gap: 8px;
     padding: 10px 20px;
     background-color: white;
@@ -219,7 +223,21 @@
     width: fit-content;
     position: relative;
     overflow: hidden;
+    
 }
+.edit_draft_image_label label{
+     cursor: pointer;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    display: flex; 
+    align-items: center;
+}
+.edit_draft_image_label svg{
+    display: block; 
+    flex-shrink: 0;
+}
+
 
 
 .edit_draft_image_label::after {
@@ -233,6 +251,7 @@
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: width 0.4s ease, height 0.4s ease;
+    
 }
 
 .edit_draft_image_label:hover::after {

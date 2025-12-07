@@ -44,7 +44,7 @@ const DeletePostModal = forwardRef(({ user_id, onDelete }, ref) => {
       if (!res.ok) {
         const text = await res.text();
         console.error("HTTP error:", res.status, text);
-        alert("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
         return;
       }
 
@@ -53,7 +53,7 @@ const DeletePostModal = forwardRef(({ user_id, onDelete }, ref) => {
         data = await res.json();
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
-        alert("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
         return;
       }
 
@@ -62,12 +62,12 @@ const DeletePostModal = forwardRef(({ user_id, onDelete }, ref) => {
         onDelete?.(postToDelete.post_id);
         closeModal();
       } else {
-        alert("Failed to delete post: " + (data.error || "Unknown error"));
+        toast.error("Failed to delete post: " + (data.error || "Unknown error"));
       }
 
     } catch (err) {
       console.error("Fetch error:", err);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

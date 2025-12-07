@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 import "./EditDraftModal.css";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function EditDraftModal({ draft, onClose, onSave, user }) {
     const [formData, setFormData] = useState({
@@ -111,7 +112,7 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
             const data = await response.json();
 
             if (data.success) {
-                alert('Draft updated successfully!');
+                toast.success('Draft updated successfully!');
                 onSave();
                 onClose();
             } else {
@@ -200,10 +201,14 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
                                 onChange={handleImageChange}
                                 style={{ display: 'none' }}
                             />
-                            <label htmlFor="post_image" className="edit_draft_image_label">
-                                <ImageIcon size={20} />
-                                {formData.post_image ? 'Change Image' : 'Upload Image'}
-                            </label>
+                            
+                            <div className="edit_draft_image_label">
+                                 <ImageIcon size={20} />
+                                <label htmlFor="post_image" >
+                                   
+                                    {formData.post_image ? 'Change Image' : 'Upload Image'}
+                                </label>
+                            </div>
 
                             {imagePreview && (
                                 <div className="edit_draft_image_preview">

@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCycle } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "../services/auth";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function PasswordResetForm() {
   const [showPass, cycleShowPass] = useCycle(false, true);
@@ -25,31 +26,31 @@ export default function PasswordResetForm() {
     e.preventDefault();
 
     if (!token) {
-      alert(
+      toast.error(
         "Invalid or missing token. Please try the password reset process again."
       );
       return;
     }
 
     if (!isPasswordValid(formData.password)) {
-      alert(
+      toast.error(
         "Password must be at least 8 characters and contain uppercase, number, and special character"
       );
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
     resetPassword(formData.password, formData.confirmPassword, token)
       .then(() => {
-        alert("Password has been successfully reset. Please log in.");
+        toast.success("Password has been successfully reset. Please log in.");
         navigate("/login");
       })
       .catch((error) => {
-        alert(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
       });
   };
 

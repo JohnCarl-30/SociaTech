@@ -1,7 +1,7 @@
 import { CircleAlert } from "lucide-react";
 import "./Report.css";
 import { useState, useEffect } from "react";
-
+import { ToastContainer, toast } from "react-toastify";
 
 
 
@@ -55,11 +55,11 @@ export default function Report({ isOpen, onClose, type, reportedBy, reportedUID,
   const handleReport = async () => {
 
     if (!reportedBy || !reportedUID) {
-      alert('Missing report data');
+      toast.error('Missing report data');
       return
     }
     if (selectedReasons.length === 0) {
-      alert('Please select at least one reason');
+      toast.error('Please select at least one reason');
       return;
     }
 
@@ -77,13 +77,13 @@ export default function Report({ isOpen, onClose, type, reportedBy, reportedUID,
       const data = await res.json();
 
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message);
         onClose();
       }
 
     } catch (err) {
       console.error("Error creating post:", err);
-      alert("Something went wrong while reporting. Please try again.");
+      toast.error("Something went wrong while reporting. Please try again.");
     }
 
 

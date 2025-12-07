@@ -22,6 +22,7 @@ import QuizNav from "../components/QuizNav";
 import HelpPage from "../components/HelpPage.jsx";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext.jsx";
+import { ToastContainer, toast } from "react-toastify";
 
 
 export default function Quiz() {
@@ -197,11 +198,11 @@ export default function Quiz() {
     })
       .then((res) => res.json())
       .then((data) => {
-        alert(`Your Score: ${score}/${quizList.length}\n${data.message}`);
+        toast.success(`Your Score: ${score}/${quizList.length}\n${data.message}`);
       })
       .catch((err) => {
         console.error(err);
-        alert("Failed to save score.");
+        toast.error("Failed to save score.");
       });
 
     setOpenQuiz(false);

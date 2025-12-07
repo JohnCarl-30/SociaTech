@@ -87,7 +87,7 @@
   transform: translateY(-2px);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   .category_slider_container {
     background: rgba(20, 20, 30, 0.95);
   }

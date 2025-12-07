@@ -7,6 +7,7 @@ import Nav from '../components/Nav';
 import { useState, useEffect } from "react";
 import { useCycle } from "framer-motion";
 import { getCurrentUser } from '../services/auth';
+import { ToastContainer, toast } from "react-toastify";
 
 export default function DraftPage() {
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -151,7 +152,7 @@ export default function DraftPage() {
         console.log('Publishing draft:', draftId);
 
         if (!user?.id) {
-            alert('Please log in to publish drafts');
+            toast.error('Please log in to publish drafts');
             return;
         }
 
@@ -176,14 +177,14 @@ export default function DraftPage() {
             console.log('Publish response:', data);
 
             if (data.success) {
-                alert('Draft published successfully!');
+                toast.success('Draft published successfully!');
                 fetchDrafts();
             } else {
-                alert('Failed to publish draft: ' + data.error);
+                toast.error('Failed to publish draft: ' + data.error);
             }
         } catch (error) {
             console.error('Error publishing draft:', error);
-            alert('Something went wrong while publishing draft.');
+            toast.error('Something went wrong while publishing draft.');
         }
     };
 
@@ -191,7 +192,7 @@ export default function DraftPage() {
         console.log('Deleting draft:', draftId);
 
         if (!user?.id) {
-            alert('Please log in to delete drafts');
+            toast.error('Please log in to delete drafts');
             return;
         }
 
@@ -216,14 +217,14 @@ export default function DraftPage() {
             console.log('Delete response:', data);
 
             if (data.success) {
-                alert('Draft deleted successfully!');
+                toast.success('Draft deleted successfully!');
                 fetchDrafts();
             } else {
-                alert('Failed to delete draft: ' + data.error);
+                toast.success('Failed to delete draft: ' + data.error);
             }
         } catch (error) {
             console.error('Error deleting draft:', error);
-            alert('Something went wrong while deleting draft.');
+            toast.success('Something went wrong while deleting draft.');
         }
     };
 

@@ -1,4 +1,4 @@
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 import Nav from "../components/Nav.jsx";
 import Report from "../components/Report.jsx";
@@ -447,7 +447,7 @@ export default function Homepage() {
 
   const handleSavePost = async (postId) => {
     if (!user_id) {
-      alert('You must be logged in to save posts');
+      toast.error('You must be logged in to save posts');
       return;
     }
 
@@ -472,10 +472,10 @@ export default function Homepage() {
           const newSet = new Set(prev);
           if (data.action === 'saved') {
             newSet.add(postId);
-            alert('Post saved successfully!');
+            toast.success('Post saved successfully!');
           } else {
             newSet.delete(postId);
-            alert('Post unsaved successfully!');
+            toast.error('Post unsaved successfully!');
           }
           return newSet;
         });
@@ -483,11 +483,11 @@ export default function Homepage() {
         setOpenMorePost(null); // Close dropdown
         setOpenMoreComment(null); // Close comment modal dropdown if open
       } else {
-        alert(data.message || 'Failed to save/unsave post');
+        toast.error(data.message || 'Failed to save/unsave post');
       }
     } catch (err) {
       console.error('Error saving post:', err);
-      alert('An error occurred while saving the post');
+      toast.error('An error occurred while saving the post');
     }
   };
 
@@ -608,7 +608,7 @@ export default function Homepage() {
   // Fixed handleToggleVote function
   const handleToggleVote = async (userId, postId, type) => {
     if (!userId) {
-      alert("You must be logged in to vote.");
+      toast.error("You must be logged in to vote.");
       return;
     }
 
@@ -705,7 +705,7 @@ export default function Homepage() {
         setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
         setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
         setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-        alert("Failed to vote. Please try again.");
+        toast.error("Failed to vote. Please try again.");
       }
     } catch (err) {
       console.log("Error sending vote:", err);
@@ -713,7 +713,7 @@ export default function Homepage() {
       setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
       setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
       setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-      alert("Error voting. Please check your connection.");
+      toast.error("Error voting. Please check your connection.");
     }
   };
 
@@ -799,20 +799,20 @@ export default function Homepage() {
       );
 
       if (!response.ok) {
-        alert("Failed to block user. Server error.");
+        toast.error("Failed to block user. Server error.");
         return;
       }
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        alert("Failed to block user. Invalid server response.");
+        toast.error("Failed to block user. Invalid server response.");
         return;
       }
 
       const data = await response.json();
 
       if (data.success) {
-        alert("User blocked successfully!");
+        toast.success("User blocked successfully!");
         setBlockedUserIds(prev => [...prev, userToBlock.userId]);
         setIsBlockConfirmOpen(false);
         setUserToBlock(null);
@@ -820,11 +820,11 @@ export default function Homepage() {
         await fetchBlockedUsers();
         fetchPost();
       } else {
-        alert(data.message || "Failed to block user");
+        toast.error(data.message || "Failed to block user");
       }
     } catch (error) {
       console.error("Error blocking user:", error);
-      alert("An error occurred while blocking the user");
+      toast.error("An error occurred while blocking the user");
     }
   };
 

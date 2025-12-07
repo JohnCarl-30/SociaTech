@@ -64,15 +64,15 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
 
   const handlePost = async () => {
     if (!user_id) {
-      alert("You must be logged in to create a post.");
+      toast.error("You must be logged in to create a post.");
       return;
     }
     if (!category || !title) {
-      alert("Category and title are required.");
+      toast.error("Category and title are required.");
       return;
     }
     if (!image && !body) {
-      alert("Body or image is required.");
+      toast.error("Body or image is required.");
       return;
     }
 
@@ -95,21 +95,21 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
         onClose();
         if (onPostCreated) onPostCreated();
       } else {
-        alert("Failed to create post: " + data.error);
+        toast.error("Failed to create post: " + data.error);
       }
     } catch (err) {
       console.error("Error creating post:", err);
-      alert("Something went wrong while posting.");
+      toast.error("Something went wrong while posting.");
     }
   };
 
   const handleSaveDraft = async () => {
     if (!user_id) {
-      alert("You must be logged in to save a draft.");
+      toast.error("You must be logged in to save a draft.");
       return;
     }
     if (!category || !title) {
-      alert("Category and title are required to save a draft.");
+      toast.error("Category and title are required to save a draft.");
       return;
     }
 
@@ -135,11 +135,11 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
         setIsImage(false);
         onClose();
       } else {
-        alert("Failed to save draft: " + response.error);
+        toast.error("Failed to save draft: " + response.error);
       }
     } catch (error) {
       console.error("Error saving draft:", error);
-      alert("Something went wrong while saving the draft.");
+      toast.error("Something went wrong while saving the draft.");
     }
   };
 

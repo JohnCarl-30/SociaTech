@@ -396,7 +396,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick, }) {
 
   const handleToggleVote = async (userId, postId, type) => {
     if (!userId) {
-      alert("You must be logged in to vote.");
+      toast.error("You must be logged in to vote.");
       return;
     }
 
@@ -489,7 +489,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick, }) {
         setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
         setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
         setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-        alert("Failed to vote. Please try again.");
+        toast.error("Failed to vote. Please try again.");
       }
     } catch (err) {
       console.error("Error sending vote:", err);
@@ -497,7 +497,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick, }) {
       setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
       setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
       setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
-      alert("Error voting. Please check your connection.");
+      toast.error("Error voting. Please check your connection.");
     }
   };
 

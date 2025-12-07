@@ -81,10 +81,10 @@ export default function DraftPage() {
 
       const data = await response.json();
       if (!data.success) throw new Error(data.error);
-      alert("Draft published successfully!");
+      toast.error("Draft published successfully!");
       fetchDrafts();
     } catch (err) {
-      alert("Failed to publish draft: " + err.message);
+      toast.error("Failed to publish draft: " + err.message);
     }
   };
 
@@ -105,10 +105,10 @@ export default function DraftPage() {
 
       const data = await response.json();
       if (!data.success) throw new Error(data.error);
-      alert("Draft deleted successfully!");
+      toast.success("Draft deleted successfully!");
       fetchDrafts();
     } catch (err) {
-      alert("Failed to delete draft: " + err.message);
+      toast.error("Failed to delete draft: " + err.message);
     }
   };
 
