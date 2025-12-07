@@ -250,7 +250,6 @@ body {
   padding: 0.875rem 1.25rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -274,14 +273,13 @@ body {
   background: rgba(57, 62, 70, 0.3);
   border-color: #393E46;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(57, 62, 70, 0.4);
 }
 
 .category_dropDown:focus {
   outline: none;
   border-color: #393E46;
   background: rgba(57, 62, 70, 0.2);
-  box-shadow: 0 0 0 4px rgba(57, 62, 70, 0.2);
+
 }
 
 .category_dropDown option {
@@ -324,16 +322,14 @@ body {
 }
 
 .create_field:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: dimgray;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .create_field:focus {
   outline: none;
-  border-color: #393E46;
+  border-color: black;
   background: rgba(57, 62, 70, 0.1);
-  box-shadow: 0 0 0 4px rgba(57, 62, 70, 0.2);
   transform: translateY(-2px);
 }
 
@@ -346,7 +342,6 @@ body {
   background: rgba(255, 255, 255, 0.05);
   color: black;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   line-height: 1.6;
   font-size: 1rem;
 }
@@ -358,14 +353,12 @@ body {
 .create_textarea:hover {
   border-color: dimgray;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .create_textarea:focus {
   outline: none;
   border-color: #393E46;
   background: rgba(57, 62, 70, 0.1);
-  box-shadow: 0 0 0 4px rgba(57, 62, 70, 0.2);
   transform: translateY(-2px);
 }
 

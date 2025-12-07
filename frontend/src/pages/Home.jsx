@@ -1,3 +1,5 @@
+import { ToastContainer } from "react-toastify";
+
 import Nav from "../components/Nav.jsx";
 import Report from "../components/Report.jsx";
 import CategorySlider from "../components/CategorySlider.jsx";
@@ -1086,6 +1088,8 @@ export default function Homepage() {
         }}
         username={userToBlock?.username}
       />
+
+      <ToastContainer position="top-center" style={{ top: '80px' }} autoClose={3000} />
     </>
   );
 }

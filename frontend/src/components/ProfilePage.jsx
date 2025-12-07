@@ -1458,6 +1458,7 @@ export default function ProfilePage({ style, closeProfilePage, onPostClick, }) {
         currentUserId={user_id}
       />
 
+
     </>
   );
 }
