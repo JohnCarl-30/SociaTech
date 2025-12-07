@@ -86,7 +86,7 @@ export default function PasswordResetForm() {
     <>
       <div className="system_logo_container">
         <img
-          src="src\assets\SociaTech_logo_whitebg.png"
+          src="http://localhost/SociaTech/frontend/src/assets/SociaTech_logo_whitebg.png"
           alt="system_logo"
           className="system_logo"
           onClick={() => navigate("/")}

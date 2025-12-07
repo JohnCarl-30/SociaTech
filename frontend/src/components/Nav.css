@@ -128,7 +128,7 @@
   transform-origin: left;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   .nav_panel {
     background: rgba(20, 20, 30, 0.95);
   }

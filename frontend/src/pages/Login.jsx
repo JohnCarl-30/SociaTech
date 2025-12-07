@@ -219,7 +219,7 @@ export default function Login() {
 
       <div className="system_logo_container">
         <img
-          src="src/assets/SociaTech_logo_whitebg.png"
+          src="http://localhost/SociaTech/frontend/src/assets/SociaTech_logo_whitebg.png"
           alt="system_logo"
           className="system_logo"
         />
@@ -328,7 +328,7 @@ export default function Login() {
               disabled={loading || loadingVerify}
             >
               <img
-                src="src/assets/google.svg"
+                src="http://localhost/SociaTech/frontend/src/assets/google.svg"
                 alt="google_logo"
                 className="google_logo"
               />
