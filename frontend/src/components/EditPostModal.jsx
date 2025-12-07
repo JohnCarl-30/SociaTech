@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Image } from "lucide-react";
 import "../pages/Home.css";
+import { ToastContainer, toast } from "react-toastify";
 
 
 export default function EditPostModal({ open, postData, fetchPost, user_id, onClose }) {
@@ -65,7 +66,7 @@ export default function EditPostModal({ open, postData, fetchPost, user_id, onCl
 
   const handleUpdatePost = async () => {
     if (!editPostTitle.trim()) {
-      alert("Post title is required");
+      toast.error("Post title is required");
       return;
     }
 
@@ -93,12 +94,12 @@ export default function EditPostModal({ open, postData, fetchPost, user_id, onCl
       if (data.success) {
         await fetchPost();
         closeModal();
-        alert("Post updated successfully!");
+        toast.success("Post updated successfully!");
       } else {
-        alert("Failed to update post: " + (data.error || "Unknown error"));
+        toast.error("Failed to update post: " + (data.error || "Unknown error"));
       }
     } catch (err) {
-      alert("Something went wrong while updating. Please try again.");
+      toast.error("Something went wrong while updating. Please try again.");
     }
   };
 

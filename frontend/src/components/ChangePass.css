@@ -1,105 +1,245 @@
-.changePass_parent_container{
-   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(1px);
+@keyframes fbFadeIn {
+    from {
+        opacity: 0;
+    }
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+    to {
+        opacity: 1;
+    }
 }
-.changePass_modal{
+
+@keyframes fbSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.changePass_parent_container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 60em;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fbFadeIn 0.3s ease-out;
+}
+
+.changePass_modal {
     background-color: white;
-  border-radius: 0.4rem;
-  width: 25em;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: start;
-  max-height: 35em;
-  padding: 1.5rem;
-  gap: 1rem;
-  position: relative;
+    border-radius: 1rem;
+    width: 25em;
+    max-width: 90vw;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: start;
+    max-height: 35em;
+    padding: 1.75rem;
+    gap: 1rem;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: scaleIn 0.3s ease-out;
 }
-.changePass_modal_title{
+
+.changePass_modal_title {
     display: flex;
     align-items: center;
     font-weight: 700;
-    font-size: 1.2rem;
-    gap: .5rem;
+    font-size: 1.25rem;
+    gap: 0.5rem;
     width: 100%;
-}
-.changePass_close_btn{
-     position: absolute;
-  top: 1rem;
-  right: 1rem;
-
-  width: 1.75em;
-  height: 1.75em;
-  border-radius: 50%;
-
-  background-color: black;
-  color: white;
-
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding: 0;
-  margin: 0;
-}
-.changePass_close_btn:hover{
-background-color: white;
     color: black;
-    cursor: pointer;
-    border: solid 2px rgb(0, 0, 0);
+    animation: fbSlideUp 0.3s ease-out;
 }
-.closeSvg{
+
+.changePass_close_btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    background-color: black;
+    color: white;
+    border: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.changePass_close_btn:hover {
+    background-color: white;
+    color: black;
+    transform: scale(1.05);
+}
+
+.changePass_close_btn:active {
+    transform: scale(0.95);
+}
+
+.closeSvg {
     width: 1em;
     height: 1em;
+}
 
+.changePass_requirement {
+    width: 80%;
+    display: block;
+    margin: 0 auto;
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.5;
+    animation: fbSlideUp 0.35s ease-out;
 }
-.changePass_requirement{
-    width: 100%;
-    font-size: .8rem;
-    
+
+.changePass_fields {
+    width: 75%;
+    border-radius: 2rem;
+    border: 2px solid black;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    background-color: white;
+    color: black;
+    transition: all 0.2s ease;
+    animation: fbSlideUp 0.4s ease-out;
+    margin: 0 auto;
+    display: block;
 }
-.changePass_fields{
-    width: 95%;
-    border-radius: .4rem;
-    border: solid 1px black;
-    padding: .25rem .5rem ;
+
+.changePass_fields:hover {
+    background-color: rgba(0, 0, 0, 0.02);
 }
-.forgetPass_container{
+
+.changePass_fields:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.changePass_fields::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.forgetPass_container {
     width: 100%;
     justify-content: end;
     display: flex;
+    animation: fbSlideUp 0.45s ease-out;
 }
-.forgetPass_link{
-    opacity: .8;
+
+.forgetPass_link {
+    font-size: 0.875rem;
+    color: black;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
 }
-.ChangePass_btn_container{
+
+.forgetPass_link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: black;
+    transition: width 0.2s ease;
+}
+
+.forgetPass_link:hover::after {
+    width: 100%;
+}
+
+.forgetPass_link:hover {
+    opacity: 0.8;
+}
+
+.ChangePass_btn_container {
     width: 100%;
     display: flex;
     justify-content: center;
+    animation: fbSlideUp 0.5s ease-out;
 }
-.ChangePass_btn_container button{
-    border-radius: .8rem;
+
+.ChangePass_btn_container button {
+    border-radius: 2rem;
     background-color: black;
     color: white;
-    padding: .5rem .5rem;
+    padding: 0.75rem 2rem;
     font-weight: 700;
-    border: none;
-    
+    font-size: 0.95rem;
+    border: 2px solid black;
+    min-width: 10em;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
-.ChangePass_btn_container button:hover{
-border: solid 2px black;
-cursor: pointer;
-background-color: white;
-color: black;
+
+.ChangePass_btn_container button:hover {
+    background-color: white;
+    color: black;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ChangePass_btn_container button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.ChangePass_btn_container button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.changePass_error {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    color: #dc2626;
+    font-size: 0.875rem;
+    text-align: center;
+    animation: fbSlideUp 0.3s ease-out;
+}
+
+.changePass_success {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    color: #16a34a;
+    font-size: 0.875rem;
+    text-align: center;
+    animation: fbSlideUp 0.3s ease-out;
 }

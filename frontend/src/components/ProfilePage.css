@@ -1,3 +1,49 @@
+@keyframes fbFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fbSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fbCommentAppear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .profilePage_parent_container {
   position: fixed;
   width: 85%;
@@ -7,9 +53,10 @@
   display: flex;
   justify-content: start;
   align-items: start;
-  background-color: white;
+  background-color: #f5f5f5;
   overflow-y: scroll;
   z-index: 9999;
+  animation: fbFadeIn 0.3s ease-out;
 }
 
 .profilePage_parent_container::-webkit-scrollbar {
@@ -21,10 +68,10 @@
   top: 2rem;
   right: 4rem;
   margin-top: 2rem;
-  border: none;
+  border: 2px solid black;
   border-radius: 50%;
-  height: 2rem;
-  width: 2rem;
+  height: 2.5rem;
+  width: 2.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,14 +79,14 @@
   background-color: black;
   color: white;
   outline: none;
-  transition: all 150ms ease-in-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .profilePage_close_btn:hover {
   background-color: white;
   color: black;
-  cursor: pointer;
-  border: solid 2px black;
+  transform: scale(1.05);
 }
 
 .profilePage_container {
@@ -50,14 +97,15 @@
   padding: 2rem 1rem;
   gap: 1.5rem;
   margin: 0 auto;
+  animation: fbSlideUp 0.35s ease-out;
 }
 
 .header_profile_container {
   display: flex;
   flex-direction: row;
-
   justify-content: space-around;
   width: 100%;
+  animation: fbCommentAppear 0.3s ease-out;
 }
 
 .pfp_username_container {
@@ -70,15 +118,21 @@
 .profilePic {
   width: 4.5em;
   height: 4.5em;
-  border: solid 2px black;
+  border: solid 3px black;
   border-radius: 50%;
   background-color: white;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.profilePic:hover {
+  transform: scale(1.05);
 }
 
 .userName_container {
   font-weight: 700;
   font-size: 1.5rem;
+  color: #1c1e21;
 }
 
 .profilePage_dashboard {
@@ -95,30 +149,36 @@
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.dashBoard_container:hover {
+  transform: translateY(-2px);
 }
 
 .profilePage_nav_container {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-
   width: 100%;
   margin: 0 auto;
+  animation: fbSlideUp 0.35s ease-out 0.1s both;
 }
 
 .profilePage_nav_child {
-  border-radius: 1.5rem;
+  border-radius: 2rem;
   border: solid 2px black;
   background-color: white;
   color: black;
   width: fit-content;
   padding: 0.5rem 1.8rem;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   height: auto;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .profilePage_nav_child::before {
@@ -131,7 +191,7 @@
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.1);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition: width 0.4s ease, height 0.4s ease;
 }
 
 .profilePage_nav_child:active::before {
@@ -140,31 +200,29 @@
 }
 
 .profilePage_nav_child:hover {
-  cursor: pointer;
   background-color: black;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Active state for selected nav button */
 .profilePage_nav_child.active,
 .profilePage_nav_child[style*="background-color: black"] {
   font-weight: 700;
   transform: scale(1.02);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .profilePage_child_container {
   width: 100%;
   height: 25em;
-
   margin: 0 auto;
 }
 
 .profilePage_childContainer_title {
   font-size: 1.75rem;
   font-weight: 700;
+  color: #1c1e21;
 }
 
 .profilePage_achievements_Container {
@@ -172,7 +230,8 @@
 }
 
 .profilePage_editProfile_Container {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  background-color: whitesmoke;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 2rem;
   gap: 1.5rem;
   display: flex;
@@ -181,26 +240,39 @@
   margin: 0 auto;
   width: 100%;
   max-width: 50em;
-  border-radius: 1rem;
-  animation: fadeIn 0.3s ease-in-out;
+  border-radius: 0.8rem;
+  animation: fbSlideUp 0.4s cubic-bezier(0.08, 0.52, 0.52, 1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+.profilePage_editProfile_Container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, black, #333);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.profilePage_editProfile_Container:hover::before {
+  transform: scaleX(1);
+}
+
+.profilePage_editProfile_Container:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
 }
 
 .changePfp_img {
   width: 6em;
   height: 6em;
-  border: solid 2px black;
+  border: solid 3px black;
   border-radius: 50%;
   background-color: white;
   object-fit: cover;
@@ -215,17 +287,18 @@
   width: fit-content;
   height: fit-content;
   border: solid 2px black;
-  border-radius: 0.5rem;
+  border-radius: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.4rem 1rem;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 1.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: white;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .change_pfp_btn::after {
@@ -235,11 +308,10 @@
   left: 50%;
   width: 0;
   height: 0;
-  background-color: black;
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.4s ease, height 0.4s ease;
-  z-index: -1;
 }
 
 .change_pfp_btn:hover::after {
@@ -248,23 +320,22 @@
 }
 
 .change_pfp_btn:hover {
-  cursor: pointer;
+  background-color: black;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Save button specifically for photo upload */
 .save_photo_btn {
   width: fit-content;
   height: fit-content;
   border: solid 2px black;
-  border-radius: 0.5rem;
+  border-radius: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0.5rem 1.5rem;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: black;
   color: white;
   font-weight: 600;
@@ -272,6 +343,7 @@
   margin-top: 0.5rem;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .save_photo_btn::before {
@@ -299,10 +371,9 @@
 }
 
 .save_photo_btn:hover {
-  cursor: pointer;
   color: black;
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .save_photo_btn:active {
@@ -334,10 +405,11 @@
   border-radius: 0.5rem;
   font-size: 1rem;
   transition: all 0.2s ease;
+  background-color: white;
 }
 
 .changeProfile_field_childContainer:focus-within {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
@@ -364,11 +436,11 @@
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   background-color: white;
   color: black;
-  font-weight: 500;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .changeProfile_btn:hover {
-  cursor: pointer;
   background-color: black;
   color: white;
   transform: scale(1.05);
@@ -381,15 +453,54 @@
   gap: 2rem;
   height: fit-content;
   width: 85%;
-  background-color: white;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  border-radius: .8rem;
+  background-color: whitesmoke;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 0.8rem;
   padding: 2rem;
+  animation: fbSlideUp 0.4s cubic-bezier(0.08, 0.52, 0.52, 1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profilePage_savePost_Container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, black, #333);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.profilePage_savePost_Container:hover::before {
+  transform: scaleX(1);
+}
+
+.profilePage_savePost_Container:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
 }
 
 .profilePage_savePost_title {
   font-size: 1.5rem;
   font-weight: 700;
+  color: #1c1e21;
+  position: relative;
+}
+
+.profilePage_savePost_title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, black, #65676b);
+  border-radius: 2px;
 }
 
 .savePost_header {
@@ -404,9 +515,16 @@
   flex-direction: row;
   justify-content: start;
   align-items: center;
-  border-radius: .8rem;
+  border-radius: 2rem;
   border: solid 2px black;
-  padding: 0 .25rem;
+  padding: 0.25rem 0.75rem;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.savedPost_searchBar_container:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .savedPost_searchBar_container svg {
@@ -417,11 +535,10 @@
 .savedPost_searchBar_field:focus {
   background-color: transparent;
   border: none;
-  padding: 0 .5rem;
+  padding: 0.5rem;
   outline: none;
 }
 
-/* New classes for inline styles */
 .user_info_container {
   display: flex;
   flex-direction: column;
@@ -432,12 +549,12 @@
 .user_fullname {
   font-size: 1rem;
   font-weight: 600;
-  color: #555;
+  color: #65676b;
 }
 
 .user_bio {
   font-size: 0.875rem;
-  color: #777;
+  color: #65676b;
   max-width: 300px;
 }
 
@@ -462,18 +579,40 @@
   background-color: black;
   color: white;
   border: 2px solid black;
-  border-radius: 0.5rem;
-  font-weight: 700;
+  border-radius: 2rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 150ms ease-in-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.edit_mode_btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.edit_mode_btn:hover::after {
+  width: 200px;
+  height: 200px;
 }
 
 .edit_mode_btn:hover {
   background-color: white;
   color: black;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .hidden_file_input {
@@ -490,13 +629,15 @@
 .profile_preview_container {
   padding: 1.5rem;
   border: 2px solid black;
-  border-radius: 0.5rem;
-  background-color: #f9f9f9;
+  border-radius: 0.8rem;
+  background-color: white;
+  animation: scaleIn 0.3s ease-out;
 }
 
 .profile_preview_title {
   margin-bottom: 1rem;
   font-weight: 700;
+  color: #1c1e21;
 }
 
 .profile_preview_fields {
@@ -508,13 +649,16 @@
 .profile_field_label {
   font-weight: 600;
   font-size: 0.875rem;
-  color: #666;
+  color: black;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .profile_field_value {
   margin-top: 0.25rem;
   font-size: 1rem;
   font-weight: 500;
+  color: gray;
 }
 
 .edit_form_wrapper {
@@ -527,6 +671,10 @@
 .edit_form_label {
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: gray;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem;
 }
 
 .edit_form_input {
@@ -536,6 +684,13 @@
   border-radius: 0.5rem;
   font-size: 1rem;
   outline: none;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.edit_form_input:focus {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .edit_form_textarea {
@@ -546,6 +701,13 @@
   font-size: 1rem;
   outline: none;
   resize: vertical;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.edit_form_textarea:focus {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .edit_action_buttons {
@@ -560,16 +722,38 @@
   background-color: black;
   color: white;
   border: 2px solid black;
-  border-radius: 0.5rem;
-  font-weight: 700;
+  border-radius: 2rem;
+  font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 150ms ease-in-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.update_profile_btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.update_profile_btn:hover:not(:disabled)::after {
+  width: 300px;
+  height: 300px;
 }
 
 .update_profile_btn:hover:not(:disabled) {
   background-color: white;
   color: black;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .update_profile_btn:disabled {
@@ -583,16 +767,38 @@
   background-color: white;
   color: black;
   border: 2px solid black;
-  border-radius: 0.5rem;
-  font-weight: 700;
+  border-radius: 2rem;
+  font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 150ms ease-in-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cancel_edit_btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.cancel_edit_btn:hover:not(:disabled)::after {
+  width: 300px;
+  height: 300px;
 }
 
 .cancel_edit_btn:hover:not(:disabled) {
   background-color: black;
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .cancel_edit_btn:disabled {
@@ -605,4 +811,156 @@
   flex-direction: column;
   gap: 0.75rem;
   align-items: flex-start;
+}
+
+.profilePage_post_card {
+  background-color: whitesmoke;
+  border-radius: 0.8rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fbSlideUp 0.4s cubic-bezier(0.08, 0.52, 0.52, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.profilePage_post_card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, black, #333);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.profilePage_post_card:hover::before {
+  transform: scaleX(1);
+}
+
+.profilePage_post_card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+}
+
+.profile_category_badge {
+  font-size: 0.65rem;
+  width: fit-content;
+  white-space: nowrap;
+  padding: 0.3rem 0.5rem;
+  background-color: black;
+  color: white;
+  border-radius: 2rem;
+  border: solid 2px black;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.profilePage_post_card:hover .profile_category_badge {
+  background-color: #333;
+  border-color: #333;
+}
+
+.profile_action_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  border: solid 2px black;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background-color: white;
+  color: black;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile_action_btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.profile_action_btn:hover::after {
+  width: 200px;
+  height: 200px;
+}
+
+.profile_action_btn:hover {
+  background-color: black;
+  color: white;
+  transform: scale(1.02);
+}
+
+.profile_action_btn:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 1024px) {
+  .profilePage_parent_container {
+    width: 100%;
+    left: 0;
+  }
+
+  .profilePage_container {
+    width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .profilePage_container {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  .header_profile_container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .profilePage_nav_container {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .profilePage_nav_child {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .profilePage_editProfile_Container,
+  .profilePage_savePost_Container {
+    padding: 1.5rem;
+  }
+
+  .edit_action_buttons {
+    flex-direction: column;
+  }
+
+  .profilePage_close_btn {
+    right: 1rem;
+    top: 1rem;
+  }
 }

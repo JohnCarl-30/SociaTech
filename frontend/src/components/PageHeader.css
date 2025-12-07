@@ -189,7 +189,7 @@ body {
   width: 7em;
   font-weight: 600;
   color: white;
-  background: #393E46;
+  background: black;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -325,9 +325,10 @@ body {
   flex-direction: column;
   width: auto;
   min-width: 180px;
+  min-height: 200px;
   height: auto;
   background: white;
-  
+
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -354,7 +355,7 @@ body {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.9rem;
-  
+
 }
 
 .dropDown_btn:hover {
@@ -419,7 +420,7 @@ body {
   background: #2a2e35;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   .page_header {
     background: rgba(20, 20, 30, 0.95);
   }

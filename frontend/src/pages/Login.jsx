@@ -95,14 +95,12 @@ export default function Login() {
     }
   };
 
-  // 🔹 AUTO-NAVIGATE IF USER LOGGED IN
   useEffect(() => {
     if (user) {
       navigate("/home", { replace: true });
     }
   }, [user, navigate]);
 
-  // 🔹 EMAIL LOGIN
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
 
@@ -124,7 +122,6 @@ export default function Login() {
         role: response.data.user.role,
         username: response.data.user.username,
       };
-      
 
       if (rememberMe) {
         localStorage.setItem("authToken", response.data.token);
@@ -170,7 +167,6 @@ export default function Login() {
     }
   };
 
-  // 🔹 GOOGLE SIGN-IN
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
@@ -214,28 +210,8 @@ export default function Login() {
   return (
     <>
       {loadingVerify && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              textAlign: "center",
-            }}
-          >
+        <div className="verification-overlay">
+          <div className="verification-modal">
             Verifying your email...
           </div>
         </div>
@@ -254,17 +230,8 @@ export default function Login() {
           <div className="signIn_title">Sign In</div>
 
           {showResendLink && (
-            <div
-              style={{
-                padding: "12px",
-                marginBottom: "16px",
-                background: "#fff3cd",
-                border: "1px solid #ffc107",
-                borderRadius: "4px",
-                fontSize: "14px",
-              }}
-            >
-              <p style={{ margin: "0 0 8px 0" }}>
+            <div className="alert-box">
+              <p>
                 Your email is not verified yet. Please check your inbox for the
                 verification link.
               </p>
@@ -272,15 +239,6 @@ export default function Login() {
                 type="button"
                 onClick={handleResendVerification}
                 disabled={loading}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#0066cc",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  padding: 0,
-                  fontSize: "14px",
-                }}
               >
                 Resend verification email
               </button>
@@ -309,7 +267,7 @@ export default function Login() {
                   name="user_signIn_pass"
                   id="user_signIn_pass"
                   className="password_wrapper_child"
-                  placeholder="********"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || loadingVerify}
@@ -353,7 +311,7 @@ export default function Login() {
             </button>
 
             <div className="createAcc_link">
-              Don't have an account?{" "}
+              Don't have an account?
               <a href="/signup" className="signUp_link">
                 Sign Up
               </a>

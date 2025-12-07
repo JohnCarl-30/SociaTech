@@ -1,4 +1,5 @@
 import { Image, X } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
 import "./CreatePostModal.css";
 import { useState, useEffect } from "react";
 import { createPost, saveDraft } from "../services/auth";
@@ -10,13 +11,13 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const [body, setBody] = useState("");
   const [image, setImage] = useState(null);
   const [isImage, setIsImage] = useState(false);
-   const [postVisibility, setPostVisibility] = useState("public");
+  const [postVisibility, setPostVisibility] = useState("public");
   const [userDefaultVisibility, setUserDefaultVisibility] = useState("public");
   const user = getUser();
 
   const user_id = user?.id || null;
 
- useEffect(() => {
+  useEffect(() => {
     if (isOpen && user_id) {
       fetchUserVisibility();
     }
@@ -63,15 +64,15 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
 
   const handlePost = async () => {
     if (!user_id) {
-      alert("You must be logged in to create a post.");
+      toast.error("You must be logged in to create a post.");
       return;
     }
     if (!category || !title) {
-      alert("Category and title are required.");
+      toast.error("Category and title are required.");
       return;
     }
     if (!image && !body) {
-      alert("Body or image is required.");
+      toast.error("Body or image is required.");
       return;
     }
 
@@ -88,27 +89,27 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     try {
       const data = await createPost(formData);
       if (data.success) {
-        alert("Post created successfully!");
+        toast.success("Post created successfully!");
         resetFields();
         setIsImage(false);
         onClose();
         if (onPostCreated) onPostCreated();
       } else {
-        alert("Failed to create post: " + data.error);
+        toast.error("Failed to create post: " + data.error);
       }
     } catch (err) {
       console.error("Error creating post:", err);
-      alert("Something went wrong while posting.");
+      toast.error("Something went wrong while posting.");
     }
   };
 
   const handleSaveDraft = async () => {
     if (!user_id) {
-      alert("You must be logged in to save a draft.");
+      toast.error("You must be logged in to save a draft.");
       return;
     }
     if (!category || !title) {
-      alert("Category and title are required to save a draft.");
+      toast.error("Category and title are required to save a draft.");
       return;
     }
 
@@ -129,16 +130,16 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
     try {
       const response = await saveDraft(formData);
       if (response.success) {
-        alert("Draft saved successfully!");
+        toast.success("Draft saved successfully!");
         resetFields();
         setIsImage(false);
         onClose();
       } else {
-        alert("Failed to save draft: " + response.error);
+        toast.error("Failed to save draft: " + response.error);
       }
     } catch (error) {
       console.error("Error saving draft:", error);
-      alert("Something went wrong while saving the draft.");
+      toast.error("Something went wrong while saving the draft.");
     }
   };
 
@@ -181,21 +182,21 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
               <option value="Virtual Reality"> Virtual Reality</option>
               <option value="Augmented Reality"> Augmented Reality</option>
             </select>
-            
+
           </div>
           <div className="canSee_post">
-          <select
-            className="category_dropDown"
-            value={postVisibility}
-            onChange={(e) => setPostVisibility(e.target.value)}
-          >
-            <option value="" disabled>
-              Who can see this post?
-            </option>
-            <option value="public">Public</option>
-            <option value="followers">Followers Only</option>
-          </select>
-        </div>
+            <select
+              className="category_dropDown"
+              value={postVisibility}
+              onChange={(e) => setPostVisibility(e.target.value)}
+            >
+              <option value="" disabled>
+                Who can see this post?
+              </option>
+              <option value="public">Public</option>
+              <option value="followers">Followers Only</option>
+            </select>
+          </div>
 
           <div className="create_title_field form_field_animated">
             <label className="create_field_label">Title</label>

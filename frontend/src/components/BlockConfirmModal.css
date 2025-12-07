@@ -1,3 +1,37 @@
+@keyframes fbFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fbSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .block_confirm_backdrop {
     position: fixed;
     top: 0;
@@ -9,73 +43,150 @@
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    animation: fbFadeIn 0.2s ease-out;
 }
 
 .block_confirm_modal {
-    background-color: white;
-    border-radius: 12px;
-    padding: 32px 24px;
+    background-color: whitesmoke;
+    border-radius: 0.8rem;
+    padding: 2rem;
     width: 90%;
     max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    animation: fbSlideUp 0.3s cubic-bezier(0.08, 0.52, 0.52, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.block_confirm_modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    border-radius: 2px 2px 0 0;
 }
 
 .block_confirm_icon {
     color: #ef4444;
+    animation: scaleIn 0.3s ease-out 0.1s both;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .block_confirm_title {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 1.25rem;
+    font-weight: 700;
     margin: 0;
     text-align: center;
+    color: #1c1e21;
+    animation: fbSlideUp 0.35s ease-out 0.15s both;
 }
 
 .block_confirm_message {
-    font-size: 14px;
-    color: #666;
+    font-size: 0.9rem;
+    color: #65676b;
     text-align: center;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
+    animation: fbSlideUp 0.35s ease-out 0.2s both;
 }
 
 .block_confirm_buttons {
     display: flex;
-    gap: 12px;
+    gap: 0.75rem;
     width: 100%;
-    margin-top: 8px;
+    margin-top: 0.5rem;
+    animation: fbSlideUp 0.35s ease-out 0.25s both;
 }
 
 .block_confirm_no,
 .block_confirm_yes {
     flex: 1;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 0.6rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.block_confirm_no::after,
+.block_confirm_yes::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.block_confirm_no:hover::after,
+.block_confirm_yes:hover::after {
+    width: 200px;
+    height: 200px;
 }
 
 .block_confirm_no {
-    background-color: #f0f0f0;
-    color: #333;
+    background-color: white;
+    color: black;
+    border: solid 2px black;
 }
 
 .block_confirm_no:hover {
-    background-color: #e0e0e0;
+    background-color: black;
+    color: white;
+    transform: scale(1.02);
+}
+
+.block_confirm_no:active {
+    transform: scale(0.98);
 }
 
 .block_confirm_yes {
     background-color: #ef4444;
     color: white;
+    border: solid 2px #ef4444;
 }
 
 .block_confirm_yes:hover {
-    background-color: #dc2626;
+    background-color: white;
+    color: #ef4444;
+    transform: scale(1.02);
+}
+
+.block_confirm_yes:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+    .block_confirm_modal {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .block_confirm_buttons {
+        flex-direction: column;
+    }
+
+    .block_confirm_no,
+    .block_confirm_yes {
+        width: 100%;
+    }
 }

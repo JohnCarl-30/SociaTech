@@ -3,6 +3,7 @@ import "./BlockedAccounts.css";
 import { useState, useEffect } from 'react';
 import { getUser } from "../utils/storage";
 import pfpImage from "../assets/deault_pfp.png";
+import { toast } from "react-toastify";
 
 export default function BlockedAccounts({ openModal, closeModal }) {
     const [blockedUsers, setBlockedUsers] = useState([]);
@@ -58,12 +59,12 @@ export default function BlockedAccounts({ openModal, closeModal }) {
 
     const handleUnblockUser = async (blockedUserId) => {
         if (!user_id) {
-            alert("You must be logged in to unblock users");
+            toast.error("You must be logged in to unblock users");
             return;
         }
 
         if (!blockedUserId) {
-            alert("Invalid user ID");
+            toast.error("Invalid user ID");
             return;
         }
 
@@ -90,14 +91,14 @@ export default function BlockedAccounts({ openModal, closeModal }) {
             const data = await response.json();
 
             if (data.success) {
-                alert("User unblocked successfully!");
+                toast.success("User unblocked successfully!");
                 await fetchBlockedUsers();
             } else {
-                alert(data.message || "Failed to unblock user");
+                toast.error(data.message || "Failed to unblock user");
             }
         } catch (error) {
             console.error("Error unblocking user:", error);
-            alert("An error occurred: " + error.message);
+            toast.error("An error occurred: " + error.message);
         }
     };
 

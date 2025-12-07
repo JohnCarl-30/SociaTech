@@ -1,212 +1,306 @@
-body{
+body {
     font-family: "Montserrat", sans-serif;
+    background-color: #f8f8f8;
+    color: whitesmoke;
+    margin: 0;
+    padding: 0;
 }
 
-
-.login_parent_container{
+.login_parent_container {
     display: flex;
-  min-height: 100vh; 
-  width: 100vw;
-  justify-content: center; 
-  align-items: center;
-  overflow: hidden;
-}
-.signIn_container{
-   
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    width: 20em;
-    min-height: 25em;
-    border-radius: 0.4rem;
-
-    
-    padding: .8rem;
-
-    
-    top: -15%;
-    transform: translateY(15%);
-}
-
-.system_logo_container{
-    position: fixed;
-  top: 1em;
-  left: 1em;
-  height: 3em;
-  font-weight: 700;
-  margin: 0.5rem;
-  z-index: 0;
-}
-
-.signIn_title{
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: .5rem;
-}
-
-.input_container{
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh;
+    width: 100vw;
     justify-content: center;
     align-items: center;
-   
-    gap: .2rem;
+    background-color: #f8f8f8;
+    padding: 1rem;
 }
 
+.system_logo_container {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 100;
+}
 
-.input_container .input_childContainer{
+.system_logo_container img {
+    height: 36px;
+}
+
+.signIn_container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.signIn_title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.75rem;
+    color: #1a1a1a;
+    text-align: center;
+}
+
+.input_container {
     display: flex;
     flex-direction: column;
-    width: 18em;
-    margin: .2rem;
+    gap: 1rem;
 }
 
-.input_container .input_childContainer label{
-    font-size: .7rem;
-    color: rgb(69, 69, 69);
-    margin-bottom: .1rem;
+.input_childContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
 }
 
-.input_container .input_childContainer input{
-    height: 2.5em;
-    border-radius: .4rem;
-     border: solid 2px black;
-     padding: 0 .5rem;
-}
-
-
-
-
-
-
-
-
-.input_childContainer .password_wrapper {
-  position: relative;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-    width: 100%;
-}
-
-.input_childContainer .password_wrapper_child{
-    width: 100%;
-}
-
-
-.input_childContainer .showPass_btn {
-  position: absolute;
-    top: .5rem;
-    right: .5rem;
-    border: none;
-    background-color: white;
+.input_childContainer label {
+    font-size: 0.8rem;
+    font-weight: 700;
     color: #555;
 }
 
-.showPass_btn:hover {
-  color: #000;
+.input_childContainer input {
+    height: 2.75rem;
+    padding: 0 1rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.input_childContainer .showPass_btn .eye_logo{
-     width: 1.3em;
-    height: 1.3em;
+.input_childContainer input::placeholder {
+    color: #999;
 }
 
-.forgetPass_link{
-  
-    align-self: self-end;
-    font-weight: 600;
-    text-decoration: underline;
-    color: black;
-    font-size: .6rem;
-    
-    margin-right: 1.7rem;
+.input_childContainer input:focus {
+    outline: none;
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-.rememberMe_container{
-    margin: 1rem 0 1rem 1rem;
-    font-size: .8rem;
+.password_wrapper {
+    position: relative;
+    display: flex;
     align-items: center;
-    display:flex ;
-    align-self: self-start;
 }
 
-.signIn_btn{
-    width: 21em;
-   height: 3em;
-   font-size: .85rem;
-   border-radius: .5rem;
-   border: solid 1.5px black;
-   display: flex;
-   align-items: center;
-   justify-content: center;
+.password_wrapper_child {
+    width: 100%;
+    padding-right: 2.75rem !important;
+}
+
+.showPass_btn {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.showPass_btn:hover {
+    color: #1a1a1a;
+}
+
+.eye_logo {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.forgetPass_link {
+    align-self: flex-end;
+    font-size: 0.8rem;
     font-weight: 600;
-   background-color: #212830;
-    color: white; 
+    color: black;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
-.google_signIn_btn{
-    background-color: white;
-    color: #212830;
+
+.forgetPass_link:hover {
+    color: #1a1a1a;
+    text-decoration: underline;
 }
-.signIn_btn:hover{
+
+.rememberMe_container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.rememberMe_container input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #1a1a1a;
     cursor: pointer;
 }
 
-
-
-.createAcc_link{
-    font-size: .7rem;
-    font-weight: 500;
+.rememberMe_container label {
+    cursor: pointer;
 }
-.signUp_link{
-       cursor: pointer;
+
+.signIn_btn {
+    width: 100%;
+    height: 2.875rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: black;
+    font-family: inherit;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    background: #1a1a1a;
+    color: white;
 }
 
+.signIn_btn:hover {
+    background: #333;
+}
 
-.seperator{
-     margin: .8rem 0; 
+.signIn_btn:active {
+    transform: scale(0.98);
+}
+
+.signIn_btn:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.createAcc_link {
     text-align: center;
-    position: relative;
-     
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
 }
-.seperator .or_text{
-        position: relative;
-    z-index: 1;
-    background-color: white;
-    padding: 0 .6rem .1rem; 
-    font-size: .7rem;
-    font-weight: 500;
-    display: inline-block; 
+
+.signUp_link {
+    color: #1a1a1a;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
 }
-.seperator .or_text::after,
-.seperator .or_text::before{
+
+.signUp_link:hover {
+    text-decoration: underline;
+}
+
+.seperator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.5rem 0;
+}
+
+.seperator::before,
+.seperator::after {
     content: "";
-    position: absolute;
-    top: 50%;
-    width: 120px; 
+    flex: 1;
     height: 1px;
-    background-color: #605f5f; 
-    z-index: 0;
+    background: #e0e0e0;
 }
 
-.seperator .or_text::after{
-  right: 0;
-    transform: translateX(100%); 
+.or_text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #888;
+    text-transform: lowercase;
 }
 
-.seperator .or_text::before{
-    left: 0;
-    transform: translateX(-100%); 
+.google_signIn_btn {
+    background: white;
+    color: #1a1a1a;
+    border: 1px solid #ddd;
 }
 
-.google_signIn{
+.google_signIn_btn:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.google_logo {
+    height: 1.125rem;
+    width: 1.125rem;
+}
+
+.verification-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.verification-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    color: #1a1a1a;
+}
+
+.alert-box {
+    padding: 1rem;
     margin-bottom: 1rem;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #555;
 }
 
-.google_logo{
-    height: 15px;
-    width: 15px;
-    margin-right: 10px;
+.alert-box p {
+    margin: 0 0 0.5rem 0;
 }
 
+.alert-box button {
+    background: transparent;
+    border: none;
+    color: #1a1a1a;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0;
+}
 
+.alert-box button:hover {
+    color: #333;
+}
+
+@media (max-width: 480px) {
+    .signIn_container {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+
+    .signIn_title {
+        font-size: 1.5rem;
+    }
+
+    .system_logo_container {
+        padding: 0 1rem;
+    }
+}

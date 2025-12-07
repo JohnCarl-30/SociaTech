@@ -15,7 +15,7 @@ import TermsofService from "../components/TermsofService.jsx";
 import PrivacyPolicies from "../components/PrivacyPolicies.jsx";
 
 export default function SignUp() {
-  
+
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -31,7 +31,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
-const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
+  const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms modal
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); // New state for Privacy modal
   const navigate = useNavigate();
 
@@ -408,7 +408,7 @@ const [isTermsOpen, setIsTermsOpen] = useState(false); // New state for Terms mo
               />
               <label htmlFor="term_checkbox" className="term_checkbox_text">
                 I agree to the{" "}
-                 <span className="term_link" onClick={handleTermsClick}>
+                <span className="term_link" onClick={handleTermsClick}>
                   Terms of Service
                 </span>{" "}
                 and{" "}

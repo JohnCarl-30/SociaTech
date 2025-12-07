@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { useCycle } from "framer-motion";
 import ProfilePage from "../components/ProfilePage";
 import Settings from "../components/Settings";
-import OtherUserProfile from "../components/otherUserProfile.jsx";
+import OtherUserProfile from "../components/OtherUserProfile.jsx";
 import { getUser } from "../utils/storage.js";
+import { ToastContainer, toast } from "react-toastify";
 
 import HelpPage from "../components/HelpPage.jsx";
 import './AdminPanel.css';
@@ -136,12 +137,12 @@ export default function AdminPanel(){
       const data = await res.json();
 
       if(data.success){
-        alert(data.message);
+        toast.success(data.message);
       }
 
     }catch(err){
          console.error("Error creating post:", err);
-      alert("Something went wrong while reporting. Please try again.");
+      toast.error("Something went wrong while reporting. Please try again.");
     }
         
 
@@ -213,7 +214,7 @@ export default function AdminPanel(){
     const fetchComment=async(contentId)=>{
         
         if(!contentId){
-            alert('Preview Failed! Missing contentId');
+            toast.error('Preview Failed! Missing contentId');
         }
          const formData = new FormData();
          formData.append('contentId',contentId);
@@ -230,16 +231,16 @@ export default function AdminPanel(){
                         
                         
                     }else{
-                        alert(data.message);
+                        toast.error(data.message);
                     }
          }  catch(err){
             console.error("Error fetching comments comment:", err);
-            alert("Something went wrong. Please try again.");
+            toast.error("Something went wrong. Please try again.");
          }  
     }
     const fetchPost=async(contentId)=>{
         if(!contentId){
-            alert('Preview Failed! Missing contentId');
+            toast.error('Preview Failed! Missing contentId');
         }
         const formData = new FormData();
         formData.append('contentId',contentId);
@@ -263,14 +264,14 @@ export default function AdminPanel(){
             setPostType('image');
         }
     } else {
-        alert("No content found! Post already deleted!");
+        toast.error("No content found! Post already deleted!");
     }
 }
 
 
         }catch(err){
          console.error("Error creating post:", err);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
         }
     }
 

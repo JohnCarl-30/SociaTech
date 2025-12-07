@@ -9,129 +9,208 @@
   align-items: start;
   background-color: white;
   z-index: 7777;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .settings_modal_container {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  position: relative;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 0.8rem;
   padding: 2rem;
-  gap: 1.5rem;
+  width: 50em;
+  height: 70vh;
+  margin: 2.5rem auto 0 auto;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  animation: slideUp 0.4s ease-out;
   display: flex;
   flex-direction: column;
-  margin: 2.5rem auto 0 auto;
-  width: 40em;
-  height: auto;
-  border-radius: 0.8rem;
-  background-color: white;
 }
 
 .settings_modal_title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin-bottom: 0;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .settings_child_container {
-  font-weight: 500;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.settings_child_container:last-of-type {
+  margin-bottom: 0;
 }
 
 .subSetting_title {
+  font-size: 0.75rem;
   font-weight: 700;
-  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
   margin-bottom: 0.75rem;
-  color: #1a1a1a;
+  padding-left: 0.25rem;
 }
 
 .subSetting_container {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0.75rem;
-  border-bottom: 1px solid #e5e5e5;
-  transition: background-color 150ms ease-in-out;
+  padding: 1rem 1.25rem;
+  background: white;
+  border-radius: 0.875rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .subSetting_container:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .subSetting_container:hover {
-  background-color: #f8f8f8;
-  cursor: pointer;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.subSetting_container:active {
+  transform: translateX(2px) scale(0.99);
 }
 
 .subSetting_child_container {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
-  color: #333;
+  gap: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.subSetting_child_container svg {
+  width: 20px;
+  height: 20px;
+  color: #475569;
+  flex-shrink: 0;
 }
 
 .subSetting_container button {
-  background-color: transparent;
-  border: none;
-  transition: all 150ms ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
-  color: #666;
-}
-
-.subSetting_container button:hover {
-  cursor: pointer;
-  color: #000;
-}
-
-.settings_close_btn {
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  height: 2.5rem;
-  width: 2.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  color: #94a3b8;
   padding: 0;
-  background-color: black;
-  color: white;
-  outline: none;
-  transition: all 150ms ease-in-out;
-}
-
-.settings_close_btn:hover {
-  background-color: white;
-  color: black;
   cursor: pointer;
-  border: solid 2px black;
+  transition: all 0.2s ease;
 }
 
-.crossSvg {
-  width: 1.25rem;
-  height: 1.25rem;
+.subSetting_container:hover button {
+  color: #1a1a2e;
+  transform: translateX(2px);
 }
 
 .toggleBody {
-  width: 3em;
-  height: 1.5em;
-  border-radius: 20px;
+  width: 52px;
+  height: 28px;
+  border-radius: 100px;
   cursor: pointer;
   display: flex;
   align-items: center;
   padding: 3px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .toggleCircle {
-  width: 1.5em;
-  height: 1.5em;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background-color: white;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.settings_close_btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  border: none;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background: #f1f5f9;
+  color: #475569;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings_close_btn:hover {
+  background: #1a1a2e;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.settings_close_btn:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+.crossSvg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 640px) {
+  .settings_modal_container {
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+    margin: 0.75rem;
+  }
+
+  .settings_modal_title {
+    font-size: 1.5rem;
+  }
+
+  .subSetting_container {
+    padding: 0.875rem 1rem;
+  }
 }

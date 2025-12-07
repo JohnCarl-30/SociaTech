@@ -1,0 +1,473 @@
+/* ================================================
+   Dashboard Button Styles - Add these to ProfilePage.css
+   ================================================ */
+.dashBoard_container {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.dashBoard_container:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+.dashBoard_container:active {
+    transform: scale(0.98);
+}
+
+/* ================================================
+   Follower Modal Styles
+   ================================================ */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalSlideDown {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+}
+
+@keyframes itemSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.follower-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+.follower-modal-overlay.closing {
+    animation: modalFadeOut 0.2s ease-out forwards;
+}
+
+.follower-modal {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90vw;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.follower-modal.closing {
+    animation: modalSlideDown 0.2s ease-out forwards;
+}
+
+.follower-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #dbdbdb;
+    position: relative;
+}
+
+.follower-modal-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #262626;
+    margin: 0;
+}
+
+.follower-modal-close {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #262626;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.follower-modal-close:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.follower-modal-close:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.follower-modal-search {
+    padding: 8px 16px;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.follower-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #efefef;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.follower-search-input:focus {
+    background-color: #e5e5e5;
+    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.2);
+}
+
+.follower-search-input::placeholder {
+    color: #8e8e8e;
+}
+
+.follower-modal-list {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 200px;
+    max-height: 400px;
+    padding: 4px 0;
+}
+
+.follower-modal-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.follower-modal-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.follower-modal-list::-webkit-scrollbar-thumb {
+    background: #dbdbdb;
+    border-radius: 3px;
+}
+
+.follower-modal-list::-webkit-scrollbar-thumb:hover {
+    background: #c7c7c7;
+}
+
+.follower-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #8e8e8e;
+    font-size: 14px;
+}
+
+.follower-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    transition: background-color 0.15s ease;
+    animation: itemSlideIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.follower-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.follower-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.follower-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.follower-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.follower-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.follower-item:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.follower-item:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.follower-item:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.follower-item:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.follower-item:nth-child(10) {
+    animation-delay: 0.5s;
+}
+
+.follower-item:hover {
+    background-color: #fafafa;
+}
+
+.follower-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.follower-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.follower-item:hover .follower-avatar {
+    transform: scale(1.05);
+}
+
+.follower-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.follower-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.follower-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.follower-username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #262626;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.follower-name {
+    font-size: 14px;
+    color: #8e8e8e;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.follower-remove-btn {
+    background-color: #efefef;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #262626;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.follower-remove-btn:hover {
+    background-color: #dbdbdb;
+    transform: scale(1.02);
+}
+
+.follower-remove-btn:active {
+    transform: scale(0.98);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .follower-modal {
+        background-color: #262626;
+    }
+
+    .follower-modal-header {
+        border-bottom-color: #363636;
+    }
+
+    .follower-modal-header h2 {
+        color: #f5f5f5;
+    }
+
+    .follower-modal-close {
+        color: #f5f5f5;
+    }
+
+    .follower-modal-close:hover {
+        background-color: #363636;
+    }
+
+    .follower-modal-search {
+        border-bottom-color: #363636;
+    }
+
+    .follower-search-input {
+        background-color: #363636;
+        color: #f5f5f5;
+    }
+
+    .follower-search-input:focus {
+        background-color: #404040;
+    }
+
+    .follower-search-input::placeholder {
+        color: #a8a8a8;
+    }
+
+    .follower-item:hover {
+        background-color: #303030;
+    }
+
+    .follower-username {
+        color: #f5f5f5;
+    }
+
+    .follower-name {
+        color: #a8a8a8;
+    }
+
+    .follower-remove-btn {
+        background-color: #363636;
+        color: #f5f5f5;
+    }
+
+    .follower-remove-btn:hover {
+        background-color: #404040;
+    }
+
+    .follower-empty-state {
+        color: #a8a8a8;
+    }
+
+    .follower-modal-list::-webkit-scrollbar-thumb {
+        background: #404040;
+    }
+
+    .follower-modal-list::-webkit-scrollbar-thumb:hover {
+        background: #4a4a4a;
+    }
+
+    .dashBoard_container:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .follower-modal {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+
+    .follower-modal-header {
+        padding: 16px;
+    }
+}
+
+.follower-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 12px;
+}
+
+.follower-loading-state p {
+    color: #8e8e8e;
+    font-size: 14px;
+}
+
+.follower-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #dbdbdb;
+    border-top-color: #262626;
+    border-radius: 50%;
+    animation: follower-spin 0.8s linear infinite;
+}
+
+@keyframes follower-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
