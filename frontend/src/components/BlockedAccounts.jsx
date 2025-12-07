@@ -2,7 +2,7 @@ import { X, UserX } from 'lucide-react';
 import "./BlockedAccounts.css";
 import { useState, useEffect } from 'react';
 import { getUser } from "../utils/storage";
-import pfpImage from "../assets/deault_pfp.png";
+import pfpImage from "/deault_pfp.png";
 import { toast } from "react-toastify";
 
 export default function BlockedAccounts({ openModal, closeModal }) {

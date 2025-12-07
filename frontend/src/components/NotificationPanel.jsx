@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, Check, X } from "lucide-react";
-import defaultPfp from "../assets/deault_pfp.png";
+import defaultPfp from "/deault_pfp.png";
 import "./NotificationPanel.css";
 
 export default function NotificationPanel({

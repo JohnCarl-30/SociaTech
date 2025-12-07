@@ -18,15 +18,13 @@ import {
   UserX,
 } from "lucide-react";
 
-import { useCycle } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
-import moreBtn from "../assets/moreBtn.png";
-import { getUser } from "../utils/storage.js";
-import pfpImage from "../assets/deault_pfp.png";
 
-import Settings from "../components/Settings.jsx";
-import TrippleDots from "../assets/moreBtn.png";
-import HelpPage from "../components/HelpPage.jsx";
+import { useEffect, useState, useRef } from "react";
+import moreBtn from "/moreBtn.png";
+import { getUser } from "../utils/storage.js";
+import pfpImage from "/deault_pfp.png";
+
+
 
 import {
   notifyPostComment,

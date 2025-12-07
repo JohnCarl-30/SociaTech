@@ -14,8 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CreatePostModal from "./CreatePostModal";
 import { useAuth } from "../hooks/useAuth.js";
-import logoImage from "../assets/SociaTech_logo_blackbg.png";
-import defaultPfp from "../assets/deault_pfp.png";
+import logoImage from "/SociaTech_logo_blackbg.png";
+import defaultPfp from "/deault_pfp.png";
 import { useState, useEffect, useRef } from "react";
 import { getUser } from "../utils/storage";
 

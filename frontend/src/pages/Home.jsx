@@ -26,12 +26,12 @@ import {
 import "./Home.css";
 import { useCycle, motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
-import moreBtn from "../assets/moreBtn.png";
+import moreBtn from "/moreBtn.png";
 import { getUser } from "../utils/storage.js";
-import pfpImage from "../assets/deault_pfp.png";
+import pfpImage from "/deault_pfp.png";
 
 import Settings from "../components/Settings.jsx";
-import TrippleDots from "../assets/moreBtn.png";
+import TrippleDots from "/moreBtn.png";
 import HelpPage from "../components/HelpPage.jsx";
 
 import NotificationPanel from "../components/NotificationPanel.jsx";

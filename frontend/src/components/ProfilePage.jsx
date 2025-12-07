@@ -23,8 +23,8 @@ import {
   Globe,
   Users
 } from "lucide-react";
-import pfpImage from "../assets/deault_pfp.png";
-import moreBtn from "../assets/moreBtn.png";
+import pfpImage from "/deault_pfp.png";
+import moreBtn from "/moreBtn.png";
 import { useState, useEffect, useRef } from "react";
 import { getUser } from "../utils/storage";
 

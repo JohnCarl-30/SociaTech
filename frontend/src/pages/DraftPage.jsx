@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { useCycle } from "framer-motion";
 import { getUser } from "../utils/storage.js";
 import EditDraftModal from '../components/EditDraftModal';
-import defaultPfp from '../assets/deault_pfp.png';
+import defaultPfp from '/deault_pfp.png';
 import { ToastContainer, toast } from "react-toastify";
 export default function DraftPage() {
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);

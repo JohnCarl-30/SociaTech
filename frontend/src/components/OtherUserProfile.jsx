@@ -19,10 +19,10 @@ import {
   Trash2,
   UserX,
 } from "lucide-react";
-import TrippleDots from "../assets/moreBtn.png";
-import pfpImage from "../assets/deault_pfp.png";
-import moreBtn from "../assets/moreBtn.png";
-import { useRef } from "react";
+import TrippleDots from "/moreBtn.png";
+import pfpImage from "/deault_pfp.png";
+import moreBtn from "/moreBtn.png";
+
 import { toast } from 'react-toastify';
 
 import {
