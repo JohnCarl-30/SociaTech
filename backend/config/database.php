@@ -12,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 class Database {
-    private $host = "localhost";
-    private $db_name = "sociatech_db";
+    private $host = "mysql.railway.internal";
+    private $db_name = "railway";
     private $username = "root";
-    private $password = ""; 
+    private $password = "eLzZvpPsbdutnIRhrbDVQzJktpNnNcMm"; 
     public $conn;
 
     public function getConnection() {
