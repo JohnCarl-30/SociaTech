@@ -1,0 +1,62 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+require_once '../config/database.php';
+
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+
+    // Get user_id from GET parameter (not POST)
+    $user_id = $_GET['user_id'] ?? null;
+
+    if (!$user_id) {
+        echo json_encode([
+            "success" => false, 
+            "message" => "Missing user_id"
+        ]);
+        exit;
+    }
+
+    // Prepare and execute query
+    $stmt = $db->prepare("
+        SELECT user_id, username, fullname, bio, profile_image 
+        FROM users 
+        WHERE user_id = ?
+    ");
+
+    $stmt->execute([$user_id]);
+    $otherUserInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($otherUserInfo) {
+        echo json_encode([
+            'success' => true, 
+            'otherUserInfo' => $otherUserInfo
+        ]);
+    } else {
+        echo json_encode([
+            "success" => false,
+            "message" => "User not found"
+        ]);
+    }
+
+} catch (PDOException $e) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Database error: " . $e->getMessage()
+    ]);
+}
+?>
