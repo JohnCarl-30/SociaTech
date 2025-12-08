@@ -1,0 +1,27 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Allow direct access to existing files and directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Redirect all other requests to index.php
+    # RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Set default files
+DirectoryIndex index.php index.html
+
+# Enable error display (remove in production)
+php_flag display_errors On
+```
