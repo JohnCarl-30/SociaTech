@@ -1,0 +1,10 @@
+
+.env
+.git
+.gitignore
+vendor/
+node_modules/
+*.log
+.DS_Store
+uploads/*
+!uploads/.gitkeep
