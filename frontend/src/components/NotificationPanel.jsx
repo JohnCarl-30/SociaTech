@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, Check, X } from "lucide-react";
-import defaultPfp from "/deault_pfp.png";
+import defaultPfp from "../assets/deault_pfp.png";
 import "./NotificationPanel.css";
 
 export default function NotificationPanel({
@@ -94,16 +94,17 @@ export default function NotificationPanel({
     // Close the notification panel first
     onClose();
 
-    // Navigate to the post
-    if (notif.post_id && onNotificationClick) {
+    // ✅ Pass the full notification object with related_post_id and related_comment_id
+    if (onNotificationClick) {
       setTimeout(() => {
-        onNotificationClick(notif.post_id);
+        onNotificationClick({
+          related_post_id: notif.related_post_id,
+          related_comment_id: notif.related_comment_id,
+          type: notif.type,
+        });
       }, 100);
     } else {
-      console.warn("Missing post_id or onNotificationClick handler", {
-        post_id: notif.post_id,
-        hasHandler: !!onNotificationClick,
-      });
+      console.warn("Missing onNotificationClick handler");
     }
   };
 

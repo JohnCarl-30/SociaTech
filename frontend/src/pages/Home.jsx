@@ -39,7 +39,9 @@ import NotificationPanel from "../components/NotificationPanel.jsx";
 import {
   notifyPostComment,
   notifyPostUpvote,
+  notifyPostDownvote,
   notifyCommentUpvote,
+  notifyCommentDownvote,
 } from "../services/notificationHelper.js";
 import OtherUserProfile from "../components/OtherUserProfile.jsx";
 import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
@@ -67,10 +69,7 @@ export default function Homepage() {
   const [commentText, setCommentText] = useState("");
   const [commentImage, setCommentImage] = useState(null);
 
-
   const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
-
-
 
   const [commentSortOption, setCommentSortOption] = useState("newest");
 
@@ -81,7 +80,7 @@ export default function Homepage() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedOtherUser, setSelectedOtherUser] = useState(null);
   const [otherUserProfile, setOtherUserProfile] = useState(null);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState("");
 
   const [otherUserPosts, setOtherUserPosts] = useState([]);
   const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
@@ -150,7 +149,7 @@ export default function Homepage() {
       );
 
       if (!response.ok) {
-        console.error('HTTP error fetching blocked users:', response.status);
+        console.error("HTTP error fetching blocked users:", response.status);
         setBlockedUserIds([]);
         return;
       }
@@ -181,9 +180,6 @@ export default function Homepage() {
       fetchBlockedUsers();
     }
   }, [user_id]);
-
-
-
 
   const handleEditButtonClick = (post) => {
     setSelectedPost(post);
@@ -233,7 +229,6 @@ export default function Homepage() {
     setOpenMorePost(null);
     setComments([]);
     setCommentSortOption("newest");
-
   };
 
   const fetchOtherUserProfile = async (userId) => {
@@ -288,10 +283,6 @@ export default function Homepage() {
     }
   };
 
-
-
-
-
   useEffect(() => {
     let intervalId;
 
@@ -318,7 +309,6 @@ export default function Homepage() {
     selectedOtherUser?.user_id,
     otherUserProfile?.user_id,
   ]);
-
 
   useEffect(() => {
     const handleFocus = () => {
@@ -349,13 +339,11 @@ export default function Homepage() {
   };
 
   const handleUsernameClick = async (userId, userData) => {
-
     //if userId is same as the user logedin, open profilepage instead
     if (userId === user_id) {
       openProfilePage();
       return;
     }
-
 
     setIsLoadingOtherUserData(true);
     setSelectedOtherUser(userData);
@@ -382,8 +370,9 @@ export default function Homepage() {
   };
   const filteredPosts = (() => {
     let filtered = posts;
-    filtered = filtered.filter(post => !blockedUserIds.includes(post.user_id));
-
+    filtered = filtered.filter(
+      (post) => !blockedUserIds.includes(post.user_id)
+    );
 
     if (selectedCategory !== "All") {
       filtered = filtered.filter(
@@ -402,34 +391,29 @@ export default function Homepage() {
     return filtered;
   })();
 
-
-
   const closeAllModals = () => {
     setIsProfilePageOpen(false);
     setIsDropDownOpen(false);
     setIsSettingOpen(false);
     setOpenHelpPage(false);
-
   };
-
 
   useEffect(() => {
     const fetchSavedPostIds = async () => {
       if (!user_id || posts.length === 0) return;
 
       try {
-        const postIds = posts.map(p => p.post_id);
-
+        const postIds = posts.map((p) => p.post_id);
 
         const res = await fetch(
-          'http://localhost/SociaTech/backend/auth/checkSavedPosts.php',
+          "http://localhost/SociaTech/backend/auth/checkSavedPosts.php",
           {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               user_id: user_id,
-              post_ids: postIds
-            })
+              post_ids: postIds,
+            }),
           }
         );
 
@@ -438,7 +422,7 @@ export default function Homepage() {
           setSavedPostIds(new Set(data.saved_post_ids));
         }
       } catch (err) {
-        console.error('Error fetching saved posts:', err);
+        console.error("Error fetching saved posts:", err);
       }
     };
 
@@ -447,20 +431,20 @@ export default function Homepage() {
 
   const handleSavePost = async (postId) => {
     if (!user_id) {
-      toast.error('You must be logged in to save posts');
+      toast.error("You must be logged in to save posts");
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append('user_id', user_id);
-      formData.append('post_id', postId);
+      formData.append("user_id", user_id);
+      formData.append("post_id", postId);
 
       const res = await fetch(
-        'http://localhost/SociaTech/backend/auth/handleSavedPost.php',
+        "http://localhost/SociaTech/backend/auth/handleSavedPost.php",
         {
-          method: 'POST',
-          body: formData
+          method: "POST",
+          body: formData,
         }
       );
 
@@ -468,14 +452,14 @@ export default function Homepage() {
 
       if (data.success) {
         // Update local state
-        setSavedPostIds(prev => {
+        setSavedPostIds((prev) => {
           const newSet = new Set(prev);
-          if (data.action === 'saved') {
+          if (data.action === "saved") {
             newSet.add(postId);
-            toast.success('Post saved successfully!');
+            toast.success("Post saved successfully!");
           } else {
             newSet.delete(postId);
-            toast.error('Post unsaved successfully!');
+            toast.error("Post unsaved successfully!");
           }
           return newSet;
         });
@@ -483,11 +467,11 @@ export default function Homepage() {
         setOpenMorePost(null); // Close dropdown
         setOpenMoreComment(null); // Close comment modal dropdown if open
       } else {
-        toast.error(data.message || 'Failed to save/unsave post');
+        toast.error(data.message || "Failed to save/unsave post");
       }
     } catch (err) {
-      console.error('Error saving post:', err);
-      toast.error('An error occurred while saving the post');
+      console.error("Error saving post:", err);
+      toast.error("An error occurred while saving the post");
     }
   };
 
@@ -495,28 +479,68 @@ export default function Homepage() {
     fetchPost();
   }, [closeOtherUserProfile]);
 
+  // Replace your handleNotificationPostClick function in Homepage.jsx with this:
 
-
-
-
-  const handleNotificationPostClick = async (postId) => {
+  const handleNotificationPostClick = async (notification) => {
+    console.log("Notification clicked:", notification);
     setIsNotificationPanelOpen(false);
 
-    const postElement = postRefs.current[postId];
-    if (postElement) {
-      postElement.scrollIntoView({ behavior: "smooth", block: "center" });
-      setHighlightedPostId(postId);
-      setTimeout(() => setHighlightedPostId(null), 3000);
-    } else {
-      setSelectedCategory("All");
-      setTimeout(() => {
-        const element = postRefs.current[postId];
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-          setHighlightedPostId(postId);
-          setTimeout(() => setHighlightedPostId(null), 3000);
-        }
-      }, 100);
+    const postId = notification.related_post_id;
+    const commentId = notification.related_comment_id;
+
+    // If there's a comment ID, open the comment modal and scroll to comment
+    if (commentId && postId) {
+      const post = posts.find((p) => p.post_id === postId);
+      if (post) {
+        setSelectedPost(post);
+        setIsCommentModalOpen(true);
+        setComments([]);
+        setCommentSortOption("newest");
+
+        // Fetch comments first
+        await fetchComments(post.post_id, "newest");
+
+        // Wait longer for DOM to fully render, then scroll
+        setTimeout(() => {
+          const commentElement = document.getElementById(
+            `comment-${commentId}`
+          );
+          if (commentElement) {
+            commentElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+
+            // Add highlight effect
+            commentElement.classList.add("highlighted-comment");
+            setTimeout(
+              () => commentElement.classList.remove("highlighted-comment"),
+              3000
+            );
+          } else {
+            console.warn(`Comment element not found: comment-${commentId}`);
+          }
+        }, 800); // Increased delay to 800ms
+      }
+    } else if (postId) {
+      // Regular post notification - scroll to post in feed
+      const postElement = postRefs.current[postId];
+      if (postElement) {
+        postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedPostId(postId);
+        setTimeout(() => setHighlightedPostId(null), 3000);
+      } else {
+        // If post not visible, reset category and try again
+        setSelectedCategory("All");
+        setTimeout(() => {
+          const element = postRefs.current[postId];
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+            setHighlightedPostId(postId);
+            setTimeout(() => setHighlightedPostId(null), 3000);
+          }
+        }, 100);
+      }
     }
   };
 
@@ -541,12 +565,9 @@ export default function Homepage() {
     if (fileInput) fileInput.value = "";
   };
 
-
-
   const toggleMorePost = (post_id) => {
     setOpenMorePost((prev) => (prev === post_id ? null : post_id));
   };
-
 
   const fetchUserVotes = async (userId) => {
     if (!userId) return {};
@@ -559,9 +580,9 @@ export default function Homepage() {
 
       if (data.success) {
         const voteObj = {};
-        data.votes.forEach(vote => {
+        data.votes.forEach((vote) => {
           // vote_type: 1 = up, 0 = down
-          voteObj[vote.post_id] = vote.vote_type === 1 ? 'up' : 'down';
+          voteObj[vote.post_id] = vote.vote_type === 1 ? "up" : "down";
         });
         return voteObj;
       }
@@ -585,7 +606,7 @@ export default function Homepage() {
         // Initialize vote tallies from fetched posts
         const upObj = {};
         const downObj = {};
-        data.posts.forEach(post => {
+        data.posts.forEach((post) => {
           upObj[post.post_id] = post.up_tally_post || 0;
           downObj[post.post_id] = post.down_tally_post || 0;
         });
@@ -613,41 +634,33 @@ export default function Homepage() {
     }
 
     const currentVote = voteState[postId];
-
-    // Determine new vote type
-    // If clicking same button, remove vote. If clicking different button, switch vote.
     const newVoteType = currentVote === type ? null : type;
 
-    // Store original values for rollback
     const originalUpTally = upTally[postId];
     const originalDownTally = downTally[postId];
     const originalVoteState = currentVote;
 
-    // Calculate what the new tallies should be
     let newUpTally = originalUpTally;
     let newDownTally = originalDownTally;
 
-    // Remove old vote effect
     if (currentVote === "up") {
       newUpTally = newUpTally - 1;
     } else if (currentVote === "down") {
       newDownTally = newDownTally - 1;
     }
 
-    // Add new vote effect
     if (newVoteType === "up") {
       newUpTally = newUpTally + 1;
     } else if (newVoteType === "down") {
       newDownTally = newDownTally + 1;
     }
 
-    // Optimistic UI update
     setVoteState((prev) => ({ ...prev, [postId]: newVoteType }));
     setUpTally((prev) => ({ ...prev, [postId]: newUpTally }));
     setDownTally((prev) => ({ ...prev, [postId]: newDownTally }));
 
-    // Prepare vote type for backend (1=up, 0=down, null=remove)
-    let voteTypeToBackend = newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
+    let voteTypeToBackend =
+      newVoteType === "up" ? 1 : newVoteType === "down" ? 0 : null;
 
     try {
       const res = await fetch(
@@ -666,7 +679,6 @@ export default function Homepage() {
       const data = await res.json();
 
       if (data.success) {
-        // Fetch updated tallies from the backend to ensure accuracy
         const postRes = await fetch(
           `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
         );
@@ -682,25 +694,34 @@ export default function Homepage() {
             [postId]: postData.post.down_tally_post,
           }));
 
-          // Update the post in the posts array too
           setPosts((prev) =>
-            prev.map(p =>
+            prev.map((p) =>
               p.post_id === postId
-                ? { ...p, up_tally_post: postData.post.up_tally_post, down_tally_post: postData.post.down_tally_post }
+                ? {
+                    ...p,
+                    up_tally_post: postData.post.up_tally_post,
+                    down_tally_post: postData.post.down_tally_post,
+                  }
                 : p
             )
           );
         }
 
-        // Create notification for upvote
-        if (newVoteType === "up") {
-          const post = posts.find((p) => p.post_id === postId);
-          if (post && post.user_id !== userId) {
+        // ✅ Create notifications for both upvote and downvote
+        const post = posts.find((p) => p.post_id === postId);
+        if (post && post.user_id !== userId) {
+          if (newVoteType === "up") {
             await notifyPostUpvote(post.user_id, userId, user.username, postId);
+          } else if (newVoteType === "down") {
+            await notifyPostDownvote(
+              post.user_id,
+              userId,
+              user.username,
+              postId
+            );
           }
         }
       } else {
-        // Revert UI changes if backend fails
         console.log("Vote failed:", data.message);
         setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
         setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
@@ -709,14 +730,12 @@ export default function Homepage() {
       }
     } catch (err) {
       console.log("Error sending vote:", err);
-      // Revert UI changes on error
       setVoteState((prev) => ({ ...prev, [postId]: originalVoteState }));
       setUpTally((prev) => ({ ...prev, [postId]: originalUpTally }));
       setDownTally((prev) => ({ ...prev, [postId]: originalDownTally }));
       toast.error("Error voting. Please check your connection.");
     }
   };
-
   // REPORT HANDLER
   const setReportData = (type, reportedBy, reportedUID, contentId) => {
     setReportType(type);
@@ -735,9 +754,7 @@ export default function Homepage() {
     setIsCommentModalOpen(true);
     setComments([]);
     setCommentSortOption("newest");
-
   };
-
 
   const closeComments = () => {
     setSelectedPost(null);
@@ -813,7 +830,7 @@ export default function Homepage() {
 
       if (data.success) {
         toast.success("User blocked successfully!");
-        setBlockedUserIds(prev => [...prev, userToBlock.userId]);
+        setBlockedUserIds((prev) => [...prev, userToBlock.userId]);
         setIsBlockConfirmOpen(false);
         setUserToBlock(null);
 
@@ -847,7 +864,6 @@ export default function Homepage() {
           onUserClick={handleUserClick}
           onPostClick={handlePostClick}
           onClearSearch={clearSearch}
-
         />
         <NotificationPanel
           isOpen={isNotificationPanelOpen}
@@ -865,9 +881,7 @@ export default function Homepage() {
             <ProfilePage
               style={isProfilePageOpen ? "flex" : "none"}
               closeProfilePage={closeProfilePage}
-
             />
-
 
             <HelpPage
               openPage={openHelpPage}
@@ -890,8 +904,13 @@ export default function Homepage() {
               ) : (
                 filteredPosts.map((post, index) => (
                   <motion.div
-                    className="post_card"
+                    className={`post_card ${
+                      highlightedPostId === post.post_id
+                        ? "highlighted-post"
+                        : ""
+                    }`}
                     key={post.post_id}
+                    ref={(el) => (postRefs.current[post.post_id] = el)} // ← Add this line
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.3 }}
@@ -958,16 +977,29 @@ export default function Homepage() {
                                 </div>
                               </>
                             )}
-                            {post.user_id !== user_id && (<div className="dropdown_item" onClick={(e) => {
-                              e.stopPropagation();
-                              handleSavePost(post.post_id);
-                            }}>
-                              <Bookmark
-                                size={18}
-                                fill={savedPostIds.has(post.post_id) ? "currentColor" : "none"}
-                              />
-                              <span>{savedPostIds.has(post.post_id) ? "Unsave" : "Save"}</span>
-                            </div>)}
+                            {post.user_id !== user_id && (
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSavePost(post.post_id);
+                                }}
+                              >
+                                <Bookmark
+                                  size={18}
+                                  fill={
+                                    savedPostIds.has(post.post_id)
+                                      ? "currentColor"
+                                      : "none"
+                                  }
+                                />
+                                <span>
+                                  {savedPostIds.has(post.post_id)
+                                    ? "Unsave"
+                                    : "Save"}
+                                </span>
+                              </div>
+                            )}
                             {post.user_id !== user_id && (
                               <div
                                 className="dropdown_item"
@@ -986,16 +1018,18 @@ export default function Homepage() {
                                 <span>Report</span>
                               </div>
                             )}
-                            {post.user_id !== user_id && (<div
-                              className="dropdown_item"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBlockUser(post.user_id, post.username);
-                              }}
-                            >
-                              <UserX size={18} />
-                              <span>Block User</span>
-                            </div>)}
+                            {post.user_id !== user_id && (
+                              <div
+                                className="dropdown_item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleBlockUser(post.user_id, post.username);
+                                }}
+                              >
+                                <UserX size={18} />
+                                <span>Block User</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1024,28 +1058,48 @@ export default function Homepage() {
                         Comment
                       </button>
                       <button
-                        className={voteState[post.post_id] === 'up' ? 'up_vote_btn active' : 'up_vote_btn'}
-                        onClick={() => handleToggleVote(user_id, post.post_id, "up")}
+                        className={
+                          voteState[post.post_id] === "up"
+                            ? "up_vote_btn active"
+                            : "up_vote_btn"
+                        }
+                        onClick={() =>
+                          handleToggleVote(user_id, post.post_id, "up")
+                        }
                       >
-                        <ArrowBigUp fill={voteState[post.post_id] === 'up' ? 'currentColor' : 'none'} />
+                        <ArrowBigUp
+                          fill={
+                            voteState[post.post_id] === "up"
+                              ? "currentColor"
+                              : "none"
+                          }
+                        />
                         {upTally[post.post_id] ?? post.up_tally_post}
                       </button>
 
                       <button
-                        className={voteState[post.post_id] === 'down' ? 'down_vote_btn active' : 'down_vote_btn'}
-                        onClick={() => handleToggleVote(user_id, post.post_id, "down")}
+                        className={
+                          voteState[post.post_id] === "down"
+                            ? "down_vote_btn active"
+                            : "down_vote_btn"
+                        }
+                        onClick={() =>
+                          handleToggleVote(user_id, post.post_id, "down")
+                        }
                       >
-                        <ArrowBigDown fill={voteState[post.post_id] === 'down' ? 'currentColor' : 'none'} />
+                        <ArrowBigDown
+                          fill={
+                            voteState[post.post_id] === "down"
+                              ? "currentColor"
+                              : "none"
+                          }
+                        />
                         {downTally[post.post_id] ?? post.down_tally_post}
                       </button>
-
-
                     </div>
                   </motion.div>
                 ))
               )}
-
-
             </div>
           </div>
         </div>
@@ -1053,7 +1107,15 @@ export default function Homepage() {
 
       {/* Comment Modal */}
 
-      <CommentModal openModal={isCommentModalOpen} closeModal={closeComments} user_id={user_id} postData={selectedPost} fetchPosts={() => fetchPost()} onDelete={handlePostDeleted} blockedUserIds={blockedUserIds} />
+      <CommentModal
+        openModal={isCommentModalOpen}
+        closeModal={closeComments}
+        user_id={user_id}
+        postData={selectedPost}
+        fetchPosts={() => fetchPost()}
+        onDelete={handlePostDeleted}
+        blockedUserIds={blockedUserIds}
+      />
 
       <Report
         isOpen={isReportOpen}
@@ -1065,8 +1127,13 @@ export default function Homepage() {
       />
 
       {/* Edit Modal */}
-      <EditPostModal open={editModalOpen} postData={selectedPost} user_id={user_id} fetchPost={() => fetchPost()} onClose={() => setEditModalOpen(false)} />
-
+      <EditPostModal
+        open={editModalOpen}
+        postData={selectedPost}
+        user_id={user_id}
+        fetchPost={() => fetchPost()}
+        onClose={() => setEditModalOpen(false)}
+      />
 
       {/* Delete Confirmation Modal */}
       <DeletePostModal
@@ -1075,9 +1142,12 @@ export default function Homepage() {
         onDelete={handlePostDeleted}
       />
 
-
       {/* otherUserModal */}
-      <OtherUserProfile openModal={isOtherUserProfileOpen} uid={selectedUserId} closeModal={closeOtherUserProfile} />
+      <OtherUserProfile
+        openModal={isOtherUserProfileOpen}
+        uid={selectedUserId}
+        closeModal={closeOtherUserProfile}
+      />
 
       <BlockConfirmModal
         isOpen={isBlockConfirmOpen}
@@ -1089,7 +1159,11 @@ export default function Homepage() {
         username={userToBlock?.username}
       />
 
-      <ToastContainer position="top-center" style={{ top: '80px' }} autoClose={3000} />
+      <ToastContainer
+        position="top-center"
+        style={{ top: "80px" }}
+        autoClose={3000}
+      />
     </>
   );
 }

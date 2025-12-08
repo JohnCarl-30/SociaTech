@@ -11,6 +11,7 @@ export const createNotification = async (notificationData) => {
       }
     );
     const data = await response.json();
+    console.log("Notification created:", data); // Debug log
     return data.success;
   } catch (error) {
     console.error("Error creating notification:", error);
@@ -26,7 +27,18 @@ export const notifyPostComment = async (
   postId,
   postTitle
 ) => {
-  if (postOwnerId === commenterId) return;
+  if (postOwnerId === commenterId) {
+    console.log("Skipping notification - same user");
+    return false;
+  }
+
+  console.log("Creating comment notification:", {
+    postOwnerId,
+    commenterId,
+    commenterUsername,
+    postId,
+    postTitle,
+  });
 
   return await createNotification({
     user_id: postOwnerId,
@@ -45,12 +57,31 @@ export const notifyPostUpvote = async (
   voterUsername,
   postId
 ) => {
-  if (postOwnerId === voterId) return;
+  if (postOwnerId === voterId) return false;
 
   return await createNotification({
     user_id: postOwnerId,
-    type: "upvote",
+    type: "upvote_post",
     message: `upvoted your post`,
+    related_post_id: postId,
+    related_comment_id: null,
+    actor_id: voterId,
+  });
+};
+
+// When someone downvotes a post
+export const notifyPostDownvote = async (
+  postOwnerId,
+  voterId,
+  voterUsername,
+  postId
+) => {
+  if (postOwnerId === voterId) return false;
+
+  return await createNotification({
+    user_id: postOwnerId,
+    type: "downvote_post",
+    message: `downvoted your post`,
     related_post_id: postId,
     related_comment_id: null,
     actor_id: voterId,
@@ -65,7 +96,7 @@ export const notifyCommentReply = async (
   postId,
   commentId
 ) => {
-  if (commentOwnerId === replierId) return;
+  if (commentOwnerId === replierId) return false;
 
   return await createNotification({
     user_id: commentOwnerId,
@@ -85,12 +116,32 @@ export const notifyCommentUpvote = async (
   postId,
   commentId
 ) => {
-  if (commentOwnerId === voterId) return;
+  if (commentOwnerId === voterId) return false;
 
   return await createNotification({
     user_id: commentOwnerId,
-    type: "upvote",
+    type: "upvote_comment",
     message: `upvoted your comment`,
+    related_post_id: postId,
+    related_comment_id: commentId,
+    actor_id: voterId,
+  });
+};
+
+// When someone downvotes a comment
+export const notifyCommentDownvote = async (
+  commentOwnerId,
+  voterId,
+  voterUsername,
+  postId,
+  commentId
+) => {
+  if (commentOwnerId === voterId) return false;
+
+  return await createNotification({
+    user_id: commentOwnerId,
+    type: "downvote_comment",
+    message: `downvoted your comment`,
     related_post_id: postId,
     related_comment_id: commentId,
     actor_id: voterId,
@@ -103,7 +154,7 @@ export const notifyFollow = async (
   followerId,
   followerUsername
 ) => {
-  if (followedUserId === followerId) return;
+  if (followedUserId === followerId) return false;
 
   return await createNotification({
     user_id: followedUserId,

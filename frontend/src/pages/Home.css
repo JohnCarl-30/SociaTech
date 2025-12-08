@@ -111,7 +111,6 @@ body {
   word-wrap: break-word;
   word-break: break-word;
 
-
   margin: 1.5em auto;
 }
 
@@ -245,14 +244,11 @@ body {
 
 .post_card_img {
   width: 100%;
-
 }
 
 .post_card_img img {
   width: 100%;
   border-radius: 1rem;
-
-
 }
 
 .postCard_btn_containers {
@@ -329,7 +325,6 @@ body {
   }
 }
 
-
 .commentModal_backDrop {
   position: fixed;
   inset: 0;
@@ -338,13 +333,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: fbFadeIn .2s ease-out;
+  animation: fbFadeIn 0.2s ease-out;
   z-index: 9999;
   padding: 20px;
 }
 
 .commentModal_backDrop.closing {
-  animation: fbFadeOut .15s ease-out forwards;
+  animation: fbFadeOut 0.15s ease-out forwards;
 }
 
 .comment_modal {
@@ -361,12 +356,12 @@ body {
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
-  animation: fbSlideUp .25s cubic-bezier(.08, .52, .52, 1);
+  animation: fbSlideUp 0.25s cubic-bezier(0.08, 0.52, 0.52, 1);
   overflow: hidden;
 }
 
 .commentModal_container.closing {
-  animation: fbSlideDown .2s ease-in forwards;
+  animation: fbSlideDown 0.2s ease-in forwards;
 }
 
 /* Exit Button Styles */
@@ -434,7 +429,7 @@ body {
   }
 }
 
-.commentModal_container>span {
+.commentModal_container > span {
   padding: 14px 16px;
   font-size: 17px;
   font-weight: 600;
@@ -450,14 +445,11 @@ body {
   padding: 10px 14px;
   border-radius: 18px;
   /* margin-bottom: 10px; */
-  animation: .18s ease-out;
+  animation: 0.18s ease-out;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   width: auto;
   height: auto;
   border: 1px solid #ccd0d5;
-
-
-
 }
 
 .commentModal_post::-webkit-scrollbar {
@@ -491,8 +483,6 @@ body {
   border-radius: 50%;
   overflow: hidden;
 }
-
-
 
 .commentModal_pfp img {
   width: 100%;
@@ -533,11 +523,10 @@ body {
 }
 
 .commentModal_dropdownMenu {
-
   position: absolute;
   right: 1.5rem;
   top: 40px;
-  padding: .25rem;
+  padding: 0.25rem;
   width: 125px;
   background: #fff;
   border-radius: 8px;
@@ -547,9 +536,9 @@ body {
 
 .commentModal_dropdownItem {
   display: flex;
-  gap: .5rem;
+  gap: 0.5rem;
   align-items: center;
-  padding: .5rem .5rem;
+  padding: 0.5rem 0.5rem;
 }
 
 .commentModal_dropdownItem:hover {
@@ -599,7 +588,6 @@ body {
   border-radius: 10px;
   margin-top: 8px;
 }
-
 
 .commentModal_btnRow {
   padding: 12px 16px;
@@ -659,7 +647,7 @@ body {
   padding: 12px 14px;
   border-radius: 12px;
   margin-bottom: 10px;
-  animation: .18s ease-out;
+  animation: 0.18s ease-out;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
@@ -944,7 +932,7 @@ body {
   padding: 10px 14px;
   font-size: 14px;
   resize: none;
-  transition: border .15s;
+  transition: border 0.15s;
 }
 
 .commentModal_inputContainer textarea:focus {
@@ -997,9 +985,6 @@ body {
   color: #fff;
 }
 
-
-
-
 @media (max-width: 768px) {
   .commentModal_container {
     width: 100%;
@@ -1048,7 +1033,7 @@ body {
 }
 
 .undo_delete_btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -1070,7 +1055,6 @@ body {
 .editPost_formGroup {
   margin-bottom: 1.5rem;
   padding: 0 1.5rem 0 0;
-
 }
 
 .editPost_formGroup label {
@@ -1098,7 +1082,6 @@ body {
   outline: none;
   border-color: #1877f2;
   box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.1);
-
 }
 
 .editPost_textarea {
@@ -1160,7 +1143,7 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  padding: .2rem 1.5rem;
+  padding: 0.2rem 1.5rem;
   background-color: white;
 }
 
@@ -1287,7 +1270,6 @@ body {
   overflow-y: scroll;
   z-index: 9999;
   padding-top: 1rem;
-
 }
 
 .otherUserProfile_parent_container::-webkit-scrollbar {
@@ -1342,7 +1324,7 @@ body {
 .userNameBio_container {
   display: flex;
   flex-direction: column;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
 .otherUserProfile_username {
@@ -1360,14 +1342,13 @@ body {
   flex-direction: row;
   gap: 1.5rem;
   font-weight: 600;
-
 }
 
 .otherUserProfile_stats_childContainer {
   font-weight: 600;
   display: flex;
   flex-direction: column;
-  gap: .25rem;
+  gap: 0.25rem;
 }
 
 .otherUserProfile_more_btn {
@@ -1378,7 +1359,7 @@ body {
   width: fit-content;
   height: fit-content;
   cursor: pointer;
-  border-radius: .4rem;
+  border-radius: 0.4rem;
   transition: all 150ms ease-in-out;
 }
 
@@ -1389,12 +1370,10 @@ body {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   height: 5em;
   width: 7em;
-  border-radius: .4rem;
+  border-radius: 0.4rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-
 }
 
 .otherUserProfile_more_option {
@@ -1402,16 +1381,15 @@ body {
   flex-direction: row;
   justify-content: start;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   height: fit-content;
-  gap: .5rem;
+  gap: 0.5rem;
   font-weight: 500;
   font-size: 1rem;
   background-color: white;
-  padding: .5rem;
-  border-radius: .4rem;
+  padding: 0.5rem;
+  border-radius: 0.4rem;
   transition: all 150ms ease-in-out;
-
 }
 
 .otherUserProfile_more_option:hover {
@@ -1422,7 +1400,6 @@ body {
 .otherUserProfile_more_btn:hover {
   cursor: pointer;
   background-color: #dfdcdc;
-
 }
 
 .otherUserProfile_more_btn img {
@@ -1442,14 +1419,13 @@ body {
   display: flex;
   margin: 0 auto;
   justify-content: start;
-
 }
 
 .followBtn {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: .8rem;
+  border-radius: 0.8rem;
   border: none;
 
   background-color: black;
@@ -1468,7 +1444,6 @@ body {
 }
 
 .otherUserProfile_parent_postContainer {
-
   padding: 1.5rem 1.5rem;
   gap: 1rem;
   display: flex;
@@ -1482,4 +1457,37 @@ body {
 .otherUserProfile_container_title {
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+/* Post highlight effect */
+.highlighted-post {
+  animation: highlightPostPulse 3s ease-in-out;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5) !important;
+}
+
+@keyframes highlightPostPulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+}
+
+/* Comment highlight effect */
+.highlighted-comment {
+  animation: highlightCommentPulse 3s ease-in-out;
+  background-color: rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+}
+
+@keyframes highlightCommentPulse {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(255, 215, 0, 0.3);
+  }
 }
