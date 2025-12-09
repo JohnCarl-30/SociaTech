@@ -20,7 +20,7 @@ class Database {
 
     public function __construct() {
         // Railway environment variables
-        $this->host = getenv('MYSQLHOST') ?: 'mysql.railway.internal';
+        $this->host = getenv('MYSQLHOST') ?: 'mysql-l6of.railway.internal';
         $this->db_name = getenv('MYSQLDATABASE') ?: 'railway';
         $this->username = getenv('MYSQLUSER') ?: 'root';
         $this->password = getenv('MYSQLPASSWORD');
