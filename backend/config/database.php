@@ -1,5 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173"); 
+header("Access-Control-Allow-Origin: https://socia-tech.vercel.app/"); 
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
@@ -19,12 +19,11 @@ class Database {
     public $conn;
 
     public function __construct() {
-        // Railway environment variables
-        $this->host = getenv('MYSQLHOST') ?: 'mysql-l6of.railway.internal';
-        $this->db_name = getenv('MYSQLDATABASE') ?: 'railway';
-        $this->username = getenv('MYSQLUSER') ?: 'root';
+        $this->host = getenv('MYSQLHOST');
+        $this->db_name = getenv('MYSQLDATABASE');
+        $this->username = getenv('MYSQLUSER');
         $this->password = getenv('MYSQLPASSWORD');
-        $this->port = getenv('MYSQLPORT') ?: '3306';
+        $this->port = getenv('MYSQLPORT');
     }
 
     public function getConnection() {
