@@ -1,4 +1,4 @@
-const API_URL = "http://localhost/Sociatech/backend/auth";
+const API_URL = "https://sociatech-production.up.railway.app/auth";
 
 const handleResponse = async (response) => {
   const text = await response.text();
