@@ -6,8 +6,11 @@ RUN docker-php-ext-install pdo pdo_mysql mysqli
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Enable Apache mod_rewrite for URL routing
-RUN a2enmod rewrite
+# Enable Apache modules and configure AllowOverride
+RUN a2enmod rewrite headers && \
+    printf '<Directory /var/www/html>\n\tOptions -Indexes\n\tAllowOverride All\n\tRequire all granted\n</Directory>\n' \
+    > /etc/apache2/conf-available/sociatech.conf && \
+    a2enconf sociatech
 
 # Copy backend files to Apache web directory
 COPY backend/ /var/www/html/
