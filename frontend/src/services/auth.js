@@ -1,4 +1,4 @@
-export const API_URL = "https://sociatech-production.up.railway.app/auth";
+export const API_URL = "https://sociatech-6.onrender.com/auth";
 
 const handleResponse = async (response) => {
   const text = await response.text();
