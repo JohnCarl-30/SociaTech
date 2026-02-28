@@ -159,9 +159,10 @@ try {
     }
 
   
-    $insert_query = "INSERT INTO users (fullname, username, email, google_id, profile_image, password) 
-                     VALUES (:fullname, :username, :email, :google_id, :profile_image, :password)";
-    
+    $insert_query = "INSERT INTO users (fullname, username, email, google_id, profile_image, password)
+                     VALUES (:fullname, :username, :email, :google_id, :profile_image, :password)
+                     RETURNING user_id";
+
     try {
         $insert_stmt = $db->prepare($insert_query);
 
@@ -183,12 +184,12 @@ try {
             $errorInfo = $insert_stmt->errorInfo();
             throw new Exception("Insert execution failed: " . $errorInfo[2]);
         }
+        $inserted = $insert_stmt->fetch(PDO::FETCH_ASSOC);
+        $user_id = $inserted['user_id'];
     } catch (PDOException $e) {
         error_log("Insert error details: " . print_r($e->errorInfo, true));
         throw new Exception("Database insert failed: " . $e->getMessage());
     }
-
-    $user_id = $db->lastInsertId();
     $user = [
         'user_id' => $user_id,
         'fullname' => $fullname,

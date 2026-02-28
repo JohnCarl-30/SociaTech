@@ -6,18 +6,8 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free
     envVars:
-      # MySQL — paste your Railway MYSQL_PUBLIC_URL here, or fill individually
-      - key: MYSQL_PUBLIC_URL
-        sync: false
-      - key: MYSQLHOST
-        sync: false
-      - key: MYSQLPORT
-        sync: false
-      - key: MYSQLUSER
-        sync: false
-      - key: MYSQLPASSWORD
-        sync: false
-      - key: MYSQLDATABASE
+      # Supabase — paste your connection string from Project Settings → Database → Connection string → URI
+      - key: DATABASE_URL
         sync: false
       # SMTP (Gmail)
       - key: SMTP_HOST

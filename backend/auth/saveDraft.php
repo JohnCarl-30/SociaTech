@@ -185,6 +185,7 @@ try {
     $stmt = $conn->prepare("
         INSERT INTO draft (user_id, post_category, post_title, post_content, post_image, username, post_date)
         VALUES (:user_id, :category, :title, :content, :image_path, :username, NOW())
+        RETURNING id
     ");
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->bindParam(':category', $category, PDO::PARAM_STR);
@@ -197,7 +198,8 @@ try {
         throw new Exception("Failed to save draft");
     }
 
-    $draft_id = $conn->lastInsertId();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $draft_id = $row['id'];
 
     ob_end_clean();
     http_response_code(200);

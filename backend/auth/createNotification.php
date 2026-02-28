@@ -19,10 +19,11 @@ if (!isset($data->user_id) || !isset($data->type)) {
 }
 
 try {
-    $query = "INSERT INTO notifications 
-              (user_id, type, message, related_post_id, related_comment_id, actor_id, is_read, created_at) 
-              VALUES 
-              (:user_id, :type, :message, :related_post_id, :related_comment_id, :actor_id, 0, NOW())";
+    $query = "INSERT INTO notifications
+              (user_id, type, message, related_post_id, related_comment_id, actor_id, is_read, created_at)
+              VALUES
+              (:user_id, :type, :message, :related_post_id, :related_comment_id, :actor_id, 0, NOW())
+              RETURNING notification_id";
     
     $stmt = $db->prepare($query);
     
@@ -34,10 +35,11 @@ try {
     $stmt->bindParam(':actor_id', $data->actor_id);
     
     if ($stmt->execute()) {
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         echo json_encode([
             "success" => true,
             "message" => "Notification created successfully",
-            "notification_id" => $db->lastInsertId()
+            "notification_id" => $row['notification_id']
         ]);
     } else {
         echo json_encode(["success" => false, "message" => "Failed to create notification"]);
