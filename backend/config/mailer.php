@@ -27,7 +27,8 @@ function sendPasswordResetEmail($recipientEmail, $recipientName, $token) {
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset Request - Sociatech';
        
-        $resetLink = "http://localhost:5173/update-password?token=" . urlencode($token);
+        $appUrl = rtrim(getenv('APP_URL') ?: 'https://socia-tech.vercel.app', '/');
+        $resetLink = $appUrl . "/update-password?token=" . urlencode($token);
         
         $mail->Body = "
             <!DOCTYPE html>

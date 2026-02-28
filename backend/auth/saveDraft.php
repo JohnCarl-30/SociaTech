@@ -5,7 +5,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../../logs/php-error.log');
 error_reporting(E_ALL);
 
-header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Origin: https://socia-tech.vercel.app');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');

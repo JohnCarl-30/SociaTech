@@ -1,19 +1,31 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
-    
+
+    # Allow OPTIONS preflight requests through
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+
     # Allow direct access to existing files and directories
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    
-    # Redirect all other requests to index.php
-    # RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
 
-# Security headers
+# CORS — override any PHP-level headers with the correct production origin
 <IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Methods
+    Header always unset Access-Control-Allow-Headers
+    Header always unset Access-Control-Allow-Credentials
+
+    Header always set Access-Control-Allow-Origin "https://socia-tech.vercel.app"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+    # Security headers
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
 </IfModule>
 
 # Disable directory listing
@@ -21,7 +33,4 @@ Options -Indexes
 
 # Set default files
 DirectoryIndex index.php index.html
-
-# Enable error display (remove in production)
-php_flag display_errors On
 

@@ -1,21 +1,18 @@
+import "./UserSkeleton.css";
+
 const UserSkeleton = () => {
-    return (
-        <div className="flex items-center justify-between px-4 py-3 animate-pulse">
-            <div className="flex items-center gap-3 flex-1">
-                {/* Avatar skeleton */}
-                <div className="w-12 h-12 rounded-full bg-muted" />
-
-                {/* Text skeletons */}
-                <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded w-24" />
-                    <div className="h-3 bg-muted rounded w-32" />
-                </div>
-            </div>
-
-            {/* Button skeleton */}
-            <div className="h-8 w-20 bg-muted rounded-lg" />
+  return (
+    <div className="skeleton_container">
+      <div className="skeleton_left">
+        <div className="skeleton_avatar" />
+        <div className="skeleton_text_group">
+          <div className="skeleton_text_name" />
+          <div className="skeleton_text_sub" />
         </div>
-    );
+      </div>
+      <div className="skeleton_button" />
+    </div>
+  );
 };
 
 export default UserSkeleton;

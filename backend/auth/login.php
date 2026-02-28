@@ -1,9 +1,9 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+error_reporting(0);
 
-header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Origin: https://socia-tech.vercel.app');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -134,7 +134,7 @@ if (!password_verify($password, $user['password'])) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Server error: ' . $e->getMessage()
+        'message' => 'An internal server error occurred'
     ]);
 }
 ?>

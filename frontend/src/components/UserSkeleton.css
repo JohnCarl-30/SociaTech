@@ -1,0 +1,55 @@
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton_container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton_left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeleton_avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.skeleton_text_group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton_text_name {
+  height: 14px;
+  width: 96px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton_text_sub {
+  height: 12px;
+  width: 128px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.skeleton_button {
+  height: 32px;
+  width: 80px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+}

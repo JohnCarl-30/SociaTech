@@ -1,4 +1,4 @@
-const API_URL = "https://sociatech-production.up.railway.app/auth";
+export const API_URL = "https://sociatech-production.up.railway.app/auth";
 
 const handleResponse = async (response) => {
   const text = await response.text();
@@ -225,7 +225,7 @@ export const sendVerificationEmail = async (email) => {
 
 export async function saveDraft(formData) {
   try {
-    const response = await fetch(`http://localhost/Sociatech/backend/auth/saveDraft.php`, {
+    const response = await fetch(`${API_URL}/saveDraft.php`, {
       method: "POST",
       body: formData,
       credentials: "include",

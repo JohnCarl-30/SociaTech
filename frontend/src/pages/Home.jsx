@@ -1,4 +1,4 @@
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 import Nav from "../components/Nav.jsx";
 import Report from "../components/Report.jsx";
@@ -14,9 +14,6 @@ import {
   ArrowBigDown,
   Bookmark,
   AlertCircle,
-  Image,
-  X,
-  Ban,
   Edit,
   Trash2,
   UserX,
@@ -24,35 +21,73 @@ import {
   Users,
 } from "lucide-react";
 import "./Home.css";
-import { useCycle, motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState, useRef, useMemo } from "react";
 import moreBtn from "/moreBtn.png";
 import { getUser } from "../utils/storage.js";
 import pfpImage from "/deault_pfp.png";
 
 import Settings from "../components/Settings.jsx";
-import TrippleDots from "/moreBtn.png";
 import HelpPage from "../components/HelpPage.jsx";
 
 import NotificationPanel from "../components/NotificationPanel.jsx";
 
 import {
-  notifyPostComment,
   notifyPostUpvote,
   notifyPostDownvote,
-  notifyCommentUpvote,
-  notifyCommentDownvote,
 } from "../services/notificationHelper.js";
 import OtherUserProfile from "../components/OtherUserProfile.jsx";
 import BlockConfirmModal from "../components/BlockConfirmModal.jsx";
+import { API_URL } from "../services/auth.js";
+
+function VisibilityBadge({ visibility }) {
+  const isPublic = visibility === "public" || !visibility;
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        padding: "3px 8px",
+        borderRadius: "12px",
+        fontSize: "11px",
+        fontWeight: "500",
+        backgroundColor: isPublic ? "#e3f2fd" : "#fff3e0",
+        color: "black",
+        border: `1px solid ${isPublic ? "#90caf9" : "#ffb74d"}`,
+      }}
+    >
+      {isPublic ? <Globe size={12} /> : <Users size={12} />}
+      <span>{isPublic ? "Public" : "Followers"}</span>
+    </div>
+  );
+}
+
+function timeAgo(dateString) {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diff = Math.floor((now - past) / 1000);
+  const units = [
+    { name: "second", seconds: 1 },
+    { name: "minute", seconds: 60 },
+    { name: "hour", seconds: 3600 },
+    { name: "day", seconds: 86400 },
+  ];
+  for (let i = units.length - 1; i >= 0; i--) {
+    const { name, seconds } = units[i];
+    if (diff >= seconds) {
+      const value = Math.floor(diff / seconds);
+      return `${value} ${value === 1 ? name : name + "s"} ago`;
+    }
+  }
+  return "just now";
+}
 
 export default function Homepage() {
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [posts, setPosts] = useState([]);
-  const [openMorePost, setOpenMorePost] = useState(null); // para sa post card
-  const [openMoreModalPost, setOpenMoreModalPost] = useState(null); // para sa post sa comment modal
-  const [openMoreComment, setOpenMoreComment] = useState(null);
+  const [openMorePost, setOpenMorePost] = useState(null);
   const [upTally, setUpTally] = useState({});
   const [downTally, setDownTally] = useState({});
   const [voteState, setVoteState] = useState({});
@@ -61,32 +96,17 @@ export default function Homepage() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const textareaRef = useRef(null);
   const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
-  const [commentImage, setCommentImage] = useState(null);
-
   const [isOtherUserProfileOpen, setIsOtherUserProfileOpen] = useState(false);
-
-  const [commentSortOption, setCommentSortOption] = useState("newest");
 
   const [openHelpPage, setOpenHelpPage] = useState(false);
   const [highlightedPostId, setHighlightedPostId] = useState(null);
   const postRefs = useRef({});
 
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedOtherUser, setSelectedOtherUser] = useState(null);
-  const [otherUserProfile, setOtherUserProfile] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState("");
-
-  const [otherUserPosts, setOtherUserPosts] = useState([]);
-  const [isLoadingOtherUserData, setIsLoadingOtherUserData] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
 
   // STATES FOR REPORT
   const [reportType, setReportType] = useState(null);
@@ -108,30 +128,6 @@ export default function Homepage() {
   const user = getUser();
   const user_id = user?.id || null;
 
-  function VisibilityBadge({ visibility }) {
-    const isPublic = visibility === "public" || !visibility;
-
-    return (
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "4px",
-          padding: "3px 8px",
-          borderRadius: "12px",
-          fontSize: "11px",
-          fontWeight: "500",
-          backgroundColor: isPublic ? "#e3f2fd" : "#fff3e0",
-          color: isPublic ? "black" : "black",
-          border: `1px solid ${isPublic ? "#90caf9" : "#ffb74d"}`,
-        }}
-      >
-        {isPublic ? <Globe size={12} /> : <Users size={12} />}
-        <span>{isPublic ? "Public" : "Followers"}</span>
-      </div>
-    );
-  }
-
   const fetchBlockedUsers = async () => {
     if (!user_id) {
       return;
@@ -145,7 +141,7 @@ export default function Homepage() {
 
     try {
       const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchBlockedUsers.php?user_id=${numericUserId}`
+        `${API_URL}/fetchBlockedUsers.php?user_id=${numericUserId}`
       );
 
       if (!response.ok) {
@@ -165,6 +161,7 @@ export default function Homepage() {
       const data = await response.json();
 
       if (data.success && Array.isArray(data.blocked_users)) {
+        setBlockedUserIds(data.blocked_users.map((u) => u.user_id));
       } else {
         console.error("Failed to fetch blocked users:", data.message);
         setBlockedUserIds([]);
@@ -197,199 +194,46 @@ export default function Homepage() {
     setSearchResults(results);
   };
 
-  const handleUserClick = async (userId, userData) => {
-    //if userId is same as the user logedin, open profilepage instead
+  const openOtherUserProfile = (userId) => {
     if (userId === user_id) {
       openProfilePage();
       clearSearch();
       return;
     }
-
-    setIsLoadingOtherUserData(true);
-    setSelectedOtherUser(userData);
     setIsOtherUserProfileOpen(true);
     setSelectedUserId(userId);
-
-    setOtherUserProfile(null);
-    setOtherUserPosts([]);
+    setIsCommentModalOpen(false);
     clearSearch();
-
-    await Promise.all([
-      fetchOtherUserProfile(userId),
-      fetchOtherUserPosts(userId),
-      fetchFollowStats(userId),
-    ]);
-
-    setIsLoadingOtherUserData(false);
   };
 
-  const handlePostClick = async (post) => {
+  const handlePostClick = (post) => {
     setSelectedPost(post);
     openComments(post);
     setOpenMorePost(null);
-    setComments([]);
-    setCommentSortOption("newest");
   };
-
-  const fetchOtherUserProfile = async (userId) => {
-    try {
-      const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/handleFetchOtherUserProfile.php?user_id=${userId}`
-      );
-      const data = await response.json();
-
-      if (data.success) {
-        setOtherUserProfile(data.otherUserInfo);
-      } else {
-        console.log("Failed to fetch user profile:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-  // Fetch other user's posts
-  const fetchOtherUserPosts = async (userId) => {
-    try {
-      const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchPost.php?user_id=${userId}`
-      );
-      const data = await response.json();
-
-      if (data.success) {
-        setOtherUserPosts(data.posts || []);
-      } else {
-        console.log("Failed to fetch user posts:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching user posts:", error);
-    }
-  };
-
-  const fetchFollowStats = async (targetUserId) => {
-    try {
-      const response = await fetch(
-        `http://localhost/SociaTech/backend/auth/getUserStats.php?user_id=${targetUserId}&current_user_id=${user_id}`
-      );
-      const data = await response.json();
-
-      if (data.success) {
-        setFollowerCount(data.follower_count);
-        setFollowingCount(data.following_count);
-        setIsFollowing(data.is_following);
-        return data;
-      }
-    } catch (error) {
-      console.error("Error fetching follow stats:", error);
-    }
-  };
-
-  useEffect(() => {
-    let intervalId;
-
-    if (
-      isOtherUserProfileOpen &&
-      (selectedOtherUser?.user_id || otherUserProfile?.user_id)
-    ) {
-      const targetUserId =
-        selectedOtherUser?.user_id || otherUserProfile?.user_id;
-
-      // Refresh counts every 10 seconds
-      intervalId = setInterval(() => {
-        fetchFollowStats(targetUserId);
-      }, 10000); // 10 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [
-    isOtherUserProfileOpen,
-    selectedOtherUser?.user_id,
-    otherUserProfile?.user_id,
-  ]);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      if (
-        isOtherUserProfileOpen &&
-        (selectedOtherUser?.user_id || otherUserProfile?.user_id)
-      ) {
-        const targetUserId =
-          selectedOtherUser?.user_id || otherUserProfile?.user_id;
-        fetchFollowStats(targetUserId);
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [
-    isOtherUserProfileOpen,
-    selectedOtherUser?.user_id,
-    otherUserProfile?.user_id,
-  ]);
 
   const openProfilePage = () => {
     setIsProfilePageOpen(true);
-    setIsDropDownOpen(false); // ⬅ auto-close dropdown
-  };
-
-  const handleUsernameClick = async (userId, userData) => {
-    //if userId is same as the user logedin, open profilepage instead
-    if (userId === user_id) {
-      openProfilePage();
-      return;
-    }
-
-    setIsLoadingOtherUserData(true);
-    setSelectedOtherUser(userData);
-    setIsOtherUserProfileOpen(true);
-    setSelectedUserId(userId);
-    setOtherUserProfile(null);
-    setOtherUserPosts([]);
-    setIsFollowing(false);
-    setFollowerCount(0);
-    setFollowingCount(0);
-    setIsCommentModalOpen(false);
-
-    await Promise.all([
-      fetchOtherUserProfile(userId),
-      fetchOtherUserPosts(userId),
-      fetchFollowStats(userId),
-    ]);
-
-    setIsLoadingOtherUserData(false);
+    setIsDropDownOpen(false);
   };
   const closeOtherUserProfile = () => {
     setIsOtherUserProfileOpen(false);
     clearSearch();
   };
-  const filteredPosts = (() => {
-    let filtered = posts;
-    filtered = filtered.filter(
-      (post) => !blockedUserIds.includes(post.user_id)
-    );
+  const filteredPosts = useMemo(() => {
+    let filtered = posts.filter((post) => !blockedUserIds.includes(post.user_id));
 
     if (selectedCategory !== "All") {
-      filtered = filtered.filter(
-        (post) => post.post_category === selectedCategory
-      );
+      filtered = filtered.filter((post) => post.post_category === selectedCategory);
     }
 
-    // Then filter by search results if there are any
     if (Array.isArray(searchResults) && searchResults.length > 0) {
-      const searchPostIds = searchResults.map((r) => r.post_id);
-      filtered = filtered.filter((post) =>
-        searchPostIds.includes(post.post_id)
-      );
+      const searchPostIds = new Set(searchResults.map((r) => r.post_id));
+      filtered = filtered.filter((post) => searchPostIds.has(post.post_id));
     }
 
     return filtered;
-  })();
+  }, [posts, blockedUserIds, selectedCategory, searchResults]);
 
   const closeAllModals = () => {
     setIsProfilePageOpen(false);
@@ -406,7 +250,7 @@ export default function Homepage() {
         const postIds = posts.map((p) => p.post_id);
 
         const res = await fetch(
-          "http://localhost/SociaTech/backend/auth/checkSavedPosts.php",
+          `${API_URL}/checkSavedPosts.php`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -441,7 +285,7 @@ export default function Homepage() {
       formData.append("post_id", postId);
 
       const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleSavedPost.php",
+        `${API_URL}/handleSavedPost.php`,
         {
           method: "POST",
           body: formData,
@@ -464,8 +308,7 @@ export default function Homepage() {
           return newSet;
         });
 
-        setOpenMorePost(null); // Close dropdown
-        setOpenMoreComment(null); // Close comment modal dropdown if open
+        setOpenMorePost(null);
       } else {
         toast.error(data.message || "Failed to save/unsave post");
       }
@@ -477,7 +320,7 @@ export default function Homepage() {
 
   useEffect(() => {
     fetchPost();
-  }, [closeOtherUserProfile]);
+  }, []);
 
   // Replace your handleNotificationPostClick function in Homepage.jsx with this:
 
@@ -494,13 +337,8 @@ export default function Homepage() {
       if (post) {
         setSelectedPost(post);
         setIsCommentModalOpen(true);
-        setComments([]);
-        setCommentSortOption("newest");
 
-        // Fetch comments first
-        await fetchComments(post.post_id, "newest");
-
-        // Wait longer for DOM to fully render, then scroll
+        // Wait for CommentModal to fetch and render comments, then scroll
         setTimeout(() => {
           const commentElement = document.getElementById(
             `comment-${commentId}`
@@ -558,13 +396,6 @@ export default function Homepage() {
   const closeProfilePage = () => setIsProfilePageOpen(false);
   const closeSetting = () => setIsSettingOpen(false);
 
-  const resetCommentFields = () => {
-    setCommentText("");
-    setCommentImage(null);
-    const fileInput = document.getElementById("commentImageInput");
-    if (fileInput) fileInput.value = "";
-  };
-
   const toggleMorePost = (post_id) => {
     setOpenMorePost((prev) => (prev === post_id ? null : post_id));
   };
@@ -574,7 +405,7 @@ export default function Homepage() {
 
     try {
       const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/getUserVotes.php?user_id=${userId}`
+        `${API_URL}/getUserVotes.php?user_id=${userId}`
       );
       const data = await res.json();
 
@@ -597,7 +428,7 @@ export default function Homepage() {
   const fetchPost = async () => {
     try {
       const res = await fetch(
-        `http://localhost/SociaTech/backend/auth/fetchPost.php?current_user_id=${user_id}`
+        `${API_URL}/fetchPost.php?current_user_id=${user_id}`
       );
       const data = await res.json();
       if (data.success) {
@@ -664,7 +495,7 @@ export default function Homepage() {
 
     try {
       const res = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleVote.php",
+        `${API_URL}/handleVote.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -680,7 +511,7 @@ export default function Homepage() {
 
       if (data.success) {
         const postRes = await fetch(
-          `http://localhost/SociaTech/backend/auth/fetchSinglePost.php?post_id=${postId}`
+          `${API_URL}/fetchSinglePost.php?post_id=${postId}`
         );
         const postData = await postRes.json();
 
@@ -749,43 +580,14 @@ export default function Homepage() {
     setIsReportOpen(false);
   };
 
-  const openComments = async (post) => {
+  const openComments = (post) => {
     setSelectedPost(post);
     setIsCommentModalOpen(true);
-    setComments([]);
-    setCommentSortOption("newest");
   };
 
   const closeComments = () => {
     setSelectedPost(null);
     setIsCommentModalOpen(false);
-    setOpenMoreModalPost(null);
-    setOpenMoreComment(null);
-    setComments([]);
-    resetCommentFields();
-  };
-
-  const timeAgo = (dateString) => {
-    const now = new Date();
-    const past = new Date(dateString);
-    const diff = Math.floor((now - past) / 1000); // seconds
-
-    const units = [
-      { name: "second", seconds: 1 },
-      { name: "minute", seconds: 60 },
-      { name: "hour", seconds: 3600 },
-      { name: "day", seconds: 86400 },
-    ];
-
-    for (let i = units.length - 1; i >= 0; i--) {
-      const { name, seconds } = units[i];
-      if (diff >= seconds) {
-        const value = Math.floor(diff / seconds);
-        return `${value} ${value === 1 ? name : name + "s"} ago`;
-      }
-    }
-
-    return "just now";
   };
 
   const handlePostDeleted = (deletedPostId) => {
@@ -808,7 +610,7 @@ export default function Homepage() {
       formData.append("blocked_user_id", userToBlock.userId);
 
       const response = await fetch(
-        "http://localhost/SociaTech/backend/auth/handleBlockUser.php",
+        `${API_URL}/handleBlockUser.php`,
         {
           method: "POST",
           body: formData,
@@ -861,7 +663,7 @@ export default function Homepage() {
           userId={user_id}
           notifEnabled={notifEnabled}
           onSearchResults={handleSearchResults}
-          onUserClick={handleUserClick}
+          onUserClick={openOtherUserProfile}
           onPostClick={handlePostClick}
           onClearSearch={clearSearch}
         />
@@ -928,7 +730,7 @@ export default function Homepage() {
                           className="post_username"
                           style={{ cursor: "pointer" }}
                           onClick={() =>
-                            handleUsernameClick(post.user_id, post)
+                            openOtherUserProfile(post.user_id)
                           }
                         >
                           {post.username}
@@ -1159,11 +961,6 @@ export default function Homepage() {
         username={userToBlock?.username}
       />
 
-      <ToastContainer
-        position="top-center"
-        style={{ top: "80px" }}
-        autoClose={3000}
-      />
     </>
   );
 }

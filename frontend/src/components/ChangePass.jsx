@@ -1,6 +1,7 @@
 import { LockKeyhole, X } from "lucide-react";
 import "./ChangePass.css";
 import { useState } from "react";
+import { API_URL } from "../services/auth.js";
 
 export default function ChangePass({
   openChangePass,
@@ -15,13 +16,13 @@ export default function ChangePass({
   const [isLoading, setIsLoading] = useState(false);
 
   const validatePassword = (password) => {
-    // At least 8 characters, contains number, letter, and special character
     const minLength = password.length >= 8;
     const hasNumber = /\d/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-    return minLength && hasNumber && hasLetter && hasSpecial;
+    return minLength && hasNumber && hasUppercase && hasLetter && hasSpecial;
   };
 
   const handleChangePassword = async () => {
@@ -42,7 +43,7 @@ export default function ChangePass({
 
     if (!validatePassword(newPassword)) {
       setError(
-        "Password must be at least 8 characters and include numbers, letters, and special characters"
+        "Password must be at least 8 characters and include an uppercase letter, number, and special character"
       );
       return;
     }
@@ -61,7 +62,7 @@ export default function ChangePass({
       formData.append("new_password", newPassword);
 
       const response = await fetch(
-        "http://localhost/SociaTech/backend/auth/changePassword.php",
+        `${API_URL}/changePassword.php`,
         {
           method: "POST",
           body: formData,

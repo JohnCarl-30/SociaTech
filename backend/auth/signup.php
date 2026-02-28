@@ -2,8 +2,8 @@
 
 header("Content-Type: application/json");
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+error_reporting(0);
 
 try {
     require_once '../config/database.php';
@@ -195,8 +195,7 @@ try {
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "An internal server error occurred.",
-        "error" => $e->getMessage()
+        "message" => "An internal server error occurred."
     ]);
 }
 
