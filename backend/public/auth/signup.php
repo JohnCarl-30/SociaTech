@@ -1,9 +1,27 @@
 <?php
+// 1. Allow the specific origin of your frontend
+header("Access-Control-Allow-Origin: https://socia-tech.vercel.app");
 
+// 2. Allow credentials (required because you use 'credentials: include' in JS)
+header("Access-Control-Allow-Credentials: true");
+
+// 3. Allow specific methods
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT");
+
+// 4. Allow the headers your frontend is sending
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+// 5. Handle the OPTIONS "Preflight" request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// --- YOUR EXISTING CODE STARTS HERE ---
 header("Content-Type: application/json");
 
 ini_set('display_errors', 0);
-error_reporting(0);
+// ... rest of your code
 
 try {
     require_once '../config/database.php';
