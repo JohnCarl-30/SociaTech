@@ -1,13 +1,9 @@
 {
-  "headers": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
     {
       "source": "/(.*)",
-      "headers": [
-        { "key": "Cross-Origin-Opener-Policy", "value": "unsafe-none" }
-      ]
+      "destination": "/index.html"
     }
-  ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

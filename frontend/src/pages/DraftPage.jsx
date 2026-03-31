@@ -9,7 +9,8 @@ import { useCycle } from "framer-motion";
 import { getUser } from "../utils/storage.js";
 import EditDraftModal from '../components/EditDraftModal';
 import defaultPfp from '/deault_pfp.png';
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
+import { resolveAssetUrl } from "../config/api.js";
 export default function DraftPage() {
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [isNotificationBarOpen, cycleNotificationBarOpen] = useCycle(false, true);
@@ -82,7 +83,7 @@ export default function DraftPage() {
 
       const data = await response.json();
       if (!data.success) throw new Error(data.error);
-      toast.error("Draft published successfully!");
+      toast.success("Draft published successfully!");
       fetchDrafts();
     } catch (err) {
       toast.error("Failed to publish draft: " + err.message);
@@ -133,10 +134,8 @@ export default function DraftPage() {
   };
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    return `http://localhost/Sociatech/backend/${imagePath}`;
+
+    return resolveAssetUrl(imagePath);
   };
   const getProfileImage = (draft) => {
     const profileImg = draft.profile_image || user?.profile_image;
@@ -247,7 +246,7 @@ export default function DraftPage() {
 
                   {draft.post_image && (
                     <div className="draft_image_preview">
-                      <img src={`http://localhost/Sociatech/${draft.post_image}`} alt="Draft preview" />
+                      <img src={getImageUrl(draft.post_image)} alt="Draft preview" />
                     </div>
                   )}
 

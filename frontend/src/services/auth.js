@@ -1,4 +1,13 @@
-export const API_URL = "https://sociatech-6.onrender.com/auth";
+import { resolveAuthUrl } from "../config/api.js";
+import { getUser } from "../utils/storage.js";
+
+export const API_URL = resolveAuthUrl("");
+
+const createRequest = (path, options = {}) =>
+  fetch(resolveAuthUrl(path), {
+    credentials: "include",
+    ...options,
+  });
 
 const handleResponse = async (response) => {
   const text = await response.text();
@@ -20,12 +29,12 @@ const handleResponse = async (response) => {
 
   return data;
 };
+
 export const signUpWithEmail = async (email, password, fullname, username) => {
   try {
-    const response = await fetch(`${API_URL}/signup.php`, {
+    const response = await createRequest("signup.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         email,
         password,
@@ -43,24 +52,13 @@ export const signUpWithEmail = async (email, password, fullname, username) => {
 
 export const signInWithEmail = async (email, password) => {
   try {
-    const response = await fetch(`${API_URL}/login.php`, {
+    const response = await createRequest("login.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-
-    // Throw error if login was not successful
-    if (!data.success) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    // Only store user info if login succeeded
-    localStorage.setItem("userData", JSON.stringify(data.data.user));
-
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Login service error:", error);
     throw error;
@@ -70,10 +68,9 @@ export const signInWithEmail = async (email, password) => {
 
 export const googleAuth = async (user) => {
   try {
-    const response = await fetch(`${API_URL}/google-auth.php`, {
+    const response = await createRequest("google-auth.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         google_id: user.uid,
         email: user.email,
@@ -97,12 +94,11 @@ export const googleAuth = async (user) => {
 
 export const signOut = async () => {
   try {
-    await fetch(`${API_URL}/logout.php`, {
+    await createRequest("logout.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
     });
   } catch (error) {
     console.error("Logout error:", error);
@@ -113,12 +109,11 @@ export const signOut = async () => {
 
 export const verifySession = async () => {
   try {
-    const response = await fetch(`${API_URL}/verify.php`, {
+    const response = await createRequest("verify.php", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
     });
 
     return await handleResponse(response);
@@ -130,18 +125,14 @@ export const verifySession = async () => {
 };
 
 export const getCurrentUser = () => {
-  const userData = localStorage.getItem("userData");
-
-  return userData ? JSON.parse(userData) : null;
-  
+  return getUser();
 };
 
 export const forgotPassword = async (email) => {
   try {
-    const response = await fetch(`${API_URL}/forgot-password.php`, {
+    const response = await createRequest("forgot-password.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email }),
     });
 
@@ -154,10 +145,9 @@ export const forgotPassword = async (email) => {
 
 export const resetPassword = async (new_password, confirm_password, token) => {
   try {
-    const response = await fetch(`${API_URL}/reset-password.php`, {
+    const response = await createRequest("reset-password.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         new_password: new_password,
         confirmPassword: confirm_password,
@@ -174,10 +164,9 @@ export const resetPassword = async (new_password, confirm_password, token) => {
 
 export const createPost = async (formData) => {
   try {
-    const response = await fetch(`${API_URL}/createPost.php`, {
+    const response = await createRequest("createPost.php", {
       method: "POST",
       body: formData,
-      credentials: "include",
     });
     return await handleResponse(response);
   } catch (error) {
@@ -188,18 +177,13 @@ export const createPost = async (formData) => {
 
 export const verifyEmail = async (token) => {
   try {
-    const response = await fetch(`${API_URL}/verify-email.php`, {
+    const response = await createRequest("verify-email.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ token: token }),
     });
-    const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Verification failed");
-    }
-    return data;
+    return await handleResponse(response);
   } catch (error) {
     console.error("Email verification error:", error);
     throw error;
@@ -208,10 +192,9 @@ export const verifyEmail = async (token) => {
 
 export const sendVerificationEmail = async (email) => {
   try {
-    const response = await fetch(`${API_URL}/send-verification-email.php`, {
+    const response = await createRequest("send-verification-email.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email: email }),
     });
     return await handleResponse(response);
@@ -225,10 +208,9 @@ export const sendVerificationEmail = async (email) => {
 
 export async function saveDraft(formData) {
   try {
-    const response = await fetch(`${API_URL}/saveDraft.php`, {
+    const response = await createRequest("saveDraft.php", {
       method: "POST",
       body: formData,
-      credentials: "include",
     });
 
     if (!response.ok) {

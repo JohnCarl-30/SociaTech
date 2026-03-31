@@ -1,4 +1,5 @@
 <?php
+require_once '../config/session.php';
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -6,14 +7,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Temporarily enable for debugging
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+header('Content-Type: application/json');
+ini_set('display_errors', 0);
+error_reporting(0);
 
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+start_sociatech_session();
 
 // Check if database.php exists
 $db_file = '../config/database.php';
@@ -119,6 +117,7 @@ try {
         }
 
         // Set session
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['username'] = $user['username'];
@@ -194,6 +193,7 @@ try {
     ];
 
     // Set session
+    session_regenerate_id(true);
     $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['email'] = $user['email'];
     $_SESSION['username'] = $user['username'];
@@ -213,18 +213,14 @@ try {
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "Database error occurred",
-        "error" => $e->getMessage(),
-        "trace" => $e->getTraceAsString()
+        "message" => "Database error occurred"
     ]);
 } catch (Throwable $e) {
     error_log("Error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => "An internal server error occurred",
-        "error" => $e->getMessage(),
-        "trace" => $e->getTraceAsString()
+        "message" => "An internal server error occurred"
     ]);
 }
 

@@ -7,6 +7,10 @@
     RewriteCond %{REQUEST_FILENAME} !-d
 </IfModule>
 
+<IfModule mod_setenvif.c>
+    SetEnvIf Origin "^https?://(localhost(:[0-9]+)?|([A-Za-z0-9-]+\\.)?vercel\\.app|([A-Za-z0-9-]+\\.)?ondigitalocean\\.app)$" ACAO=$0
+</IfModule>
+
 # CORS — Apache adds these headers to every response (including OPTIONS preflights)
 <IfModule mod_headers.c>
     Header always unset Access-Control-Allow-Origin
@@ -14,10 +18,11 @@
     Header always unset Access-Control-Allow-Headers
     Header always unset Access-Control-Allow-Credentials
 
-    Header always set Access-Control-Allow-Origin "https://socia-tech.vercel.app"
-    Header always set Access-Control-Allow-Credentials "true"
-    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+    Header always set Access-Control-Allow-Origin "%{ACAO}e" env=ACAO
+    Header always set Access-Control-Allow-Credentials "true" env=ACAO
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT" env=ACAO
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization" env=ACAO
+    Header always set Vary "Origin" env=ACAO
 
     # Security headers
     Header always set X-Content-Type-Options "nosniff"

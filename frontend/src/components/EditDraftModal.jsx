@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 import "./EditDraftModal.css";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
+import { resolveAssetUrl } from "../config/api.js";
 
 export default function EditDraftModal({ draft, onClose, onSave, user }) {
     const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
             });
 
             if (draft.post_image) {
-                setImagePreview(`http://localhost/Sociatech/backend/${draft.post_image}`);
+                setImagePreview(resolveAssetUrl(draft.post_image));
             }
 
         }
@@ -72,7 +73,7 @@ export default function EditDraftModal({ draft, onClose, onSave, user }) {
             ...prev,
             post_image: null
         }));
-        setImagePreview(draft.post_image ? `http://localhost/Sociatech/backend/${draft.post_image}` : null);
+        setImagePreview(draft.post_image ? resolveAssetUrl(draft.post_image) : null);
     };
 
     const handleSubmit = async (e) => {

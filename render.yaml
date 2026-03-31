@@ -9,15 +9,15 @@ services:
       # Supabase — paste your connection string from Project Settings → Database → Connection string → URI
       - key: DATABASE_URL
         sync: false
-      # SMTP (Gmail)
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_EMAIL
-        sync: false        # your Gmail address
-      - key: SMTP_PASS
-        sync: false        # your Gmail app password
+      # Resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RESEND_FROM_NAME
+        value: SociaTech
+      - key: RESEND_REPLY_TO
+        sync: false
       # Frontend URL used in password-reset emails and CORS
       - key: APP_URL
         value: https://socia-tech.vercel.app

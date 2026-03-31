@@ -4,15 +4,16 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
+const reactFiles = ['**/*.{js,jsx}']
+
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '.vite']),
   {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
+    files: reactFiles,
+    plugins: {
+      ...reactHooks.configs.flat['recommended-latest'].plugins,
+      ...reactRefresh.configs.vite.plugins,
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -23,7 +24,17 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      ...js.configs.recommended.rules,
+      ...reactHooks.configs.flat['recommended-latest'].rules,
+      ...reactRefresh.configs.vite.rules,
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          varsIgnorePattern: '^[A-Z_]',
+        },
+      ],
     },
   },
 ])

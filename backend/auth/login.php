@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../config/session.php';
+start_sociatech_session();
 ini_set('display_errors', 0);
 error_reporting(0);
 
@@ -111,11 +112,11 @@ if (!password_verify($password, $user['password'])) {
     
     $token = generateToken($userId);
 
-    
-    
+    session_regenerate_id(true);
     unset($user['password']); 
     $_SESSION['user_id'] = $userId;
     $_SESSION['role'] = strtolower($user['role']);
+    $_SESSION['logged_in'] = true;
     http_response_code(200);
 
    

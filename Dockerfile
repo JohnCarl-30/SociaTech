@@ -16,10 +16,18 @@ RUN a2enmod rewrite headers && \
 
 # Copy backend files to Apache web directory
 COPY backend/ /var/www/html/
+COPY comment_images/ /var/www/html/comment_images/
+COPY post_images/ /var/www/html/post_images/
+COPY uploads/ /var/www/html/uploads/
 
 WORKDIR /var/www/html
 
-RUN if [ -f "composer.json" ]; then composer install --no-dev --optimize-autoloader; fi
+RUN if [ -f "composer.json" ]; then composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist; fi
+
+RUN mkdir -p /var/www/html/comment_images \
+    /var/www/html/post_images \
+    /var/www/html/uploads/drafts \
+    /var/www/html/uploads/profile_images
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html

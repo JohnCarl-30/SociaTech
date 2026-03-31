@@ -2,22 +2,43 @@
 class Database {
     public $conn;
 
+    private function getDatabaseConfig(): array {
+        $databaseUrl = getenv('DATABASE_URL');
+
+        if ($databaseUrl) {
+            $parts = parse_url($databaseUrl);
+
+            if ($parts && isset($parts['host'], $parts['user'], $parts['pass'], $parts['path'])) {
+                return [
+                    'host' => $parts['host'],
+                    'port' => $parts['port'] ?? 5432,
+                    'user' => urldecode($parts['user']),
+                    'pass' => urldecode($parts['pass']),
+                    'dbname' => ltrim($parts['path'], '/'),
+                ];
+            }
+        }
+
+        return [
+            'host' => getenv('PGHOST'),
+            'port' => getenv('PGPORT') ?: 5432,
+            'user' => getenv('PGUSER'),
+            'pass' => getenv('PGPASSWORD'),
+            'dbname' => getenv('PGDATABASE'),
+        ];
+    }
+
     public function getConnection() {
         $this->conn = null;
 
         try {
-            // ✅ Use explicit environment variables (RECOMMENDED)
-            $host = getenv('PGHOST');
-            $port = getenv('PGPORT') ?: 5432;
-            $user = getenv('PGUSER');
-            $pass = getenv('PGPASSWORD');
-            $dbname = getenv('PGDATABASE');
+            $config = $this->getDatabaseConfig();
+            $host = $config['host'] ?? null;
+            $port = $config['port'] ?? 5432;
+            $user = $config['user'] ?? null;
+            $pass = $config['pass'] ?? null;
+            $dbname = $config['dbname'] ?? null;
 
-            // 🧪 Debug (remove after working)
-            error_log("DB HOST: " . $host);
-            error_log("DB USER: " . $user);
-
-            // ❌ Stop early if missing config
             if (!$host || !$user || !$pass || !$dbname) {
                 throw new Exception("Missing database environment variables");
             }
@@ -33,27 +54,14 @@ class Database {
 
             return $this->conn;
 
-        } catch(Exception $e) {
+        } catch (Throwable $e) {
             error_log("Database config error: " . $e->getMessage());
 
+            header("Content-Type: application/json");
             http_response_code(500);
             echo json_encode([
                 "success" => false,
                 "message" => "Database configuration error"
-            ]);
-            exit();
-
-        } catch(PDOException $e) {
-            error_log("Database connection error: " . $e->getMessage());
-
-            header("Access-Control-Allow-Origin: https://socia-tech.vercel.app");
-            header("Access-Control-Allow-Credentials: true");
-            header("Content-Type: application/json");
-
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "message" => "Database connection failed"
             ]);
             exit();
         }

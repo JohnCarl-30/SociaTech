@@ -1,4 +1,5 @@
 <?php
+require_once '../config/session.php';
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: https://socia-tech.vercel.app"); 
@@ -9,11 +10,10 @@ header("Access-Control-Allow-Credentials: true");
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-session_start();
+start_sociatech_session();
 
 try {
-    // Check if user is logged in
-    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode([
             "success" => false,
@@ -27,12 +27,11 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-   
-    $query = "SELECT user_id, fullname, username, email, profile_image, created_at 
+    $query = "SELECT user_id, fullname, username, email, profile_image, role, created_at 
               FROM users 
               WHERE user_id = :user_id";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(":id", $_SESSION['user_id']);
+    $stmt->bindParam(":user_id", $_SESSION['user_id'], PDO::PARAM_INT);
     $stmt->execute();
 
     if ($stmt->rowCount() === 0) {

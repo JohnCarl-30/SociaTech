@@ -21,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    require_once '../config/database.php';
-    require_once '../config/mailer.php';
+    require_once __DIR__ . '/../config/database.php';
+    require_once __DIR__ . '/../config/mailer.php';
 
     $database = new Database();
     $db = $database->getConnection();

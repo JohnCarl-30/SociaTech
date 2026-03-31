@@ -1,7 +1,8 @@
 <?php
 // verify-email.php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+require_once '../config/app.php';
+ini_set('display_errors', 0);
+error_reporting(0);
 
 header('Access-Control-Allow-Origin: https://socia-tech.vercel.app');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -29,8 +30,7 @@ try {
     
     if (empty($token)) {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            header('Location: http://localhost:5173/login?error=' . urlencode('Verification token is required'));
-            exit();
+            redirect_to_frontend('login', ['error' => 'Verification token is required']);
         } else {
             header('Content-Type: application/json');
             http_response_code(400);
@@ -53,8 +53,7 @@ try {
 
     if (!$verification) {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            header('Location: http://localhost:5173/login?error=' . urlencode('Invalid or expired verification token'));
-            exit();
+            redirect_to_frontend('login', ['error' => 'Invalid or expired verification token']);
         } else {
             header('Content-Type: application/json');
             http_response_code(400);
@@ -69,8 +68,7 @@ try {
     // Check if token has expired
     if (strtotime($verification['expires_at']) < time()) {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            header('Location: http://localhost:5173/login?error=' . urlencode('Verification token has expired. Please request a new one.'));
-            exit();
+            redirect_to_frontend('login', ['error' => 'Verification token has expired. Please request a new one.']);
         } else {
             header('Content-Type: application/json');
             http_response_code(400);
@@ -105,10 +103,8 @@ try {
 
     // If GET request (from email link), redirect to frontend
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        header('Location: http://localhost:5173/login?verified=true');
-        exit();
+        redirect_to_frontend('login', ['verified' => 'true']);
     } else {
-       
         header('Content-Type: application/json');
         echo json_encode([
             'success' => true,
@@ -124,8 +120,7 @@ try {
     error_log("Verification Error: " . $e->getMessage());
     
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        header('Location: http://localhost:5173/login?error=' . urlencode('Verification failed. Please try again.'));
-        exit();
+        redirect_to_frontend('login', ['error' => 'Verification failed. Please try again.']);
     } else {
         header('Content-Type: application/json');
         http_response_code(500);

@@ -1,15 +1,14 @@
+import { resolveAuthUrl } from "../config/api.js";
+
 export const createNotification = async (notificationData) => {
   try {
-    const response = await fetch(
-      "http://localhost/SociaTech/backend/auth/createNotification.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(notificationData),
-      }
-    );
+    const response = await fetch(resolveAuthUrl("createNotification.php"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(notificationData),
+    });
     const data = await response.json();
     console.log("Notification created:", data); // Debug log
     return data.success;
@@ -54,7 +53,7 @@ export const notifyPostComment = async (
 export const notifyPostUpvote = async (
   postOwnerId,
   voterId,
-  voterUsername,
+  _voterUsername,
   postId
 ) => {
   if (postOwnerId === voterId) return false;
@@ -73,7 +72,7 @@ export const notifyPostUpvote = async (
 export const notifyPostDownvote = async (
   postOwnerId,
   voterId,
-  voterUsername,
+  _voterUsername,
   postId
 ) => {
   if (postOwnerId === voterId) return false;
@@ -92,7 +91,7 @@ export const notifyPostDownvote = async (
 export const notifyCommentReply = async (
   commentOwnerId,
   replierId,
-  replierUsername,
+  _replierUsername,
   postId,
   commentId
 ) => {
@@ -112,7 +111,7 @@ export const notifyCommentReply = async (
 export const notifyCommentUpvote = async (
   commentOwnerId,
   voterId,
-  voterUsername,
+  _voterUsername,
   postId,
   commentId
 ) => {
@@ -132,7 +131,7 @@ export const notifyCommentUpvote = async (
 export const notifyCommentDownvote = async (
   commentOwnerId,
   voterId,
-  voterUsername,
+  _voterUsername,
   postId,
   commentId
 ) => {
@@ -152,7 +151,7 @@ export const notifyCommentDownvote = async (
 export const notifyFollow = async (
   followedUserId,
   followerId,
-  followerUsername
+  _followerUsername
 ) => {
   if (followedUserId === followerId) return false;
 
